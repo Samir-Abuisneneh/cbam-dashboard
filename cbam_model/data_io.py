@@ -4,7 +4,7 @@ Three tables feed the model, and they are at different stages of maturity:
 
   corridor_logistics.csv  REAL. Derived from Gayu's maritime notebooks, with
                           cargo tonnage the one remaining assumption.
-  emissions_table.csv     PLACEHOLDER. Awaiting Riya.
+  emissions_table.csv     REAL. From Riya, both products, both countries.
   commercial_inputs.csv   PLACEHOLDER. No owner assigned.
 
 Anything still synthetic is marked PLACEHOLDER in its source column, so a real
@@ -27,20 +27,37 @@ NF = rc.NINGBO_FELIXSTOWE
 
 
 def _placeholder_emissions() -> pd.DataFrame:
-    """Embedded emissions. Hydrogen is real, from Riya. Ammonia is still placeholder.
+    """Embedded emissions. Hydrogen and ammonia are both real, from Riya.
 
-    Hydrogen figures are kgCO2/kg H2, numerically identical to tCO2e per tonne.
-    Same for ammonia.
+    Figures are kgCO2/kg product, numerically identical to tCO2e per tonne.
 
-    Hydrogen source: Riya, `Assumptions Table(Sheet1).csv`, delivered 26 July 2026.
-    Two ranges in her table (Ningbo green and blue) are collapsed to their
-    midpoint, per her own instruction in the group chat. She flagged that the
-    Canada green and blue figures may still be revised, having mislaid two
-    further values she meant to check, so treat those two as provisional.
+    Source: Riya, `Assumptions Table(Sheet1).csv`, delivered 29 July 2026 - the
+    revision that finally includes the ammonia table and both countries'
+    CBAM defaults, superseding the 26 July hydrogen-only delivery and closing
+    out the two figures she'd previously flagged as provisional (Canada green
+    and blue hydrogen are now taken as final).
 
-    The two "cbam_default" rows are not literature LCA figures. They are the
-    actual IR 2025/2621 default embedded emissions values for hydrogen (CN
-    2804 10 00), country-specific as the regulation requires. Unlike the
+    Ranges in her table are collapsed to their midpoint, per her own
+    instruction in the group chat: Ningbo hydrogen green (1.45-3.04), Ningbo
+    ammonia green (0.596-1.04) and Ningbo ammonia coal/grey (4.4-4.8).
+
+    Ningbo blue hydrogen: her table lists two candidate rows for this ("Coal
+    hydrogen with CCS", 4.92-10.90, and "CCS-equipped fossil hydrogen",
+    4.54-8.20). Taking the coal-specific one, since China's blue route is more
+    likely coal-based with CCS - matching her own grey/coal_gasification
+    pathway for the same corridor - rather than the generic fossil-hydrogen
+    figure used previously.
+
+    Halifax-Hamburg ammonia has no blue (SMR+CCS) row in her table at all, so
+    that pathway is dropped here rather than left on an invented number.
+    Ningbo-Felixstowe ammonia has only one grey/coal route in her table, so
+    the two separate placeholder pathways that used to stand in for it
+    (grey_smr and coal_gasification) collapse into one, named coal_gasification
+    to match the naming already used for Ningbo hydrogen's equivalent route.
+
+    The four "cbam_default" rows (one per product per country) are not
+    literature LCA figures. They are the actual IR 2025/2621 default embedded
+    emissions values, country-specific as the regulation requires. Unlike the
     literature pathways, these should be run with using_default_values=True so
     the mark-up (10% in 2026) applies on top of them, since that mark-up is a
     penalty for using regulatory defaults instead of verified actual emissions,
@@ -52,26 +69,27 @@ def _placeholder_emissions() -> pd.DataFrame:
     (2026 federal OBPS rate), converted to EUR at the 23 July 2026 ECB
     reference rate, treated as an upper bound because OBPS only charges above
     a facility-specific benchmark and EverWind's actual performance against it
-    is unknown. China: EUR 0, because hydrogen production is not yet covered
-    by China's national ETS at all, so there is nothing to deduct. See
-    regulatory_constants.py for full sourcing on both.
+    is unknown. China: EUR 0, because neither hydrogen nor ammonia production
+    is yet covered by China's national ETS, so there is nothing to deduct. See
+    regulatory_constants.py for full sourcing on both. Origin price is a
+    country-level fact, not a product-level one, so ammonia gets the same
+    Canada/China figures as hydrogen.
     """
     ca = rc.ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E  # EUR 68.63, upper bound, see above
-    cn = rc.ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E  # EUR 0.00, hydrogen not yet in scope
+    cn = rc.ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E  # EUR 0.00, neither product yet in scope
 
     rows = [
         # corridor, product, pathway, tCO2e/t, origin price, method, source
         (HH, "hydrogen", "green_electrolysis", 1.23, ca,
          "Alkaline electrolysis",
          "Riya, https://link.springer.com/article/10.1007/s11708-025-1008-2 "
-         "(well-to-gate LCA). PROVISIONAL - Riya flagged a possible revised figure."),
+         "(well-to-gate LCA)."),
         (HH, "hydrogen", "grey_smr", 10.07, ca,
          "SMR",
          "Riya, https://link.springer.com/article/10.1007/s11708-025-1008-2"),
         (HH, "hydrogen", "blue_smr_ccs", 4.89, ca,
          "SMR + CCS",
-         "Riya, https://link.springer.com/article/10.1007/s11708-025-1008-2 "
-         "PROVISIONAL - Riya flagged a possible revised figure."),
+         "Riya, https://link.springer.com/article/10.1007/s11708-025-1008-2"),
         (HH, "hydrogen", "cbam_default", 10.82, ca,
          "IR 2025/2621 default, Canada",
          "Riya, CBAM Default Values (IR 2025/2621). Use with using_default_values=True."),
@@ -83,31 +101,33 @@ def _placeholder_emissions() -> pd.DataFrame:
          "Coal gasification",
          "Riya, https://www.sciencedirect.com/science/article/pii/S0360544225018249 "
          "(GREET-based LCA)"),
-        (NF, "hydrogen", "blue_ccs", 6.37, cn,
-         "unspecified - not stated in source",
-         "Riya, https://www.sciencedirect.com/science/article/pii/S0360319925010602 "
-         "midpoint of published range 4.54-8.20. Production method not given; "
-         "confirm with Riya before citing as SMR+CCS, China's blue route is more "
-         "likely coal-based with CCS."),
+        (NF, "hydrogen", "blue_ccs", 7.91, cn,
+         "Coal hydrogen with CCS",
+         "Riya, https://www.sciencedirect.com/science/article/pii/S0959652622021151 "
+         "midpoint of published range 4.92-10.90."),
         (NF, "hydrogen", "cbam_default", 26.64, cn,
          "IR 2025/2621 default, China",
          "Riya, CBAM Default Values (IR 2025/2621). Use with using_default_values=True."),
-        # Ammonia: still placeholder emissions. Riya's table has none yet; her
-        # own note says the ammonia table exists but China has not been added.
-        # Origin price is a country-level fact, not a product-level one, so
-        # these rows get the same real Canada/China figures as hydrogen above.
-        (HH, "ammonia", "grey_smr", 2.7, ca, "SMR",
-         "PLACEHOLDER emissions - awaiting Riya, Part C literature ranges"),
-        (HH, "ammonia", "blue_smr_ccs", 1.2, ca, "SMR + CCS",
-         "PLACEHOLDER emissions - awaiting Riya, Part C literature ranges"),
-        (HH, "ammonia", "green_electrolysis", 0.1, ca, "Electrolysis",
-         "PLACEHOLDER emissions - awaiting Riya, Part C literature ranges"),
-        (NF, "ammonia", "grey_smr", 2.8, cn, "SMR",
-         "PLACEHOLDER emissions - awaiting Riya, Part C literature ranges"),
-        (NF, "ammonia", "coal_gasification", 7.0, cn, "Coal gasification",
-         "PLACEHOLDER emissions - awaiting Riya, Part C literature ranges"),
-        (NF, "ammonia", "green_electrolysis", 0.1, cn, "Electrolysis",
-         "PLACEHOLDER emissions - awaiting Riya, Part C literature ranges"),
+        (HH, "ammonia", "grey_smr", 2.18, ca,
+         "Natural gas ammonia",
+         "Riya, https://www.sciencedirect.com/science/article/pii/S0360319924054375#abs0020"),
+        (HH, "ammonia", "green_electrolysis", 0.62, ca,
+         "Electrolysis",
+         "Riya, https://www.sciencedirect.com/science/article/pii/S0360319924054375#abs0020"),
+        (HH, "ammonia", "cbam_default", 1.98, ca,
+         "IR 2025/2621 default, Canada",
+         "Riya, CBAM Default Values (IR 2025/2621). Use with using_default_values=True."),
+        (NF, "ammonia", "coal_gasification", 4.6, cn,
+         "Coal gasification",
+         "Riya, https://www.sciencedirect.com/science/article/pii/S0301479723016365 "
+         "midpoint of published range 4.4-4.8 (2023)."),
+        (NF, "ammonia", "green_electrolysis", 0.818, cn,
+         "Renewable electrolysis + Haber-Bosch",
+         "Riya, https://www.sciencedirect.com/science/article/pii/S0301479723016365 "
+         "midpoint of published range 0.596-1.04 (2023)."),
+        (NF, "ammonia", "cbam_default", 4.36, cn,
+         "IR 2025/2621 default, China",
+         "Riya, CBAM Default Values (IR 2025/2621). Use with using_default_values=True."),
     ]
     return pd.DataFrame(
         rows,
@@ -176,9 +196,9 @@ def _placeholder_commercial() -> pd.DataFrame:
         ("hydrogen", "coal_gasification"): 1300.0,
         ("hydrogen", "cbam_default"): 1500.0,  # priced as grey; default is an emissions figure, not a route
         ("ammonia", "grey_smr"): 350.0,
-        ("ammonia", "blue_smr_ccs"): 450.0,
         ("ammonia", "green_electrolysis"): 700.0,
         ("ammonia", "coal_gasification"): 300.0,
+        ("ammonia", "cbam_default"): 350.0,  # priced as grey; default is an emissions figure, not a route
     }
     conversion = {"hydrogen": 1200.0, "ammonia": 150.0}
     shipping = {(HH, "hydrogen"): 800.0, (HH, "ammonia"): 120.0,

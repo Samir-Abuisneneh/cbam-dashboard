@@ -1,0 +1,4 @@
+corridor,vessel_set,vessel_class,route_scenario,speed_scenario,distance_nm,service_speed_knots,voyage_days,fuel_consumption_t_per_nm,voyage_fuel_total_t,voyage_co2_t,port_in_port_emissions_t,voyage_energy_mj,fueleu_actual_intensity_gco2e_mj,source
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2962.0,14.8,8.3,0.115733,342.8,1080.2,58.51,14054800.0,90.8,Gayu FINAL_shipping_maritime_cost_model.ipynb
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,10403.0,14.8,29.3,0.116322,1210.1,3813.0,58.51,49614099.99999999,90.8,Gayu FINAL_shipping_maritime_cost_model.ipynb
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,14815.0,14.8,41.7,0.116247,1722.2,5426.7,58.51,70610200.0,90.8,Gayu FINAL_shipping_maritime_cost_model.ipynb

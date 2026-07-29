@@ -1,0 +1,17 @@
+corridor,vessel_set,year,parameter,mean_abs_pct_change,rank
+halifax_hamburg,gas_carrier,2026,fueleu_actual_intensity_gco2e_mj,131.24776366575855,1
+halifax_hamburg,gas_carrier,2026,service_speed_knots,21.07872645877682,2
+halifax_hamburg,gas_carrier,2026,engine_load_fraction,20.098376850654397,3
+halifax_hamburg,gas_carrier,2026,main_engine_power_kw,20.098376850654397,3
+halifax_hamburg,gas_carrier,2026,sfoc_g_per_kwh,20.098376850654397,3
+halifax_hamburg,gas_carrier,2026,carbon_price,19.999999999999993,4
+halifax_hamburg,gas_carrier,2026,vlsfo_carbon_factor,15.312715242292194,5
+halifax_hamburg,gas_carrier,2026,port_days,0.0,6
+ningbo_felixstowe,gas_carrier,2026,engine_load_fraction,20.11621944966673,1
+ningbo_felixstowe,gas_carrier,2026,main_engine_power_kw,20.11621944966673,1
+ningbo_felixstowe,gas_carrier,2026,sfoc_g_per_kwh,20.11621944966673,1
+ningbo_felixstowe,gas_carrier,2026,vlsfo_carbon_factor,20.005127328661768,2
+ningbo_felixstowe,gas_carrier,2026,carbon_price,20.0,3
+ningbo_felixstowe,gas_carrier,2026,port_days,19.979490685352935,4
+ningbo_felixstowe,gas_carrier,2026,fueleu_actual_intensity_gco2e_mj,0.0,5
+ningbo_felixstowe,gas_carrier,2026,service_speed_knots,0.0,5

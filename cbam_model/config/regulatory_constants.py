@@ -1,0 +1,349 @@
+"""Law-derived constants for the corridor cost model.
+
+Every value carries its source. Two values are deliberately unresolved and will
+raise if used: see `unresolved.py`.
+
+Corridors:
+    halifax_hamburg    Canada to Germany. EU CBAM, EU ETS Maritime, FuelEU.
+    ningbo_felixstowe  China to UK. UK CBAM (from 2027), UK ETS Maritime. No FuelEU.
+"""
+
+from .unresolved import Unresolved
+
+HALIFAX_HAMBURG = "halifax_hamburg"
+NINGBO_FELIXSTOWE = "ningbo_felixstowe"
+CORRIDORS = (HALIFAX_HAMBURG, NINGBO_FELIXSTOWE)
+
+PRODUCTS = ("hydrogen", "ammonia")
+
+# Corridor to regulatory regime. Drives which cost terms apply.
+CORRIDOR_REGIME = {
+    HALIFAX_HAMBURG: "EU",
+    NINGBO_FELIXSTOWE: "UK",
+}
+
+
+# ---------------------------------------------------------------------------
+# EU CBAM
+# ---------------------------------------------------------------------------
+
+# Share of embedded emissions that generates a certificate obligation.
+#
+# WARNING: this is NOT the free allocation share. Free allocation is the
+# inverse (97.5% protected in 2026, falling to 0% in 2034). Confusing the two
+# inverts the entire result and has been caught twice in this project.
+# Source: Regulation (EU) 2023/956, free-allocation phase-out schedule.
+CBAM_FACTOR = {
+    2026: 0.025,
+    2027: 0.05,
+    2028: 0.10,
+    2029: 0.225,
+    2030: 0.485,
+    2031: 0.61,
+    2032: 0.735,
+    2033: 0.86,
+    2034: 1.00,
+}
+
+# Mark-up applied to default embedded emissions values, to incentivise use of
+# verified actual data over defaults.
+# Source: Implementing Regulation (EU) 2025/2621, which also sets the
+# country-specific and production-route-specific default values for hydrogen
+# (CN 2804 10 00) and ammonia.
+DEFAULT_VALUE_MARKUP = {2026: 0.10, 2027: 0.20, 2028: 0.30}  # 0.30 applies 2028 onward
+
+# Certificate price mechanism.
+# Source: Implementing Regulation (EU) 2025/2548. NOTE: this is a different
+# regulation from 2025/2621 above. 2621 sets default values, 2548 sets price.
+# Miscited once earlier in this project.
+CBAM_CERT_PRICE_AVERAGING = {2026: "quarterly", 2027: "weekly"}  # weekly from 2027 onward
+CBAM_CERT_PRICE_Q1_2026_ACTUAL = 75.36  # EUR/tCO2e, confirmed published figure (EEX)
+
+# Hydrogen has no de minimis mass exemption. Every shipment is in scope.
+EU_CBAM_HYDROGEN_DE_MINIMIS_EXEMPTION = False
+
+# First annual declaration and certificate surrender for 2026 imports.
+EU_CBAM_FIRST_SURRENDER_DEADLINE = "2027-09-30"
+
+
+# ---------------------------------------------------------------------------
+# UK CBAM
+# ---------------------------------------------------------------------------
+# Source: UK Government CBAM policy summary (HMRC).
+
+UK_CBAM_START_YEAR = 2027  # Ningbo-Felixstowe carries zero CBAM liability in 2026
+UK_CBAM_COUNTRY_DIFFERENTIATED_DEFAULTS = False  # single flat default per CN code, year 1
+UK_CBAM_VALUE_THRESHOLD_GBP = 50_000  # value threshold, not the EU's 50-tonne mass threshold
+UK_CBAM_INDIRECT_EMISSIONS_INCLUDED_FROM = 2029  # at the earliest
+UK_CBAM_IS_TAX_NOT_CERTIFICATES = True  # structural difference from the EU scheme
+UK_CBAM_FIRST_PAYMENT_DEADLINE = "2028-05-31"  # for the 2027 accounting period
+
+# UNRESOLVED. Do not guess.
+UK_CBAM_PHASE_IN_FACTOR = Unresolved(
+    name="UK_CBAM_PHASE_IN_FACTOR",
+    question=(
+        "Does the UK apply its own phase-in / free-allocation-style factor "
+        "schedule analogous to the EU CBAM factor, or is liability 100% from "
+        "1 January 2027?"
+    ),
+    how_to_resolve=(
+        "Check the UK CBAM primary legislation and HMRC technical note directly. "
+        "Assuming 100% from day one overstates UK corridor cost; assuming an "
+        "EU-style 2.5% start understates it. The gap between those two is larger "
+        "than most other parameters in the model."
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
+# EU ETS Maritime
+# ---------------------------------------------------------------------------
+# Source: EMSA EU ETS Maritime Extension Overview; European Commission FAQ on
+# maritime transport in the EU ETS. Confirmed against two independent EU sources.
+
+EU_ETS_MARITIME_PHASE_IN = {2024: 0.40, 2025: 0.70, 2026: 1.00}  # 1.00 from 2026 onward
+EU_ETS_INTRA_EEA_COVERAGE = 1.00  # voyages between two EU/EEA ports
+EU_ETS_EXTRA_EEA_COVERAGE = 0.50  # voyages to or from a port outside the EEA
+
+# Halifax-Hamburg's EU leg is extra-EEA, so 50% coverage applies.
+EU_ETS_CORRIDOR_COVERAGE = {HALIFAX_HAMBURG: EU_ETS_EXTRA_EEA_COVERAGE}
+
+
+# ---------------------------------------------------------------------------
+# UK ETS Maritime
+# ---------------------------------------------------------------------------
+# HIGHEST ERROR RISK IN THE MODEL. This was wrong in two earlier drafts, which
+# assumed EU-equivalent 50% coverage of the international voyage. It is not.
+# Re-verified against the Environment Agency guidance plus ICCT, DNV, Lloyd's
+# Register and ICAP commentary (7 sources total).
+#
+# Source: UK Government / Environment Agency, "UK Emissions Trading Scheme for
+# Maritime: How to Comply", published 22 June 2026.
+
+UK_ETS_START_DATE = "2026-07-01"  # first compliance period is 6 months, Jul-Dec 2026
+UK_ETS_DOMESTIC_VOYAGE_COVERAGE = 1.00  # UK port to UK port only
+UK_ETS_INTL_VOYAGE_COVERAGE = 0.00  # the international ocean leg is NOT covered
+UK_ETS_IN_PORT_COVERAGE = 1.00  # 100% of berth, hotelling and in-port movement
+# emissions, regardless of whether the ship
+# arrived from a UK or a non-UK port
+
+# PROPOSED extension to 50% of international voyages from 2028. The consultation
+# closed January 2026 with no legislative decision. This is not law. It may only
+# ever appear in the model as an explicitly labelled scenario.
+UK_ETS_INTL_EXPANSION_PROPOSED = 0.50
+UK_ETS_INTL_EXPANSION_IS_LAW = False
+UK_ETS_INTL_EXPANSION_EARLIEST_YEAR = 2028
+
+
+# ---------------------------------------------------------------------------
+# FuelEU Maritime
+# ---------------------------------------------------------------------------
+# Source: Regulation (EU) 2023/1805, Annex II, Annex IV and Article 5.
+# Applies to the Halifax-Hamburg corridor only. Felixstowe sits outside EU
+# jurisdiction, so Ningbo-Felixstowe carries no FuelEU cost. That asymmetry is a
+# real cost difference between the corridors, not a gap in the model.
+
+FUELEU_BASELINE_2020 = 91.16  # gCO2e/MJ, well-to-wake
+
+# Article 4(2) reduction steps applied to the 2020 baseline. The build spec only
+# carried the 2025-2029 step, but the scenario matrix runs 2030, so the later
+# steps are added here. Targets are computed from the baseline rather than typed
+# in, which is why the 2025 figure reads 89.3368 rather than the rounded 89.34
+# quoted in most secondary sources.
+FUELEU_REDUCTION_BY_PERIOD = {
+    (2025, 2029): 0.02,
+    (2030, 2034): 0.06,
+    (2035, 2039): 0.145,
+    (2040, 2044): 0.31,
+    (2045, 2049): 0.62,
+    (2050, 2099): 0.80,
+}
+# The 2025-2029 ceiling is quoted as 89.34 gCO2e/MJ in the regulation's own
+# supporting material and in Gayu's model. Computing it from the baseline gives
+# 89.3368, a 0.004% difference that would nonetheless make results diverge from
+# hers. The published figure is used for those years so the two models agree
+# exactly; later years are computed from the Article 4(2) reduction steps.
+FUELEU_TARGET_PUBLISHED = {year: 89.34 for year in range(2025, 2030)}
+
+FUELEU_PENALTY_EUR_PER_TONNE_VLSFO = 2400
+VLSFO_MJ_PER_TONNE = 41_000
+
+# Well-to-wake intensity of conventional marine fuel, from the European
+# Commission's own worked example for marine diesel oil: 14.4 gCO2e/MJ
+# well-to-tank plus 76.4 gCO2e/MJ tank-to-wake.
+# Source: European Commission Q&A on Regulation (EU) 2023/1805, via Gayu.
+FUELEU_CONVENTIONAL_WTW_INTENSITY = 90.8
+FUELEU_RFNBO_MULTIPLIER = 2.0  # green H2 / e-ammonia bunker fuel, to end of 2033 (Art. 5)
+FUELEU_RFNBO_MULTIPLIER_EXPIRES = 2033
+FUELEU_APPLIES_TO = (HALIFAX_HAMBURG,)
+
+# Annex II tank-to-wake default values for ammonia combustion in internal
+# combustion engines are marked "TBM" (to be measured) and are not yet set.
+# Declared as a data gap; fuel-cell pathway factors and literature values are
+# used instead.
+FUELEU_AMMONIA_ICE_TTW_IS_TBM = True
+
+
+# ---------------------------------------------------------------------------
+# Carbon price scenarios
+# ---------------------------------------------------------------------------
+# Source: GMK Center consensus forecast aggregating Bloomberg, ABN Amro,
+# Refinitiv, ICIS, S&P Global, Aurora and the Potsdam Institute. 2030 range
+# EUR 80-147 across institutions, consensus approximately EUR 126.
+
+# Prices are year-specific because the two sources answer different questions.
+# The 2026 figures are a near-term market range; the 2030 figures are a forecast.
+# Using an 80 EUR near-term price for 2030, or a 126 EUR 2030 forecast for 2026,
+# would both be wrong.
+#
+# 2026: ESMA, Market Report on EU Carbon Markets 2026 (9 July 2026), via Gayu's
+#       maritime cost model.
+# 2030: GMK Center consensus forecast aggregating Bloomberg, ABN Amro, Refinitiv,
+#       ICIS, S&P Global, Aurora and the Potsdam Institute. Range EUR 80-147
+#       across institutions, consensus approximately EUR 126.
+EU_ETS_PRICE_SCENARIOS_BY_YEAR = {
+    2026: {"low": 70.0, "medium": 80.0, "high": 90.0},
+    2030: {"low": 80.0, "medium": 126.0, "high": 147.0},
+}
+
+# UK ETS. RESOLVED, previously an open item.
+#
+# The medium figure is the UK ETS Authority's determination of GBP 49.41/tCO2e
+# for the scheme year beginning 1 January 2026, published 28 November 2025. It is
+# formally the price used for civil penalties, but it is calculated as the average
+# end-of-day settlement price of 2026 UKA December futures over the 12 months to
+# 11 November 2025, so it is a market-derived figure rather than an administrative
+# rate. That makes it a defensible central anchor. For comparison, the equivalent
+# 2025 determination was GBP 41.84.
+#
+# The low and high figures are Gayu's bracketing scenarios around that anchor.
+# They are not themselves sourced forecasts, and should be described as a
+# sensitivity range rather than as projections.
+#
+# Note this sits well below the EU ETS figures above, which is the expected
+# relationship and was the reason the spec warned against reusing the EU series.
+UK_ETS_PRICE_SCENARIOS = {"low": 40.0, "medium": 49.41, "high": 60.0}  # GBP/tCO2e
+UK_ETS_PRICE_2026_OFFICIAL = 49.41
+
+PRICE_SCENARIOS = ("low", "medium", "high")
+
+
+def eu_ets_price(year: int, scenario: str) -> float:
+    """EU ETS price in EUR/tCO2e for a given year and scenario.
+
+    Years between the two anchor points are linearly interpolated. Years beyond
+    2030 hold flat at the 2030 figure rather than extrapolating, since the
+    underlying forecasts do not extend further.
+    """
+    anchors = sorted(EU_ETS_PRICE_SCENARIOS_BY_YEAR)
+    if year in EU_ETS_PRICE_SCENARIOS_BY_YEAR:
+        return EU_ETS_PRICE_SCENARIOS_BY_YEAR[year][scenario]
+    if year <= anchors[0]:
+        return EU_ETS_PRICE_SCENARIOS_BY_YEAR[anchors[0]][scenario]
+    if year >= anchors[-1]:
+        return EU_ETS_PRICE_SCENARIOS_BY_YEAR[anchors[-1]][scenario]
+    lo = max(a for a in anchors if a < year)
+    hi = min(a for a in anchors if a > year)
+    lo_p = EU_ETS_PRICE_SCENARIOS_BY_YEAR[lo][scenario]
+    hi_p = EU_ETS_PRICE_SCENARIOS_BY_YEAR[hi][scenario]
+    return lo_p + (hi_p - lo_p) * (year - lo) / (hi - lo)
+
+
+# ---------------------------------------------------------------------------
+# Modelling assumptions (not law)
+# ---------------------------------------------------------------------------
+# These are analyst choices rather than regulatory values, so they are separated
+# from everything above. Each must be stated in the methodology chapter and
+# carried through the sensitivity analysis.
+
+# ---------------------------------------------------------------------------
+# Origin carbon prices
+# ---------------------------------------------------------------------------
+# Article 9 of Regulation (EU) 2023/956 lets an importer deduct any carbon
+# price already effectively paid in the country of origin from EU CBAM
+# liability. These two figures replace the invented EUR 50 / GBP 10 placeholders
+# that were in the model until this was looked up on 26-27 July 2026.
+
+# CANADA. CAD 110/tCO2e is the federal Output-Based Pricing System (OBPS) rate
+# for the 2026 compliance year, rising from CAD 95 in 2025 by CAD 15/year to
+# CAD 170 by 2030. Source: ICAP (International Carbon Action Partnership)
+# federal OBPS factsheet. Nova Scotia, where EverWind is based, does not run
+# its own industrial carbon price and follows the federal one directly,
+# confirmed via the Nova Scotia government's own climate change pages.
+#
+# CAVEAT, and it is a real one: OBPS is not a flat charge on every tonne. Each
+# facility gets free allowances up to a sector-average performance benchmark
+# and only pays CAD 110 on emissions above that benchmark. A facility
+# performing at or better than the benchmark could owe close to nothing despite
+# this headline rate existing. EverWind's actual performance against its
+# benchmark is not known, so CAD 110 is the ceiling on what could be deducted,
+# not a confirmed effective price. Same shape of problem as the EU CBAM factor
+# vs free allocation distinction elsewhere in this project.
+#
+# Converted at the ECB reference rate for 23 July 2026, 1 CAD = 0.62393 EUR.
+ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_2026 = 110.0
+FX_EUR_PER_CAD_2026_07_23 = 0.62393
+ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E = round(
+    ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_2026 * FX_EUR_PER_CAD_2026_07_23, 2
+)  # EUR 68.63/tCO2e, upper bound
+
+# CHINA. Set to zero, and this is a finding rather than a missing figure.
+# China's national ETS as of 2026 covers only power generation, steel, cement
+# and aluminium smelting. Hydrogen production falls under chemicals and
+# petrochemicals, which multiple sources (ICAP, IEEFA, China-Briefing) describe
+# as planned for a future expansion phase, not yet included. If hydrogen
+# production is not in scope of any domestic carbon price, there is genuinely
+# nothing to deduct under Article 9, which is different from simply not having
+# looked the number up.
+ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E = 0.0
+# two apart rather than combining them with an invented exchange rate, on the
+# grounds that the decision belongs wherever the tables are used next. That
+# decision has not been made and no rate has been sourced, so the two currencies
+# stay separate here too and no conversion happens anywhere in the model.
+FX_EUR_PER_GBP = Unresolved(
+    name="FX_EUR_PER_GBP",
+    question="What GBP to EUR rate, at what reference date, should the study use?",
+    how_to_resolve=(
+        "Pick a stated reference date and take the ECB reference rate for it, then "
+        "record both in the methodology chapter. Until then EU-regime costs are "
+        "reported in EUR and UK-regime costs in GBP, side by side and unconverted, "
+        "which is how Gayu's notebooks present them."
+    ),
+)
+
+
+def cbam_factor(year: int) -> float:
+    """EU CBAM factor for a given year. 100% from 2034 onward."""
+    if year < 2026:
+        return 0.0
+    return CBAM_FACTOR.get(year, 1.00)
+
+
+def default_value_markup(year: int) -> float:
+    """Mark-up on EU CBAM default embedded emissions values. 30% from 2028 onward."""
+    if year < 2026:
+        return 0.0
+    return DEFAULT_VALUE_MARKUP.get(year, 0.30)
+
+
+def eu_ets_maritime_phase_in(year: int) -> float:
+    """EU ETS maritime phase-in fraction. 100% from 2026 onward."""
+    if year < 2024:
+        return 0.0
+    return EU_ETS_MARITIME_PHASE_IN.get(year, 1.00)
+
+
+def fueleu_target(year: int) -> float:
+    """FuelEU GHG intensity target in gCO2e/MJ for a given year.
+
+    Source: Regulation (EU) 2023/1805 Article 4(2), applied to the 91.16 gCO2e/MJ
+    2020 fleet-average baseline.
+    """
+    if year in FUELEU_TARGET_PUBLISHED:
+        return FUELEU_TARGET_PUBLISHED[year]
+    for (start, end), reduction in FUELEU_REDUCTION_BY_PERIOD.items():
+        if start <= year <= end:
+            return FUELEU_BASELINE_2020 * (1 - reduction)
+    raise ValueError(
+        f"No FuelEU target defined for {year}. Article 4(2) covers 2025 onward."
+    )

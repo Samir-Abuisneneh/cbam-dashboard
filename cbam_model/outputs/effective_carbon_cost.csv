@@ -1,0 +1,97 @@
+corridor,vessel_set,route_scenario,speed_scenario,year,price_scenario,uk_ets_variant,voyage_co2_t,currency,cost_in_own_currency,effective_cost_per_tonne_co2
+halifax_hamburg,VLGC/VLAC,suez,lower,2026,low,n/a,1236.1,EUR,58402.47797356822,47.24737316848817
+halifax_hamburg,VLGC/VLAC,suez,lower,2026,medium,n/a,1236.1,EUR,64582.97797356822,52.24737316848817
+halifax_hamburg,VLGC/VLAC,suez,lower,2026,high,n/a,1236.1,EUR,70763.47797356821,57.24737316848816
+halifax_hamburg,VLGC/VLAC,suez,lower,2030,low,n/a,1236.1,EUR,102426.27524229075,82.86245064500507
+halifax_hamburg,VLGC/VLAC,suez,lower,2030,medium,n/a,1236.1,EUR,130856.57524229074,105.86245064500505
+halifax_hamburg,VLGC/VLAC,suez,lower,2030,high,n/a,1236.1,EUR,143835.62524229073,116.36245064500504
+halifax_hamburg,VLGC/VLAC,suez,base,2026,low,n/a,1080.2,EUR,51035.75770925105,47.246581845261105
+halifax_hamburg,VLGC/VLAC,suez,base,2026,medium,n/a,1080.2,EUR,56436.75770925105,52.246581845261105
+halifax_hamburg,VLGC/VLAC,suez,base,2026,high,n/a,1080.2,EUR,61837.75770925105,57.246581845261105
+halifax_hamburg,VLGC/VLAC,suez,base,2030,low,n/a,1080.2,EUR,89505.02766519824,82.85968123051124
+halifax_hamburg,VLGC/VLAC,suez,base,2030,medium,n/a,1080.2,EUR,114349.62766519825,105.85968123051124
+halifax_hamburg,VLGC/VLAC,suez,base,2030,high,n/a,1080.2,EUR,125691.72766519824,116.35968123051123
+halifax_hamburg,VLGC/VLAC,suez,upper,2026,low,n/a,950.0,EUR,44884.97797356823,47.24734523533498
+halifax_hamburg,VLGC/VLAC,suez,upper,2026,medium,n/a,950.0,EUR,49634.97797356823,52.24734523533498
+halifax_hamburg,VLGC/VLAC,suez,upper,2026,high,n/a,950.0,EUR,54384.97797356823,57.24734523533498
+halifax_hamburg,VLGC/VLAC,suez,upper,2030,low,n/a,950.0,EUR,78719.23524229074,82.86235288662184
+halifax_hamburg,VLGC/VLAC,suez,upper,2030,medium,n/a,950.0,EUR,100569.23524229074,105.86235288662184
+halifax_hamburg,VLGC/VLAC,suez,upper,2030,high,n/a,950.0,EUR,110544.23524229074,116.36235288662184
+halifax_hamburg,ACL G4-class ConRo,suez,service,2026,low,n/a,1593.8,EUR,75301.9779735682,47.246817651881166
+halifax_hamburg,ACL G4-class ConRo,suez,service,2026,medium,n/a,1593.8,EUR,83270.9779735682,52.246817651881166
+halifax_hamburg,ACL G4-class ConRo,suez,service,2026,high,n/a,1593.8,EUR,91239.9779735682,57.246817651881166
+halifax_hamburg,ACL G4-class ConRo,suez,service,2030,low,n/a,1593.8,EUR,132063.07524229074,82.86050648907688
+halifax_hamburg,ACL G4-class ConRo,suez,service,2030,medium,n/a,1593.8,EUR,168720.47524229076,105.8605064890769
+halifax_hamburg,ACL G4-class ConRo,suez,service,2030,high,n/a,1593.8,EUR,185455.37524229076,116.3605064890769
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2026,low,current_scope,4333.6,GBP,2340.4,0.5400590732877977
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2026,medium,current_scope,4333.6,GBP,2890.9790999999996,0.6671079702787519
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2026,high,current_scope,4333.6,GBP,3510.6,0.8100886099316964
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,low,current_scope,4333.6,GBP,2340.4,0.5400590732877977
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,low,proposed_expansion,4333.6,GBP,89012.40000000002,20.5400590732878
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,medium,current_scope,4333.6,GBP,2890.9790999999996,0.6671079702787519
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,medium,proposed_expansion,4333.6,GBP,109952.56710000001,25.372107970278755
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,high,current_scope,4333.6,GBP,3510.6,0.8100886099316964
+ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,high,proposed_expansion,4333.6,GBP,133518.60000000003,30.810088609931704
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2026,low,current_scope,6181.3,GBP,2340.4,0.3786258554025852
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2026,medium,current_scope,6181.3,GBP,2890.9790999999996,0.4676975878860433
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2026,high,current_scope,6181.3,GBP,3510.6,0.5679387831038778
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,low,current_scope,6181.3,GBP,2340.4,0.3786258554025852
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,low,proposed_expansion,6181.3,GBP,125966.40000000001,20.378625855402586
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,medium,current_scope,6181.3,GBP,2890.9790999999996,0.4676975878860433
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,medium,proposed_expansion,6181.3,GBP,155599.9956,25.17269758788604
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,high,current_scope,6181.3,GBP,3510.6,0.5679387831038778
+ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,high,proposed_expansion,6181.3,GBP,188949.6,30.567938783103877
+ningbo_felixstowe,VLGC/VLAC,suez,base,2026,low,current_scope,3813.0,GBP,2340.4,0.6137949121426698
+ningbo_felixstowe,VLGC/VLAC,suez,base,2026,medium,current_scope,3813.0,GBP,2890.9790999999996,0.7581901652242328
+ningbo_felixstowe,VLGC/VLAC,suez,base,2026,high,current_scope,3813.0,GBP,3510.6,0.9206923682140047
+ningbo_felixstowe,VLGC/VLAC,suez,base,2030,low,current_scope,3813.0,GBP,2340.4,0.6137949121426698
+ningbo_felixstowe,VLGC/VLAC,suez,base,2030,low,proposed_expansion,3813.0,GBP,78600.4,20.61379491214267
+ningbo_felixstowe,VLGC/VLAC,suez,base,2030,medium,current_scope,3813.0,GBP,2890.9790999999996,0.7581901652242328
+ningbo_felixstowe,VLGC/VLAC,suez,base,2030,medium,proposed_expansion,3813.0,GBP,97091.14409999999,25.46319016522423
+ningbo_felixstowe,VLGC/VLAC,suez,base,2030,high,current_scope,3813.0,GBP,3510.6,0.9206923682140047
+ningbo_felixstowe,VLGC/VLAC,suez,base,2030,high,proposed_expansion,3813.0,GBP,117900.6,30.920692368214006
+ningbo_felixstowe,VLGC/VLAC,cape,base,2026,low,current_scope,5426.7,GBP,2340.4,0.4312749921683528
+ningbo_felixstowe,VLGC/VLAC,cape,base,2026,medium,current_scope,5426.7,GBP,2890.9790999999996,0.5327324340759577
+ningbo_felixstowe,VLGC/VLAC,cape,base,2026,high,current_scope,5426.7,GBP,3510.6,0.6469124882525291
+ningbo_felixstowe,VLGC/VLAC,cape,base,2030,low,current_scope,5426.7,GBP,2340.4,0.4312749921683528
+ningbo_felixstowe,VLGC/VLAC,cape,base,2030,low,proposed_expansion,5426.7,GBP,110874.40000000001,20.431274992168355
+ningbo_felixstowe,VLGC/VLAC,cape,base,2030,medium,current_scope,5426.7,GBP,2890.9790999999996,0.5327324340759577
+ningbo_felixstowe,VLGC/VLAC,cape,base,2030,medium,proposed_expansion,5426.7,GBP,136957.60259999998,25.237732434075955
+ningbo_felixstowe,VLGC/VLAC,cape,base,2030,high,current_scope,5426.7,GBP,3510.6,0.6469124882525291
+ningbo_felixstowe,VLGC/VLAC,cape,base,2030,high,proposed_expansion,5426.7,GBP,166311.6,30.646912488252532
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2026,low,current_scope,3318.3,GBP,2340.4,0.7053009070909803
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2026,medium,current_scope,3318.3,GBP,2890.9790999999996,0.8712229454841333
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2026,high,current_scope,3318.3,GBP,3510.6,1.0579513606364703
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,low,current_scope,3318.3,GBP,2340.4,0.7053009070909803
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,low,proposed_expansion,3318.3,GBP,68706.40000000001,20.705300907090983
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,medium,current_scope,3318.3,GBP,2890.9790999999996,0.8712229454841333
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,medium,proposed_expansion,3318.3,GBP,84869.5806,25.576222945484133
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,high,current_scope,3318.3,GBP,3510.6,1.0579513606364703
+ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,high,proposed_expansion,3318.3,GBP,103059.6,31.05795136063647
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2026,low,current_scope,4724.0,GBP,2340.4,0.49542760372565625
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2026,medium,current_scope,4724.0,GBP,2890.9790999999996,0.6119769475021167
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2026,high,current_scope,4724.0,GBP,3510.6,0.7431414055884843
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,low,current_scope,4724.0,GBP,2340.4,0.49542760372565625
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,low,proposed_expansion,4724.0,GBP,96820.40000000001,20.49542760372566
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,medium,current_scope,4724.0,GBP,2890.9790999999996,0.6119769475021167
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,medium,proposed_expansion,4724.0,GBP,119597.39910000001,25.31697694750212
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,high,current_scope,4724.0,GBP,3510.6,0.7431414055884843
+ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,high,proposed_expansion,4724.0,GBP,145230.6,30.743141405588485
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2026,low,current_scope,12464.4,GBP,11566.800000000001,0.927986906710311
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2026,medium,current_scope,12464.4,GBP,14287.8897,1.1462958265139116
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2026,high,current_scope,12464.4,GBP,17350.2,1.3919803600654665
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,low,current_scope,12464.4,GBP,11566.800000000001,0.927986906710311
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,low,proposed_expansion,12464.4,GBP,260854.8,20.92798690671031
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,medium,current_scope,12464.4,GBP,14287.8897,1.1462958265139116
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,medium,proposed_expansion,12464.4,GBP,322220.8917,25.851295826513912
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,high,current_scope,12464.4,GBP,17350.2,1.3919803600654665
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,high,proposed_expansion,12464.4,GBP,391282.2,31.391980360065467
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2026,low,current_scope,17732.6,GBP,11566.800000000001,0.6522901322987043
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2026,medium,current_scope,17732.6,GBP,14287.8897,0.8057413859219743
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2026,high,current_scope,17732.6,GBP,17350.2,0.9784351984480563
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,low,current_scope,17732.6,GBP,11566.800000000001,0.6522901322987043
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,low,proposed_expansion,17732.6,GBP,366218.8,20.652290132298706
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,medium,current_scope,17732.6,GBP,14287.8897,0.8057413859219743
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,medium,proposed_expansion,17732.6,GBP,452371.7726999999,25.51074138592197
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,high,current_scope,17732.6,GBP,17350.2,0.9784351984480563
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,high,proposed_expansion,17732.6,GBP,549328.2,30.978435198448057

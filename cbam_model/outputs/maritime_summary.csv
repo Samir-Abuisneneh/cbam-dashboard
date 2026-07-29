@@ -1,0 +1,9 @@
+corridor,vessel_set,year,distance_nm,voyage_days,voyage_co2_t,eu_ets_cost_eur,fueleu_cost_eur,uk_ets_cost_gbp,total_eur,total_gbp
+halifax_hamburg,ACL G4-class ConRo,2026,2962,6.9,1593.8,63752.0,19518.9779735682,0.0,83270.9779735682,0.0
+halifax_hamburg,VLGC/VLAC,2026,2962,8.3,1080.2,43208.0,13228.757709251044,0.0,56436.75770925105,0.0
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,2026,10403,19.4,12464.4,0.0,0.0,14287.8897,0.0,14287.8897
+ningbo_felixstowe,VLGC/VLAC,2026,10403,29.3,3813.0,0.0,0.0,2890.9790999999996,0.0,2890.9790999999996
+halifax_hamburg,ACL G4-class ConRo,2030,2962,6.9,1593.8,100409.4,68311.07524229075,0.0,168720.47524229076,0.0
+halifax_hamburg,VLGC/VLAC,2030,2962,8.3,1080.2,68052.6,46297.02766519824,0.0,114349.62766519825,0.0
+ningbo_felixstowe,HMM Algeciras-class / Megamax-24,2030,10403,19.4,12464.4,0.0,0.0,14287.8897,0.0,14287.8897
+ningbo_felixstowe,VLGC/VLAC,2030,10403,29.3,3813.0,0.0,0.0,2890.9790999999996,0.0,2890.9790999999996

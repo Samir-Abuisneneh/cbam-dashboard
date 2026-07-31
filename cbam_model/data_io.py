@@ -48,6 +48,20 @@ def _placeholder_emissions() -> pd.DataFrame:
     pathway for the same corridor - rather than the generic fossil-hydrogen
     figure used previously.
 
+    Canada green and blue hydrogen also gained a second candidate row each in
+    this delivery - green: "PEM electrolysis (grid average)", 1.34, alongside
+    the original "Alkaline electrolysis (grid average)", 1.23; blue: "SMR/ATR/
+    NGD + CCS (natural gas-producing regions)", 3.91-8.20, alongside the
+    original single-value "SMR + CCS", 4.89. Both PEM and the second blue row
+    are dropped in favour of the originals, unlike the Ningbo blue case above,
+    because the originals are the only Canada hydrogen figures that come from
+    the same source paper as the Canada grey (SMR) row, keeping green/grey/
+    blue internally consistent as one LCA study rather than mixing studies
+    for the same country. This has not been confirmed with Riya as her
+    intended canonical figure now that alternatives exist - ask her directly
+    before treating it as settled, the same way the Ningbo choice above should
+    be.
+
     Halifax-Hamburg ammonia has no blue (SMR+CCS) row in her table at all, so
     that pathway is dropped here rather than left on an invented number.
     Ningbo-Felixstowe ammonia has only one grey/coal route in her table, so

@@ -195,15 +195,19 @@ table_data = [
                "would include hydrogen, are described in official and industry "
                "sources as planned for a future expansion phase.", cell)],
     [Paragraph("UK CBAM phase in mechanism", cell),
-     Paragraph("<b>Unresolved</b>", cell),
-     Paragraph("Confirmed unresolved by the UK government itself. The EU CBAM "
-               "factor phases in liability from 2.5% in 2026 to 100% by 2034. "
-               "Checked directly against the UK government's response to its CBAM "
-               "policy design consultation. Paragraph 3.76 states the UK CBAM rate "
-               "will be adjusted for free allowances but that government is "
-               "continuing to consider options as to how to do this. The mechanism "
-               "also appears structurally different from the EU's. Not a research "
-               "gap on our side; a live and openly acknowledged gap in UK policy.",
+     Paragraph("<b>Resolved</b>", cell),
+     Paragraph("Traced through primary UK legislation: the draft CBAM (Calculation "
+               "of CBAM Rate and Determination of Carbon Price Relief) Regulations "
+               "2026 and the Greenhouse Gas Emissions Trading Scheme (Amendment) "
+               "Order 2026. The UK CBAM rate is not a flat percentage of embedded "
+               "emissions like the EU's; it is UK ETS price times one minus a "
+               "baseline free allocation percentage times an Article 16(14) factor "
+               "that runs 0.975 in 2027 down to 0.775 by 2030. The baseline (Finance "
+               "Act 2026 s.149(4)) blends 2019 EU ETS data with 2022 and 2023 UK "
+               "ETS data for the UK's one in scope hydrogen installation, Teesside "
+               "Hydrogen Plant. All three years are now sourced, giving a baseline "
+               "of 86.49% and an implied rate rising from 15.7% of the UK ETS price "
+               "in 2027 to 33.0% by 2030.",
                cell)],
     [Paragraph("GBP to EUR exchange rate", cell),
      Paragraph("<b>Not applied</b>", cell),
@@ -250,13 +254,6 @@ story.append(Paragraph(
 ))
 story.append(Paragraph(
     "<b>Ammonia embedded emissions</b>, pending Riya.",
-    body,
-))
-story.append(Paragraph(
-    "<b>The UK CBAM phase in mechanism</b>, pending UK government policy. This "
-    "blocks a full, non hypothetical 2027 onward result for the Ningbo to "
-    "Felixstowe corridor. The model currently runs this case as a clearly labelled "
-    "upper bound scenario rather than reporting it as fact.",
     body,
 ))
 story.append(Paragraph(

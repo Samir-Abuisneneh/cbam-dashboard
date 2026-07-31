@@ -81,7 +81,7 @@ def uk_cbam_cost(
     embedded_emissions_tco2e: float,
     year: int,
     uk_carbon_price_gbp: float,
-    phase_in_factor=None,
+    rate_fraction=None,
 ) -> float:
     """UK CBAM liability in GBP for one shipment.
 
@@ -89,24 +89,25 @@ def uk_cbam_cost(
     year one it uses a single flat default value per CN code with no
     country differentiation.
 
+    Liability = embedded_emissions x rate_fraction x UK ETS price, where
+    rate_fraction = 1 - (baseline free allocation % x Article 16(14) factor)
+    per the draft CBAM (Calculation of CBAM Rate...) Regulations 2026 and
+    Finance Act 2026 s.149(4) - see `regulatory_constants.uk_cbam_rate_fraction`
+    for the full derivation.
+
     Args:
-        phase_in_factor: Share of embedded emissions that is chargeable. This is
-            the unresolved item. Passing None falls back to the constant in
-            `regulatory_constants`, which is an `Unresolved` sentinel and will
-            raise. Pass an explicit float only when running a clearly labelled
-            what-if, never for a baseline result.
+        rate_fraction: Overrides the real computed rate_fraction for a
+            clearly labelled what-if. Leave as None for a baseline result.
     """
     if year < rc.UK_CBAM_START_YEAR:
         return 0.0  # zero-CBAM baseline year for Ningbo-Felixstowe in 2026
 
-    factor = rc.UK_CBAM_PHASE_IN_FACTOR if phase_in_factor is None else phase_in_factor
+    fraction = rc.uk_cbam_rate_fraction(year) if rate_fraction is None else rate_fraction
 
-    if is_unresolved(factor):
-        factor._fail()
     if is_unresolved(uk_carbon_price_gbp):
         uk_carbon_price_gbp._fail()
 
-    return embedded_emissions_tco2e * factor * uk_carbon_price_gbp
+    return embedded_emissions_tco2e * fraction * uk_carbon_price_gbp
 
 
 def cbam_cost_for_corridor(
@@ -117,7 +118,7 @@ def cbam_cost_for_corridor(
     uk_carbon_price_gbp=None,
     origin_carbon_price_eur_per_tco2e: float = 0.0,
     using_default_values: bool = False,
-    uk_phase_in_factor=None,
+    uk_rate_fraction=None,
 ) -> float:
     """Dispatch to the right CBAM regime. Returns cost in the regime's currency."""
     regime = rc.CORRIDOR_REGIME[corridor]
@@ -130,5 +131,5 @@ def cbam_cost_for_corridor(
             using_default_values,
         )
     return uk_cbam_cost(
-        embedded_emissions_tco2e, year, uk_carbon_price_gbp, uk_phase_in_factor
+        embedded_emissions_tco2e, year, uk_carbon_price_gbp, uk_rate_fraction
     )

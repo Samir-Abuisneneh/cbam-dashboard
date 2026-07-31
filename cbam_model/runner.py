@@ -21,7 +21,7 @@ from . import data_io
 
 
 def run_maritime_matrix(
-    years=(2026, 2030),
+    years=tuple(scenarios.YEARS),
     vessel_sets=vl.VESSEL_SETS,
     speed_scenarios=("lower", "base", "upper"),
     routes=vl.ROUTE_SCENARIOS,
@@ -66,8 +66,8 @@ def run_maritime_matrix(
 
 def run_cbam_matrix(
     emissions=None,
-    years=(2026, 2030),
-    uk_cbam_phase_in_override=None,
+    years=tuple(scenarios.YEARS),
+    uk_cbam_rate_override=None,
     using_default_values: bool = None,
     skip_unresolved: bool = True,
 ) -> pd.DataFrame:
@@ -102,7 +102,7 @@ def run_cbam_matrix(
                                 "origin_carbon_price_eur_per_tco2e"
                             ],
                             using_default_values=using_default_values,
-                            uk_cbam_phase_in_factor=uk_cbam_phase_in_override,
+                            uk_cbam_rate_override=uk_cbam_rate_override,
                         ).as_dict()
                     )
                 except UnresolvedConstantError:
@@ -112,12 +112,11 @@ def run_cbam_matrix(
 
     if skipped:
         warnings.warn(
-            f"\n  {skipped} of {skipped + len(rows)} CBAM cases were skipped.\n"
-            f"  These are the Ningbo-Felixstowe cases from 2027 onward, which need the "
-            f"UK CBAM phase-in factor. That is the last unresolved regulatory item.\n"
-            f"  Halifax-Hamburg ran in full, as did Ningbo-Felixstowe for 2026, where "
-            f"UK CBAM liability is genuinely zero.\n"
-            f"  Pass uk_cbam_phase_in_override to run the rest as a labelled what-if.",
+            f"\n  {skipped} of {skipped + len(rows)} CBAM cases were skipped due to an "
+            f"unresolved regulatory constant (see the raised error upstream for which "
+            f"one). UK CBAM's rate mechanism is fully resolved as of 31 July 2026 and no "
+            f"longer a source of skips; this now only fires for something else, e.g. "
+            f"FX_EUR_PER_GBP if a future change routes through it.",
             stacklevel=2,
         )
 
@@ -126,11 +125,11 @@ def run_cbam_matrix(
 
 def run_compliance_matrix(
     emissions=None,
-    years=(2026, 2030),
+    years=tuple(scenarios.YEARS),
     vessel_set: str = "gas_carrier",
     speed_scenario: str = "base",
     route: str = "suez",
-    uk_cbam_phase_in_override=None,
+    uk_cbam_rate_override=None,
     skip_unresolved: bool = True,
 ) -> pd.DataFrame:
     """Total carbon compliance cost per tonne of product, both layers joined.
@@ -174,7 +173,7 @@ def run_compliance_matrix(
                                 origin_carbon_price_eur_per_tco2e=e[
                                     "origin_carbon_price_eur_per_tco2e"
                                 ],
-                                uk_cbam_phase_in_factor=uk_cbam_phase_in_override,
+                                uk_cbam_rate_override=uk_cbam_rate_override,
                             )
                         except UnresolvedConstantError:
                             if not skip_unresolved:
@@ -187,11 +186,9 @@ def run_compliance_matrix(
 
     if skipped:
         warnings.warn(
-            f"\n  {skipped} of {skipped + len(rows)} compliance cases were skipped.\n"
-            f"  Ningbo-Felixstowe from 2027 onward needs the UK CBAM phase-in factor, "
-            f"the last unresolved regulatory item.\n"
-            f"  Everything else ran, including the 2026 UK baseline where CBAM "
-            f"liability is genuinely zero.",
+            f"\n  {skipped} of {skipped + len(rows)} compliance cases were skipped due "
+            f"to an unresolved regulatory constant (see the raised error upstream for "
+            f"which one).",
             stacklevel=2,
         )
 

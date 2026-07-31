@@ -56,6 +56,16 @@ DEFAULT_VALUE_MARKUP = {2026: 0.10, 2027: 0.20, 2028: 0.30}  # 0.30 applies 2028
 # Source: Implementing Regulation (EU) 2025/2548. NOTE: this is a different
 # regulation from 2025/2621 above. 2621 sets default values, 2548 sets price.
 # Miscited once earlier in this project.
+#
+# The model does not feed this Q1 print into eu_cbam_cost() directly. Article
+# 21 pegs the CBAM certificate price to the EU ETS average over the averaging
+# window above, so it should track the EU_ETS_PRICE_SCENARIOS_BY_YEAR figures
+# rather than needing its own separate cost path - eu_cbam_cost() is called
+# with the EU ETS price precisely because the two are meant to move together.
+# This constant instead exists as a real-world anchor: see
+# cbam_cert_price_within_ets_scenario_bounds() below, which checks the 2026
+# scenario range still brackets it. If that check ever fails, the scenario
+# bounds have drifted from the actual market and need revisiting.
 CBAM_CERT_PRICE_AVERAGING = {2026: "quarterly", 2027: "weekly"}  # weekly from 2027 onward
 CBAM_CERT_PRICE_Q1_2026_ACTUAL = 75.36  # EUR/tCO2e, confirmed published figure (EEX)
 
@@ -78,21 +88,65 @@ UK_CBAM_INDIRECT_EMISSIONS_INCLUDED_FROM = 2029  # at the earliest
 UK_CBAM_IS_TAX_NOT_CERTIFICATES = True  # structural difference from the EU scheme
 UK_CBAM_FIRST_PAYMENT_DEADLINE = "2028-05-31"  # for the 2027 accounting period
 
-# UNRESOLVED. Do not guess.
-UK_CBAM_PHASE_IN_FACTOR = Unresolved(
-    name="UK_CBAM_PHASE_IN_FACTOR",
-    question=(
-        "Does the UK apply its own phase-in / free-allocation-style factor "
-        "schedule analogous to the EU CBAM factor, or is liability 100% from "
-        "1 January 2027?"
-    ),
-    how_to_resolve=(
-        "Check the UK CBAM primary legislation and HMRC technical note directly. "
-        "Assuming 100% from day one overstates UK corridor cost; assuming an "
-        "EU-style 2.5% start understates it. The gap between those two is larger "
-        "than most other parameters in the model."
-    ),
-)
+# RESOLVED 31 July 2026. There is no flat "UK CBAM rate" - it is a formula,
+# from the draft Carbon Border Adjustment Mechanism (Calculation of CBAM Rate
+# and Determination of Carbon Price Relief) Regulations 2026:
+#
+#   UK CBAM rate = UK ETS price x (1 - baseline free allocation % x
+#                                       Article 16(14) factor)
+#
+# The design intent (Analytical Annex: Free Allocation for CBAM Sectors): the
+# import charge is pegged to what a UK domestic producer in the same CBAM
+# sector effectively pays after their own free allowances, not the full UK
+# ETS price. As UK domestic free allocation shrinks over 2027-2030, the
+# import rate rises correspondingly.
+#
+# The baseline free allocation percentage is legally defined (Finance Act
+# 2026, s.149(4)) as the average across three scheme years: 2019 under the EU
+# ETS (pre-Brexit), plus 2022 and 2023 under the UK ETS. Hydrogen is one of
+# five UK CBAM sectors, with the UK's only in-scope installation being
+# Teesside Hydrogen Plant (BOC Limited).
+#
+#   2019 (EU ETS): Union Registry Public Website bulk export ("Operators
+#   Yearly Activity Daily", union-registry-data.ec.europa.eu), installation
+#   ID 201961, retrieved 31 July 2026. This is the Commission's own
+#   installation-level data, not the EEA's aggregated country+sector+year
+#   "data viewer" product, which cannot isolate a single installation.
+#
+#   2022 and 2023 (UK ETS): Analytical Annex Table 4, sourced to the UK ETS
+#   Registry Compliance Report.
+UK_CBAM_BASELINE_YEARS = {
+    2019: {"emissions_tco2e": 221_554, "free_allocation": 200_228},
+    2022: {"emissions_tco2e": 170_000, "free_allocation": 160_000},
+    2023: {"emissions_tco2e": 160_000, "free_allocation": 120_000},
+}
+UK_CBAM_BASELINE_FREE_ALLOCATION_PCT = sum(
+    v["free_allocation"] / v["emissions_tco2e"] for v in UK_CBAM_BASELINE_YEARS.values()
+) / len(UK_CBAM_BASELINE_YEARS)  # 0.8649
+
+# Article 16(14) factor, inserted into the UK's retained version of
+# Commission Delegated Regulation (EU) 2019/331 by The Greenhouse Gas
+# Emissions Trading Scheme (Amendment) Order 2026. Multiplies the CBAM
+# sector's free allocation (new Article 16(2a)), not the CBAM rate directly.
+# Current-law defaults - the UK ETS Authority can change these via secondary
+# legislation for any given scheme year.
+UK_CBAM_ARTICLE_16_14_FACTOR = {2027: 0.975, 2028: 0.95, 2029: 0.9, 2030: 0.775}
+
+
+def uk_cbam_rate_fraction(year: int) -> float:
+    """Fraction of the UK ETS price charged as the UK CBAM rate.
+
+    rate_fraction = 1 - (baseline free allocation % x Article 16(14) factor).
+    Raises for years with no confirmed Article 16(14) factor rather than
+    extrapolating - these are current-law defaults, not a smooth curve.
+    """
+    if year not in UK_CBAM_ARTICLE_16_14_FACTOR:
+        raise ValueError(
+            f"No confirmed Article 16(14) factor for {year}. Defined for "
+            f"{sorted(UK_CBAM_ARTICLE_16_14_FACTOR)} only."
+        )
+    factor = UK_CBAM_ARTICLE_16_14_FACTOR[year]
+    return 1 - (UK_CBAM_BASELINE_FREE_ALLOCATION_PCT * factor)
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +227,16 @@ VLSFO_MJ_PER_TONNE = 41_000
 # well-to-tank plus 76.4 gCO2e/MJ tank-to-wake.
 # Source: European Commission Q&A on Regulation (EU) 2023/1805, via Gayu.
 FUELEU_CONVENTIONAL_WTW_INTENSITY = 90.8
+
+# Green bunker fuel scenario: the ship burns its own cargo product (green
+# hydrogen or e-ammonia) as bunker fuel instead of conventional VLSFO. Gayu's
+# own gas-carrier notebook already runs this as a worked example ("Green
+# ammonia (RFNBO, 2x multiplier)"), treating combustion intensity as
+# near-zero - already compliant before the Article 5 multiplier is even
+# applied. Modelled here the same way, rather than inventing a dual-fuel
+# blend ratio with no source.
+FUELEU_GREEN_BUNKER_WTW_INTENSITY = 0.0  # Gayu's notebook worked example
+
 FUELEU_RFNBO_MULTIPLIER = 2.0  # green H2 / e-ammonia bunker fuel, to end of 2033 (Art. 5)
 FUELEU_RFNBO_MULTIPLIER_EXPIRES = 2033
 FUELEU_APPLIES_TO = (HALIFAX_HAMBURG,)
@@ -247,6 +311,22 @@ def eu_ets_price(year: int, scenario: str) -> float:
     lo_p = EU_ETS_PRICE_SCENARIOS_BY_YEAR[lo][scenario]
     hi_p = EU_ETS_PRICE_SCENARIOS_BY_YEAR[hi][scenario]
     return lo_p + (hi_p - lo_p) * (year - lo) / (hi - lo)
+
+
+def cbam_cert_price_within_ets_scenario_bounds(year: int = 2026) -> bool:
+    """Sanity check: does the real published CBAM certificate price fall
+    within that year's EU ETS low/high scenario bounds?
+
+    The model prices EU CBAM using the EU ETS scenario range rather than
+    CBAM_CERT_PRICE_Q1_2026_ACTUAL directly (see the comment above that
+    constant). This is only a reasonable substitution while the two stay
+    close, so this check exists to catch the day they drift apart - if the
+    EU ETS scenario bounds are ever revised without checking against the
+    actual CBAM print, this returning False is the signal to look again.
+    """
+    low = eu_ets_price(year, "low")
+    high = eu_ets_price(year, "high")
+    return low <= CBAM_CERT_PRICE_Q1_2026_ACTUAL <= high
 
 
 # ---------------------------------------------------------------------------

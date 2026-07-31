@@ -8,6 +8,7 @@ expectations.
 import pytest
 
 from cbam_model.config import regulatory_constants as rc
+from cbam_model.config import scenarios
 from cbam_model.config import vessel_logistics as vl
 from cbam_model.config.unresolved import UnresolvedConstantError, is_unresolved
 from cbam_model.model import cbam, ets_maritime, fueleu, total_cost
@@ -42,6 +43,16 @@ def test_cbam_factor_is_small_in_2026_not_large():
     """2026 charges 2.5%, not 97.5%. Directional guard against the inversion."""
     assert rc.cbam_factor(2026) == 0.025
     assert rc.cbam_factor(2026) < rc.cbam_factor(2030) < rc.cbam_factor(2034)
+
+
+def test_cbam_cert_price_still_matches_ets_scenario_bounds():
+    """The model substitutes the EU ETS price for the CBAM certificate price.
+
+    That is only valid while the two stay close (Article 21 pegs them
+    together by design). This fails loudly if the EU ETS scenario range is
+    ever edited without checking it still brackets the real EEX print.
+    """
+    assert rc.cbam_cert_price_within_ets_scenario_bounds(2026)
 
 
 def test_cbam_factor_saturates_at_one_after_2034():
@@ -123,14 +134,34 @@ def test_uk_cbam_is_zero_in_2026():
     assert cbam.uk_cbam_cost(10.0, 2026, 40.0) == 0.0
 
 
-def test_uk_cbam_raises_from_2027_without_resolved_phase_in():
-    """The phase-in factor is unresolved and must not be silently assumed."""
-    with pytest.raises(UnresolvedConstantError, match="UK_CBAM_PHASE_IN_FACTOR"):
-        cbam.uk_cbam_cost(10.0, 2027, 40.0)
+def test_uk_cbam_rate_fraction_matches_the_confirmed_baseline():
+    """rate_fraction = 1 - (baseline_FA% x Article 16(14) factor).
+
+    Baseline = (200228/221554 + 0.941176... + 0.75) / 3 ~= 0.8649 (2019 EU
+    ETS + 2022/2023 UK ETS for Teesside Hydrogen Plant, installation 201961).
+    """
+    baseline = rc.UK_CBAM_BASELINE_FREE_ALLOCATION_PCT
+    assert baseline == pytest.approx(0.8649, abs=0.0001)
+    assert rc.uk_cbam_rate_fraction(2027) == pytest.approx(1 - baseline * 0.975)
+    assert rc.uk_cbam_rate_fraction(2030) == pytest.approx(1 - baseline * 0.775)
+    # Rising free-allocation squeeze (falling Article 16(14) factor) means a
+    # rising CBAM rate, same directional logic as the EU's own CBAM factor.
+    assert rc.uk_cbam_rate_fraction(2027) < rc.uk_cbam_rate_fraction(2030)
+
+
+def test_uk_cbam_rate_fraction_undefined_year_raises():
+    with pytest.raises(ValueError, match="Article 16"):
+        rc.uk_cbam_rate_fraction(2031)
+
+
+def test_uk_cbam_uses_the_real_rate_by_default():
+    cost = cbam.uk_cbam_cost(10.0, 2027, 40.0)
+    expected_fraction = 1 - rc.UK_CBAM_BASELINE_FREE_ALLOCATION_PCT * 0.975
+    assert cost == pytest.approx(10.0 * expected_fraction * 40.0)
 
 
 def test_uk_cbam_runs_with_explicit_override():
-    cost = cbam.uk_cbam_cost(10.0, 2027, 40.0, phase_in_factor=1.0)
+    cost = cbam.uk_cbam_cost(10.0, 2027, 40.0, rate_fraction=1.0)
     assert cost == pytest.approx(400.0)
 
 
@@ -290,6 +321,33 @@ def test_fueleu_does_not_apply_to_felixstowe():
     assert not fueleu.fueleu_applies(rc.NINGBO_FELIXSTOWE)
 
 
+def test_green_bunker_fuel_zeroes_out_fueleu_penalty():
+    """Green RFNBO bunker fuel reproduces Gayu's own worked example: already
+    compliant, so FuelEU cost drops to zero versus the conventional case."""
+    profile = vl.corridor_profile(rc.HALIFAX_HAMBURG, "gas_carrier", "base")
+    conventional = total_cost.maritime_cost_per_voyage(
+        profile, 2026, "medium", bunker_fuel="conventional"
+    )
+    green = total_cost.maritime_cost_per_voyage(
+        profile, 2026, "medium", bunker_fuel="green_rfnbo"
+    )
+    assert conventional.fueleu_cost_eur == pytest.approx(13_229, rel=0.01)
+    assert green.fueleu_cost_eur == 0.0
+    # Bunker fuel choice only affects FuelEU in this model, not the voyage's
+    # actual CO2 or the EU ETS cost charged on it.
+    assert green.eu_ets_cost_eur == conventional.eu_ets_cost_eur
+    assert green.voyage_co2_t == conventional.voyage_co2_t
+
+
+def test_bunker_fuel_is_not_applicable_on_uk_corridor():
+    profile = vl.corridor_profile(rc.NINGBO_FELIXSTOWE, "gas_carrier", "base")
+    maritime = total_cost.maritime_cost_per_voyage(
+        profile, 2026, "medium", bunker_fuel="green_rfnbo"
+    )
+    assert maritime.bunker_fuel == "n/a"
+    assert maritime.fueleu_cost_eur == 0.0
+
+
 # ---------------------------------------------------------------------------
 # Validation layer
 # ---------------------------------------------------------------------------
@@ -409,21 +467,23 @@ def test_uk_corridor_maritime_cost_ignores_the_ocean_voyage():
     assert suez == pytest.approx(cape)
 
 
-def test_cbam_matrix_skips_only_uk_years_from_2027():
-    with pytest.warns(UserWarning, match="UK CBAM phase-in"):
-        cbam_results = runner.run_cbam_matrix()
+def test_cbam_matrix_runs_all_years_with_no_skips():
+    """UK CBAM's rate mechanism is fully resolved, so nothing is skipped and
+    Ningbo-Felixstowe carries a real, nonzero CBAM cost from 2027 onward."""
+    cbam_results = runner.run_cbam_matrix()
     uk = cbam_results[cbam_results["corridor"] == rc.NINGBO_FELIXSTOWE]
-    assert set(uk["year"].unique()) == {2026}
-    assert (uk["uk_cbam_cost_gbp_per_tonne"] == 0.0).all()
+    assert set(uk["year"].unique()) == set(scenarios.YEARS)
+    assert (uk[uk["year"] == 2026]["uk_cbam_cost_gbp_per_tonne"] == 0.0).all()
+    assert (uk[uk["year"] >= 2027]["uk_cbam_cost_gbp_per_tonne"] > 0.0).all()
 
 
 def test_cbam_matrix_runs_fully_with_override():
     cbam_results = runner.run_cbam_matrix(
-        uk_cbam_phase_in_override=1.0, skip_unresolved=False
+        uk_cbam_rate_override=1.0, skip_unresolved=False
     )
     emissions, _, _ = data_io.load_inputs()
-    # 2 years x 3 price scenarios per emissions-table row
-    assert len(cbam_results) == len(emissions) * 6
+    # len(scenarios.YEARS) years x 3 price scenarios per emissions-table row
+    assert len(cbam_results) == len(emissions) * len(scenarios.YEARS) * 3
 
 
 def test_cargo_tonnage_is_resolved_from_gayu():
@@ -442,8 +502,8 @@ def test_delivered_cost_is_now_blocked_on_commercial_costs_not_cargo():
 
 
 def test_compliance_matrix_joins_both_layers():
-    with pytest.warns(UserWarning):
-        compliance = runner.run_compliance_matrix()
+    """UK CBAM is fully resolved, so this runs clean with no skips/warnings."""
+    compliance = runner.run_compliance_matrix()
     assert len(compliance) > 0
     assert set(compliance["corridor"].unique()) == set(rc.CORRIDORS)
     # Every row carries both a CBAM term and a maritime term on one basis.
@@ -459,8 +519,7 @@ def test_hydrogen_absorbs_more_maritime_cost_per_tonne_than_ammonia():
     The same voyage carries 9.6x more ammonia by mass, so each tonne of hydrogen
     absorbs 9.6x more of the voyage's carbon cost.
     """
-    with pytest.warns(UserWarning):
-        compliance = runner.run_compliance_matrix()
+    compliance = runner.run_compliance_matrix()
     subset = compliance[
         (compliance["corridor"] == rc.HALIFAX_HAMBURG)
         & (compliance["year"] == 2026)
@@ -473,8 +532,7 @@ def test_hydrogen_absorbs_more_maritime_cost_per_tonne_than_ammonia():
 
 
 def test_uk_corridor_has_zero_compliance_cost_beyond_berth_in_2026():
-    with pytest.warns(UserWarning):
-        compliance = runner.run_compliance_matrix()
+    compliance = runner.run_compliance_matrix()
     uk_2026 = compliance[
         (compliance["corridor"] == rc.NINGBO_FELIXSTOWE) & (compliance["year"] == 2026)
     ]

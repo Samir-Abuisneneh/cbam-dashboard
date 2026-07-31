@@ -342,10 +342,18 @@ product = st.sidebar.selectbox(
     "Product", list(rc.PRODUCTS), format_func=lambda p: p.capitalize()
 )
 
+# Riya flagged the blue hydrogen figures (blue_smr_ccs, blue_ccs) as a data
+# quality issue and asked for them to be dropped from the dashboard. The
+# underlying rows stay in emissions_table.csv; this is a display-only filter.
+EXCLUDED_PATHWAYS = {"blue_smr_ccs", "blue_ccs"}
+
 pathway_options = sorted(
-    emissions[
-        (emissions["corridor"] == corridor) & (emissions["product"] == product)
-    ]["pathway"].unique()
+    set(
+        emissions[
+            (emissions["corridor"] == corridor) & (emissions["product"] == product)
+        ]["pathway"].unique()
+    )
+    - EXCLUDED_PATHWAYS
 )
 if not pathway_options:
     st.sidebar.error("No emissions pathway data for this corridor/product combination.")
@@ -385,7 +393,7 @@ elif not has_cbam_default:
 else:
     st.sidebar.caption("Literature pathway — a sensitivity scenario around the CBAM default.")
 
-year = st.sidebar.selectbox("Year", [2026, 2030])
+year = st.sidebar.selectbox("Year", list(scenarios.YEARS))
 price_scenario = st.sidebar.selectbox(
     "Carbon price scenario",
     list(rc.PRICE_SCENARIOS),
@@ -433,20 +441,45 @@ if is_uk and year >= rc.UK_ETS_INTL_EXPANSION_EARLIEST_YEAR:
 
 uk_cbam_override = None
 if is_uk and year >= rc.UK_CBAM_START_YEAR:
-    st.sidebar.markdown("**UK CBAM phase-in factor**")
+    real_rate_fraction = rc.uk_cbam_rate_fraction(year)
+    st.sidebar.markdown("**UK CBAM rate**")
     st.sidebar.caption(
-        "Not yet set by UK legislation — this is a what-if slider, not a "
-        "forecast. Defaulting to 100% overstates the likely real cost."
+        f"{real_rate_fraction:.1%} of the UK ETS price — from the confirmed "
+        f"86.49% three-year baseline free allocation (Finance Act 2026 "
+        f"s.149(4): 2019 EU ETS + 2022/2023 UK ETS, Teesside Hydrogen Plant) "
+        f"and the {year} Article 16(14) factor. This is the real mechanism, "
+        f"not a placeholder."
     )
-    uk_cbam_override = st.sidebar.slider(
-        "Share of embedded emissions charged", 0.0, 1.0, 1.0, 0.05
+    if st.sidebar.checkbox("Override with a what-if rate"):
+        uk_cbam_override = st.sidebar.slider(
+            "Share of UK ETS price charged", 0.0, 1.0, real_rate_fraction, 0.05
+        )
+
+bunker_fuel = "conventional"
+if not is_uk:
+    bunker_fuel = st.sidebar.selectbox(
+        "Bunker fuel (FuelEU)",
+        ("conventional", "green_rfnbo"),
+        format_func=lambda v: (
+            "Conventional (VLSFO)" if v == "conventional" else "Green RFNBO (own cargo as fuel)"
+        ),
     )
+    if bunker_fuel == "green_rfnbo":
+        st.sidebar.caption(
+            "Ship bunkers green hydrogen/ammonia instead of VLSFO — near-zero "
+            "combustion intensity, already compliant before the Article 5 2x "
+            "multiplier is even applied. Only changes FuelEU: EU ETS still "
+            "charges the voyage's actual CO2 either way, since propulsion "
+            "fuel burn itself isn't re-modelled here."
+        )
 
 # ---------------------------------------------------------------------------
 # Compute: maritime layer, CBAM layer, compliance join
 # ---------------------------------------------------------------------------
 profile = vl.corridor_profile(corridor, vessel_set, speed_scenario, route)
-maritime = total_cost.maritime_cost_per_voyage(profile, year, price_scenario, uk_ets_variant)
+maritime = total_cost.maritime_cost_per_voyage(
+    profile, year, price_scenario, uk_ets_variant, bunker_fuel=bunker_fuel
+)
 
 row = emissions[
     (emissions["corridor"] == corridor)
@@ -458,11 +491,10 @@ is_placeholder_row = str(row.get("source", "")).startswith("PLACEHOLDER")
 
 compliance = None
 blocked_message = None
-# NOTE: with today's fixed Year options (2026, 2030), this except branch is
-# unreachable - 2030 >= rc.UK_CBAM_START_YEAR always shows the phase-in
-# slider above, so uk_cbam_override is never None when it matters. Kept as
-# a safety net for if a year between 2027-2029 is ever added without also
-# checking that the slider's trigger condition still covers it.
+# UK CBAM's rate mechanism is fully resolved (see the caption above), so this
+# except branch no longer fires for that reason. Kept as a safety net for any
+# other Unresolved regulatory constant (e.g. FX_EUR_PER_GBP) that might end up
+# on this call path in the future.
 try:
     cbam_row = total_cost.cbam_cost_per_tonne(
         corridor=corridor,
@@ -472,7 +504,7 @@ try:
         price_scenario=price_scenario,
         embedded_emissions_tco2e_per_tonne=row["embedded_emissions_tco2e_per_tonne"],
         origin_carbon_price_eur_per_tco2e=row["origin_carbon_price_eur_per_tco2e"],
-        uk_cbam_phase_in_factor=uk_cbam_override,
+        uk_cbam_rate_override=uk_cbam_override,
     )
     compliance = total_cost.compliance_cost_per_tonne(maritime, cbam_row)
 except UnresolvedConstantError as exc:

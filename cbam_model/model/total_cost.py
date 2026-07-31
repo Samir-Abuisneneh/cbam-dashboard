@@ -39,6 +39,7 @@ class MaritimeCost:
     voyage_days: float
     voyage_co2_t: float
     port_co2_t: float
+    bunker_fuel: str = "conventional"
     eu_ets_cost_eur: float = 0.0
     fueleu_cost_eur: float = 0.0
     uk_ets_cost_gbp: float = 0.0
@@ -72,6 +73,7 @@ def maritime_cost_per_voyage(
     price_scenario: str,
     uk_ets_variant: str = "current_scope",
     include_eu_berth_emissions: bool = False,
+    bunker_fuel: str = "conventional",
 ) -> MaritimeCost:
     """Carbon cost of one voyage, from Gayu's voyage profile.
 
@@ -82,6 +84,14 @@ def maritime_cost_per_voyage(
             False so results reproduce hers exactly. Setting True adds the
             Hamburg port call and makes the EU figure slightly more complete
             than her published number.
+        bunker_fuel: "conventional" (VLSFO, the default - matches Gayu's
+            published figures) or "green_rfnbo" (the ship bunkers its own
+            cargo product as fuel instead). Only affects FuelEU, which only
+            applies to the EU corridor; UK ETS and EU ETS cost the voyage's
+            actual CO2 regardless of bunker fuel choice, since the vessel
+            still burns VLSFO for propulsion in both scenarios in this
+            model - "green_rfnbo" isolates the FuelEU compliance-cost effect
+            of green bunker fuel, not a full re-modelling of the voyage.
     """
     corridor = profile["corridor"]
     regime = rc.CORRIDOR_REGIME[corridor]
@@ -98,6 +108,7 @@ def maritime_cost_per_voyage(
         voyage_days=profile["voyage_days"],
         voyage_co2_t=profile["voyage_co2_t"],
         port_co2_t=profile["port_in_port_emissions_t"],
+        bunker_fuel=bunker_fuel if regime == "EU" else "n/a",
     )
 
     if regime == "EU":
@@ -109,8 +120,14 @@ def maritime_cost_per_voyage(
             rc.EU_ETS_CORRIDOR_COVERAGE[corridor],
             profile["port_in_port_emissions_t"] if include_eu_berth_emissions else 0.0,
         )
+        if bunker_fuel == "green_rfnbo":
+            fueleu_actual_intensity = fueleu.effective_intensity_with_rfnbo(
+                rc.FUELEU_GREEN_BUNKER_WTW_INTENSITY, rfnbo_energy_share=1.0, year=year
+            )
+        else:
+            fueleu_actual_intensity = profile["fueleu_actual_intensity_gco2e_mj"]
         cost.fueleu_cost_eur = fueleu.fueleu_cost(
-            profile["fueleu_actual_intensity_gco2e_mj"],
+            fueleu_actual_intensity,
             profile["voyage_energy_mj"],
             year,
         )
@@ -137,7 +154,7 @@ def cbam_cost_per_tonne(
     embedded_emissions_tco2e_per_tonne: float,
     origin_carbon_price_eur_per_tco2e: float = 0.0,
     using_default_values: bool = None,
-    uk_cbam_phase_in_factor=None,
+    uk_cbam_rate_override=None,
 ) -> CbamCost:
     """CBAM liability per tonne of product landed.
 
@@ -174,7 +191,7 @@ def cbam_cost_per_tonne(
             embedded_emissions_tco2e_per_tonne,
             year,
             rc.UK_ETS_PRICE_SCENARIOS[price_scenario],
-            uk_cbam_phase_in_factor,
+            uk_cbam_rate_override,
         )
 
     return cost

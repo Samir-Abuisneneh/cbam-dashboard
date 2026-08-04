@@ -17,7 +17,7 @@ Currencies are never mixed. EU-regime costs are EUR, UK-regime costs are GBP,
 and no exchange rate is applied anywhere, matching how Gayu presents her tables.
 """
 
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 
 from ..config import regulatory_constants as rc
 from ..config.unresolved import is_unresolved
@@ -39,6 +39,7 @@ class MaritimeCost:
     voyage_days: float
     voyage_co2_t: float
     port_co2_t: float
+    uk_price_variant: str = "frozen"
     bunker_fuel: str = "conventional"
     eu_ets_cost_eur: float = 0.0
     fueleu_cost_eur: float = 0.0
@@ -60,6 +61,7 @@ class CbamCost:
     year: int
     price_scenario: str
     embedded_emissions_tco2e_per_tonne: float
+    uk_price_variant: str = "frozen"
     eu_cbam_cost_eur_per_tonne: float = 0.0
     uk_cbam_cost_gbp_per_tonne: float = 0.0
 
@@ -74,6 +76,7 @@ def maritime_cost_per_voyage(
     uk_ets_variant: str = "current_scope",
     include_eu_berth_emissions: bool = False,
     bunker_fuel: str = "conventional",
+    uk_price_variant: str = "frozen",
 ) -> MaritimeCost:
     """Carbon cost of one voyage, from Gayu's voyage profile.
 
@@ -108,6 +111,7 @@ def maritime_cost_per_voyage(
         voyage_days=profile["voyage_days"],
         voyage_co2_t=profile["voyage_co2_t"],
         port_co2_t=profile["port_in_port_emissions_t"],
+        uk_price_variant=uk_price_variant if regime == "UK" else "n/a",
         bunker_fuel=bunker_fuel if regime == "EU" else "n/a",
     )
 
@@ -136,7 +140,7 @@ def maritime_cost_per_voyage(
         cost.uk_ets_cost_gbp = ets_maritime.uk_ets_maritime_cost(
             profile["port_in_port_emissions_t"],
             year,
-            rc.UK_ETS_PRICE_SCENARIOS[price_scenario],
+            rc.uk_ets_price(year, price_scenario, uk_price_variant),
             voyage_co2_t=profile["voyage_co2_t"],
             include_intl_expansion=(uk_ets_variant == "proposed_expansion"),
         )
@@ -155,6 +159,7 @@ def cbam_cost_per_tonne(
     origin_carbon_price_eur_per_tco2e: float = 0.0,
     using_default_values: bool = None,
     uk_cbam_rate_override=None,
+    uk_price_variant: str = "frozen",
 ) -> CbamCost:
     """CBAM liability per tonne of product landed.
 
@@ -176,6 +181,7 @@ def cbam_cost_per_tonne(
         year=year,
         price_scenario=price_scenario,
         embedded_emissions_tco2e_per_tonne=embedded_emissions_tco2e_per_tonne,
+        uk_price_variant=uk_price_variant if regime == "UK" else "n/a",
     )
 
     if regime == "EU":
@@ -190,8 +196,10 @@ def cbam_cost_per_tonne(
         cost.uk_cbam_cost_gbp_per_tonne = cbam.uk_cbam_cost(
             embedded_emissions_tco2e_per_tonne,
             year,
-            rc.UK_ETS_PRICE_SCENARIOS[price_scenario],
+            rc.uk_ets_price(year, price_scenario, uk_price_variant),
             uk_cbam_rate_override,
+            # Emissions table stores origin prices in EUR; UK regime is GBP.
+            rc.eur_to_gbp(origin_carbon_price_eur_per_tco2e),
         )
 
     return cost
@@ -245,6 +253,12 @@ def compliance_cost_per_tonne(
         "speed_scenario": maritime.speed_scenario,
         "vessel_set": maritime.vessel_set,
         "uk_ets_variant": maritime.uk_ets_variant,
+        # Both scenario dimensions have to travel with the row. Without them a
+        # saved compliance table cannot be told apart from one run under a
+        # different scenario, which is exactly how a labelled what-if ends up
+        # quoted as a baseline result.
+        "uk_price_variant": maritime.uk_price_variant,
+        "bunker_fuel": maritime.bunker_fuel,
         "currency": currency,
         "cargo_tonnes": cargo_tonnes,
         "embedded_emissions_tco2e_per_tonne": (

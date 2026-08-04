@@ -82,7 +82,7 @@ deliberate counterfactual that isolates cargo density by holding the vessel
 constant, and should be labelled as such rather than presented as a shipping
 option available today.
 
-## 3. `commercial_inputs.csv` — owner: UNASSIGNED
+## 3. `commercial_inputs.csv` — owner: UNASSIGNED (production cost partly filled 4 Aug 2026)
 
 | column | type | unit |
 |---|---|---|
@@ -94,18 +94,31 @@ option available today.
 | `shipping_cost_eur_per_tonne` | float | EUR per tonne, freight rate excluding carbon costs |
 | `source` | str | |
 
-**This is the gap.** `total_delivered_cost` has six terms. Riya's table feeds
-the CBAM term, Gayu's feeds the ETS and FuelEU terms, and nobody is contracted
-to supply the other three. Production cost in particular is the largest single
-component of delivered cost by a wide margin, so leaving it on placeholders
-means the headline delivered-cost comparison is not yet real.
+**Still the gap, but smaller.** `total_delivered_cost` has six terms. Riya's
+emissions table feeds the CBAM term, Gayu's feeds the ETS and FuelEU terms.
+Nobody is formally contracted to supply the other three, but Riya's 4 August
+2026 delivery included two production-cost sheets ("Production Costs -
+Literature" and "Production Costs (IEA)") alongside her emissions update, so
+`production_cost_eur_per_tonne` is now real, literature-sourced figures
+(USD converted to EUR at the 23 July 2026 ECB rate) rather than invented
+placeholders - see `data_io._placeholder_commercial()` for the per-pathway
+sourcing. Production cost was the largest single component of delivered cost
+by a wide margin, so this is real progress, but `run_delivered_cost()` stays
+blocked: `conversion_cost_eur_per_tonne` and `shipping_cost_eur_per_tonne`
+are still on invented placeholder numbers with no source at all.
 
-Two options, and one of them needs picking soon:
+Two open items:
 
-1. Samir sources all three from the literature and owns the table. Reasonable
-   for production cost, where LCOH and LCOA figures are well published.
-2. Gayu extends her scope to cover the freight rate, since it sits closest to
-   her corridor work, and Samir takes production and conversion.
+1. Conversion cost (liquefaction, cracking, storage) and shipping cost
+   (freight rate) still need an owner. Two options, and one of them needs
+   picking soon: Samir sources both from the literature, or Gayu extends her
+   scope to cover the freight rate specifically, since it sits closest to her
+   corridor work, and Samir takes conversion cost alone.
+2. The IEA sheet ("Production Costs (IEA)") is year- and method-specific
+   (2025 vs 2030, several production methods per country) and is not yet
+   used - the model only has one flat production-cost figure per pathway, not
+   a year-varying one. Incorporating it means deciding whether production
+   cost should move by scenario year the way carbon prices already do.
 
 Worth noting that the shipping cost here must exclude carbon compliance costs,
 otherwise the ETS and FuelEU terms double count.

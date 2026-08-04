@@ -6,7 +6,7 @@ the EU functions, GBP for the UK function. Conversion happens once, in
 """
 
 from ..config import regulatory_constants as rc
-from ..config.unresolved import is_unresolved, UnresolvedConstantError
+from ..config.unresolved import is_unresolved
 
 
 CBAM_DEFAULT_PATHWAY_NAME = "cbam_default"
@@ -82,6 +82,7 @@ def uk_cbam_cost(
     year: int,
     uk_carbon_price_gbp: float,
     rate_fraction=None,
+    origin_carbon_price_gbp_per_tco2e: float = 0.0,
 ) -> float:
     """UK CBAM liability in GBP for one shipment.
 
@@ -89,15 +90,35 @@ def uk_cbam_cost(
     year one it uses a single flat default value per CN code with no
     country differentiation.
 
-    Liability = embedded_emissions x rate_fraction x UK ETS price, where
-    rate_fraction = 1 - (baseline free allocation % x Article 16(14) factor)
-    per the draft CBAM (Calculation of CBAM Rate...) Regulations 2026 and
-    Finance Act 2026 s.149(4) - see `regulatory_constants.uk_cbam_rate_fraction`
-    for the full derivation.
+    Liability = embedded_emissions x rate_fraction x (UK ETS price - origin
+    carbon price), where rate_fraction = 1 - (baseline free allocation % x
+    Article 16(14) factor) per the draft CBAM (Calculation of CBAM Rate and
+    Determination of Carbon Price Relief) Regulations 2026 and Finance Act
+    2026 s.149(4). See `regulatory_constants.uk_cbam_rate_fraction` for the
+    full derivation.
 
     Args:
         rate_fraction: Overrides the real computed rate_fraction for a
             clearly labelled what-if. Leave as None for a baseline result.
+        origin_carbon_price_gbp_per_tco2e: Carbon price effectively paid in the
+            country of origin, GBP/tCO2e. Added 4 August 2026. It is zero for
+            every case this study currently runs, because China's national ETS
+            covers power, steel, cement and aluminium and has not yet been
+            extended to chemicals, so neither hydrogen nor ammonia production
+            is priced there. The parameter exists because the relief is real
+            in law - carbon price relief is named in the title of the
+            Regulations above - and because China's ETS expansion into
+            chemicals is documented as planned. Without it the model could not
+            represent that change at all.
+
+            Note the unit: GBP, not EUR. The UK regime works in GBP throughout
+            and the emissions table stores origin prices in EUR, so callers
+            must convert. `total_cost.cbam_cost_per_tonne` does this via
+            `rc.eur_to_gbp`. Passing a EUR figure here would silently overstate
+            the relief by about 17%.
+
+            Enters on the same basis as the liability it offsets, exactly as in
+            `eu_cbam_cost`, and the result floors at zero.
     """
     if year < rc.UK_CBAM_START_YEAR:
         return 0.0  # zero-CBAM baseline year for Ningbo-Felixstowe in 2026
@@ -107,7 +128,8 @@ def uk_cbam_cost(
     if is_unresolved(uk_carbon_price_gbp):
         uk_carbon_price_gbp._fail()
 
-    return embedded_emissions_tco2e * fraction * uk_carbon_price_gbp
+    net_price = uk_carbon_price_gbp - origin_carbon_price_gbp_per_tco2e
+    return max(0.0, embedded_emissions_tco2e * fraction * net_price)
 
 
 def cbam_cost_for_corridor(
@@ -131,5 +153,10 @@ def cbam_cost_for_corridor(
             using_default_values,
         )
     return uk_cbam_cost(
-        embedded_emissions_tco2e, year, uk_carbon_price_gbp, uk_rate_fraction
+        embedded_emissions_tco2e,
+        year,
+        uk_carbon_price_gbp,
+        uk_rate_fraction,
+        # The caller's origin price is in EUR; the UK regime works in GBP.
+        rc.eur_to_gbp(origin_carbon_price_eur_per_tco2e),
     )

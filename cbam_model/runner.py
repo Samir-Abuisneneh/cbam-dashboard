@@ -1,11 +1,12 @@
 """Scenario runners, one per layer.
 
 `run_maritime_matrix` is entirely Gayu's data and carries no assumptions of mine.
-`run_cbam_matrix` is Riya's emissions plus the border rules, and is still on
-placeholder emissions.
+`run_cbam_matrix` is Riya's emissions plus the border rules. Both products and
+both corridors now run on her real sourced figures, not placeholders.
 
-They are not joined. Joining requires cargo tonnage, which nobody has supplied.
-`run_delivered_cost` exists for when it lands and raises clearly until then.
+The two are joined by `run_compliance_matrix` using Gayu's cargo tonnage.
+`run_delivered_cost` remains blocked, but only on conversion and freight cost;
+production cost is real as of Riya's 4 August 2026 delivery.
 """
 
 import warnings
@@ -26,6 +27,7 @@ def run_maritime_matrix(
     speed_scenarios=("lower", "base", "upper"),
     routes=vl.ROUTE_SCENARIOS,
     include_eu_berth_emissions: bool = False,
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """Maritime carbon cost per voyage, across Gayu's own scenario dimensions.
 
@@ -52,15 +54,26 @@ def run_maritime_matrix(
                             ):
                                 variants = scenarios.UK_ETS_VARIANTS
                             for variant in variants:
-                                rows.append(
-                                    total_cost.maritime_cost_per_voyage(
-                                        profile,
-                                        year,
-                                        price_scenario,
-                                        variant,
-                                        include_eu_berth_emissions,
-                                    ).as_dict()
+                                # Bunker choice is only priced by FuelEU, which
+                                # is EU-only, so the UK corridor runs the base
+                                # case alone rather than duplicate rows.
+                                bunkers = (
+                                    scenarios.BUNKER_FUELS
+                                    if rc.CORRIDOR_REGIME[corridor] == "EU"
+                                    else ["conventional"]
                                 )
+                                for bunker in bunkers:
+                                    rows.append(
+                                        total_cost.maritime_cost_per_voyage(
+                                            profile,
+                                            year,
+                                            price_scenario,
+                                            variant,
+                                            include_eu_berth_emissions,
+                                            bunker_fuel=bunker,
+                                            uk_price_variant=uk_price_variant,
+                                        ).as_dict()
+                                    )
     return pd.DataFrame(rows)
 
 
@@ -70,6 +83,7 @@ def run_cbam_matrix(
     uk_cbam_rate_override=None,
     using_default_values: bool = None,
     skip_unresolved: bool = True,
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """CBAM liability per tonne of product.
 
@@ -103,6 +117,7 @@ def run_cbam_matrix(
                             ],
                             using_default_values=using_default_values,
                             uk_cbam_rate_override=uk_cbam_rate_override,
+                            uk_price_variant=uk_price_variant,
                         ).as_dict()
                     )
                 except UnresolvedConstantError:
@@ -114,9 +129,9 @@ def run_cbam_matrix(
         warnings.warn(
             f"\n  {skipped} of {skipped + len(rows)} CBAM cases were skipped due to an "
             f"unresolved regulatory constant (see the raised error upstream for which "
-            f"one). UK CBAM's rate mechanism is fully resolved as of 31 July 2026 and no "
-            f"longer a source of skips; this now only fires for something else, e.g. "
-            f"FX_EUR_PER_GBP if a future change routes through it.",
+            f"one). UK CBAM's rate mechanism and the GBP/EUR rate are both resolved as "
+            f"of 1 August 2026 and no longer a source of skips; this now only fires for "
+            f"a not-yet-sourced constant added later.",
             stacklevel=2,
         )
 
@@ -131,6 +146,7 @@ def run_compliance_matrix(
     route: str = "suez",
     uk_cbam_rate_override=None,
     skip_unresolved: bool = True,
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """Total carbon compliance cost per tonne of product, both layers joined.
 
@@ -157,7 +173,8 @@ def run_compliance_matrix(
                     variants = scenarios.UK_ETS_VARIANTS
                 for variant in variants:
                     maritime = total_cost.maritime_cost_per_voyage(
-                        profile, year, price_scenario, variant
+                        profile, year, price_scenario, variant,
+                        uk_price_variant=uk_price_variant,
                     )
                     for _, e in corridor_rows.iterrows():
                         try:
@@ -174,6 +191,7 @@ def run_compliance_matrix(
                                     "origin_carbon_price_eur_per_tco2e"
                                 ],
                                 uk_cbam_rate_override=uk_cbam_rate_override,
+                                uk_price_variant=uk_price_variant,
                             )
                         except UnresolvedConstantError:
                             if not skip_unresolved:
@@ -215,11 +233,16 @@ def run_delivered_cost(compliance=None, commercial=None):
 
 
 def summarise_maritime(maritime: pd.DataFrame) -> pd.DataFrame:
-    """Headline maritime carbon cost per voyage, base case only."""
+    """Headline maritime carbon cost per voyage, base case only.
+
+    Base case is conventional VLSFO bunkers; the green-bunker rows are a
+    separate comparison and would double up the EU corridor here.
+    """
     base = maritime[
         (maritime["speed_scenario"].isin(["base", "service"]))
         & (maritime["route_scenario"] == "suez")
         & (maritime["uk_ets_variant"].isin(["n/a", "current_scope"]))
+        & (maritime["bunker_fuel"].isin(["conventional", "n/a"]))
     ]
     return base[
         [

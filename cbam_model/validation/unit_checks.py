@@ -153,12 +153,15 @@ def validate_logistics_table(df: pd.DataFrame) -> pd.DataFrame:
 def validate_commercial_table(df: pd.DataFrame) -> pd.DataFrame:
     """Validate commercial_inputs.csv.
 
-    This table has no owner assigned in the build spec. See the note in
-    data/README.md: production, conversion and shipping costs are three of the
-    six terms in total_delivered_cost, but neither Riya's nor Gayu's contract
-    covers them.
+    Partly owned as of 4 August 2026. Production cost is real, from Riya's
+    delivery, even though no contract formally assigned it to her. Conversion
+    and shipping cost still have no owner and no source. See data/README.md.
+
+    Both unowned terms are invariant to production pathway, so they cancel out
+    of any within-corridor pathway comparison and do not block the marginal
+    abatement cost results.
     """
-    owner = "UNASSIGNED, see data/README.md"
+    owner = "Conversion/shipping UNASSIGNED, see data/README.md"
     _require_columns(
         df,
         {

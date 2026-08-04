@@ -11,6 +11,19 @@ PRICE_SCENARIOS = list(rc.PRICE_SCENARIOS)
 # 2028, so the variant only splits the 2028-2030 runs, and only on the UK corridor.
 UK_ETS_VARIANTS = ["current_scope", "proposed_expansion"]
 
+# Bunker fuel the vessel burns. Only FuelEU prices bunker choice, and FuelEU
+# applies to the EU corridor alone, so this dimension only splits the
+# Halifax-Hamburg runs. Sweeping it on the UK corridor would emit duplicate
+# rows, since maritime_cost_per_voyage sets bunker_fuel to "n/a" there.
+#
+# "conventional" is VLSFO and reproduces Gayu's published figures, so it stays
+# first and remains the base case. "green_rfnbo" is the ship bunkering its own
+# cargo product, which is the comparison the supervisor asked for: it isolates
+# what FuelEU compliance costs with and without green bunker fuel. It is not a
+# full re-modelling of the voyage, since the vessel's actual CO2 output is held
+# constant (see maritime_cost_per_voyage).
+BUNKER_FUELS = ["conventional", "green_rfnbo"]
+
 
 def enumerate_cases():
     """Yield (corridor, product, year, price_scenario, uk_ets_variant) tuples.

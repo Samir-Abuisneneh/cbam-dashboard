@@ -1,14 +1,13 @@
 """Law-derived constants for the corridor cost model.
 
-Every value carries its source. Two values are deliberately unresolved and will
-raise if used: see `unresolved.py`.
+Every value carries its source. Values that are still genuinely unsourced use
+the `Unresolved` sentinel from `unresolved.py` and raise if used; none currently
+do, as of 1 August 2026.
 
 Corridors:
     halifax_hamburg    Canada to Germany. EU CBAM, EU ETS Maritime, FuelEU.
     ningbo_felixstowe  China to UK. UK CBAM (from 2027), UK ETS Maritime. No FuelEU.
 """
-
-from .unresolved import Unresolved
 
 HALIFAX_HAMBURG = "halifax_hamburg"
 NINGBO_FELIXSTOWE = "ningbo_felixstowe"
@@ -68,6 +67,33 @@ DEFAULT_VALUE_MARKUP = {2026: 0.10, 2027: 0.20, 2028: 0.30}  # 0.30 applies 2028
 # bounds have drifted from the actual market and need revisiting.
 CBAM_CERT_PRICE_AVERAGING = {2026: "quarterly", 2027: "weekly"}  # weekly from 2027 onward
 CBAM_CERT_PRICE_Q1_2026_ACTUAL = 75.36  # EUR/tCO2e, confirmed published figure (EEX)
+
+# EU ETS product benchmarks, tCO2e per tonne of product.
+#
+# SOURCED 4 August 2026 from Commission Implementing Regulation (EU) 2021/447,
+# Annex, section 2 (product benchmarks accounting for fuel and electricity
+# exchangeability). Note the regulation prints these with a decimal comma, so
+# "1,570" is 1.570 and "6,84" is 6.84.
+#
+# These are NOT the CBAM default embedded emissions values. Those are a
+# different thing in a different regulation (IR 2025/2621) and are already held
+# per country in the emissions table as the `cbam_default` pathway. A benchmark
+# is what an EU installation's free allocation is calculated against; a default
+# value is what an importer must use absent verified actual emissions data.
+# Conflating them is easy and would be a material error.
+#
+# Independent confirmation that these are the right figures: Ramsook et al.
+# (2025) quote the EU ammonia benchmark as 1.57 tCO2/tNH3, matching 1.570 here
+# exactly. See validation/reference_case.py.
+#
+# CAVEAT: these are the 2021-2025 values. The Commission adopted revised
+# benchmarks for 2026-2030 on 29 June 2026, cutting free allocation by more
+# than 16% on average, with ammonia and hydrogen explicitly among the sectors
+# revised. The 2026-2030 figures have NOT been read out yet. Use these to size
+# the effect, not to produce a final result.
+EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE = {"hydrogen": 6.84, "ammonia": 1.570}
+EU_ETS_PRODUCT_BENCHMARK_PERIOD = "2021-2025"
+EU_ETS_PRODUCT_BENCHMARK_SOURCE = "Commission Implementing Regulation (EU) 2021/447, Annex"
 
 # Hydrogen has no de minimis mass exemption. Every shipment is in scope.
 EU_CBAM_HYDROGEN_DE_MINIMIS_EXEMPTION = False
@@ -230,12 +256,10 @@ FUELEU_CONVENTIONAL_WTW_INTENSITY = 90.8
 
 # Green bunker fuel scenario: the ship burns its own cargo product (green
 # hydrogen or e-ammonia) as bunker fuel instead of conventional VLSFO. Gayu's
-# own gas-carrier notebook already runs this as a worked example ("Green
-# ammonia (RFNBO, 2x multiplier)"), treating combustion intensity as
-# near-zero - already compliant before the Article 5 multiplier is even
-# applied. Modelled here the same way, rather than inventing a dual-fuel
-# blend ratio with no source.
-FUELEU_GREEN_BUNKER_WTW_INTENSITY = 0.0  # Gayu's notebook worked example
+# own gas-carrier notebook runs this as a worked example ("Green ammonia
+# (RFNBO, 2x multiplier)"). Updated 1 Aug 2026 per Gayu to the real green
+# ammonia well-to-wake intensity rather than the earlier near-zero placeholder.
+FUELEU_GREEN_BUNKER_WTW_INTENSITY = 1.28  # gCO2e/MJ, Gayu's notebook
 
 FUELEU_RFNBO_MULTIPLIER = 2.0  # green H2 / e-ammonia bunker fuel, to end of 2033 (Art. 5)
 FUELEU_RFNBO_MULTIPLIER_EXPIRES = 2033
@@ -290,6 +314,43 @@ UK_ETS_PRICE_SCENARIOS = {"low": 40.0, "medium": 49.41, "high": 60.0}  # GBP/tCO
 UK_ETS_PRICE_2026_OFFICIAL = 49.41
 
 PRICE_SCENARIOS = ("low", "medium", "high")
+
+
+# ---------------------------------------------------------------------------
+# EU-UK ETS linkage
+# ---------------------------------------------------------------------------
+# The figures above hold the UK price flat across every model year, which is
+# not a finding but an artefact: only the 2026 figure was ever sourced. The
+# defensible forward path is not an invented growth rate, it is convergence,
+# because the UK and EU are linking their trading schemes and linked schemes
+# mutually recognise allowances, which arbitrages the price difference away.
+#
+# Timeline, all documented:
+#   19 May 2025   UK and EU jointly commit to linking their ETSs.
+#   12 Nov 2025   EU member states unanimously back a negotiating mandate.
+#   w/c 19 Jan 2026  Formal negotiations open.
+#
+# Market expectation (Energy Aspects): the EUA-UKA spread falls below EUR 10/t
+# by end-2026, narrows through 2027-28, and reaches full price alignment from
+# 2029. The market has already repriced hard on the announcement alone: the
+# spread fell from over GBP 35/t in January 2025 to roughly GBP 6.50 by August
+# 2025. The Switzerland-EU linkage of 2020 is the precedent, where the discount
+# closed within weeks of signature.
+#
+# NOT LAW. A summit was scheduled for 13 July 2026 at which a formal agreement
+# was expected; that outcome is not confirmed in the sources consulted on
+# 4 August 2026. So this may only ever appear as an explicitly labelled
+# scenario, exactly like UK_ETS_INTL_EXPANSION_PROPOSED above. The frozen path
+# stays the baseline.
+#
+# Note also that linkage contemplates mutual EU/UK CBAM exemptions. That does
+# NOT touch either corridor in this study: Halifax-Hamburg is Canada-to-EU and
+# Ningbo-Felixstowe is China-to-UK, and neither Canada nor China is party to
+# the linkage. Do not let that provision leak into the corridor results.
+UK_ETS_LINKAGE_IS_LAW = False
+UK_ETS_LINKAGE_ANCHOR_YEAR = 2026  # last year on the sourced official figure
+UK_ETS_LINKAGE_FULL_ALIGNMENT_YEAR = 2029
+UK_ETS_PRICE_VARIANTS = ("frozen", "linked")
 
 
 def eu_ets_price(year: int, scenario: str) -> float:
@@ -376,20 +437,76 @@ ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E = round(
 # nothing to deduct under Article 9, which is different from simply not having
 # looked the number up.
 ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E = 0.0
-# two apart rather than combining them with an invented exchange rate, on the
-# grounds that the decision belongs wherever the tables are used next. That
-# decision has not been made and no rate has been sourced, so the two currencies
-# stay separate here too and no conversion happens anywhere in the model.
-FX_EUR_PER_GBP = Unresolved(
-    name="FX_EUR_PER_GBP",
-    question="What GBP to EUR rate, at what reference date, should the study use?",
-    how_to_resolve=(
-        "Pick a stated reference date and take the ECB reference rate for it, then "
-        "record both in the methodology chapter. Until then EU-regime costs are "
-        "reported in EUR and UK-regime costs in GBP, side by side and unconverted, "
-        "which is how Gayu's notebooks present them."
-    ),
-)
+
+# RESOLVED 1 August 2026. Same reference date as the Canada FX rate above, for
+# consistency across every cross-currency conversion in the model. ECB euro
+# foreign exchange reference rate for 23 July 2026: 1 EUR = 0.85318 GBP, so
+# 1 GBP = 1 / 0.85318 EUR.
+FX_EUR_PER_GBP_2026_07_23 = 1.17209
+FX_EUR_PER_GBP = FX_EUR_PER_GBP_2026_07_23
+
+
+def eur_to_gbp(amount_eur: float) -> float:
+    """Convert a EUR amount to GBP at the 23 July 2026 ECB reference rate."""
+    return amount_eur / FX_EUR_PER_GBP
+
+
+# RESOLVED 4 August 2026. Needed to convert Riya's USD-denominated production
+# cost literature review (Assumptions Table, "Production Costs - Literature")
+# into EUR for commercial_inputs.csv. Same 23 July 2026 reference date as the
+# Canada and GBP rates above, for consistency across every cross-currency
+# conversion in the model.
+# ECB euro foreign exchange reference rate for 23 July 2026 (ECB Statistical
+# Data Warehouse, series EXR.D.USD.EUR.SP00.A): 1 EUR = 1.1392 USD.
+FX_USD_PER_EUR_2026_07_23 = 1.1392
+FX_EUR_PER_USD = round(1 / FX_USD_PER_EUR_2026_07_23, 6)
+
+
+def usd_to_eur(amount_usd: float) -> float:
+    """Convert a USD amount to EUR at the 23 July 2026 ECB reference rate."""
+    return amount_usd * FX_EUR_PER_USD
+
+
+def uk_ets_price(year: int, scenario: str = "medium", variant: str = "frozen") -> float:
+    """UK ETS price in GBP/tCO2e.
+
+    Args:
+        variant: "frozen" holds the sourced 2026 official determination across
+            every year. That is the baseline, and it is conservative rather
+            than correct: nobody decided UK prices stay flat, only one year was
+            ever sourced. "linked" runs the EU-UK ETS linkage scenario, which
+            is NOT law (see UK_ETS_LINKAGE_IS_LAW) and must be labelled as a
+            scenario wherever it appears.
+
+    The linked path narrows the discount to the EU price to zero by
+    UK_ETS_LINKAGE_FULL_ALIGNMENT_YEAR, rather than interpolating the price
+    level directly. Modelling it as a shrinking spread is what the market
+    commentary actually describes, and it keeps the UK price tracking EU
+    movements during the transition instead of drifting on its own line.
+    """
+    if variant not in UK_ETS_PRICE_VARIANTS:
+        raise ValueError(
+            f"Unknown UK ETS price variant {variant!r}. "
+            f"Expected one of {UK_ETS_PRICE_VARIANTS}."
+        )
+
+    frozen = UK_ETS_PRICE_SCENARIOS[scenario]
+    if variant == "frozen":
+        return frozen
+
+    anchor = UK_ETS_LINKAGE_ANCHOR_YEAR
+    align = UK_ETS_LINKAGE_FULL_ALIGNMENT_YEAR
+    if year <= anchor:
+        return frozen
+
+    aligned_now = eu_ets_price(year, scenario) / FX_EUR_PER_GBP
+    if year >= align:
+        return aligned_now
+
+    # Spread at the anchor year, shrinking linearly to zero at alignment.
+    anchor_spread = (eu_ets_price(anchor, scenario) / FX_EUR_PER_GBP) - frozen
+    remaining = (align - year) / (align - anchor)
+    return aligned_now - anchor_spread * remaining
 
 
 def cbam_factor(year: int) -> float:

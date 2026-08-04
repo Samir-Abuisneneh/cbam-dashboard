@@ -44,11 +44,24 @@ Source: `eu_cbam_cost()`, `cbam_model/model/cbam.py:37` · Regulation (EU) 2023/
 ### UK
 
 $$
-\text{UK CBAM cost/t} = \text{embedded emissions} \times \text{UK carbon price} \times \text{phase-in factor}
+\text{UK CBAM cost/t} = \text{embedded emissions} \times \text{rate fraction} \times \text{UK carbon price}
 $$
 
-Zero if `year < 2027` (scheme doesn't exist yet). Phase-in factor is not yet set by UK
-legislation — it is exposed in the dashboard as an explicit what-if slider, never assumed.
+$$
+\text{rate fraction} = 1 - (\text{baseline free allocation \%} \times \text{Article 16(14) factor})
+$$
+
+Zero if `year < 2027` (the scheme does not exist yet). The rate fraction is no longer a
+what-if: it was resolved on 31 July 2026 from the draft CBAM (Calculation of CBAM Rate and
+Determination of Carbon Price Relief) Regulations 2026 and Finance Act 2026 s.149(4).
+Baseline free allocation is 86.49%, averaged over scheme years 2019, 2022 and 2023. The
+Article 16(14) factors run 0.975 (2027), 0.95 (2028), 0.9 (2029), 0.775 (2030), giving a
+rate of 15.7% of the UK ETS price in 2027 rising to 33.0% by 2030. Years outside 2027-2030
+raise rather than extrapolate.
+
+Note the UK function takes no origin carbon price argument, unlike the EU one. China
+prices neither product today so nothing is lost, but the UK regulations do provide for
+carbon price relief and the model has no way to apply it.
 
 Source: `uk_cbam_cost()`, `cbam_model/model/cbam.py:80`
 

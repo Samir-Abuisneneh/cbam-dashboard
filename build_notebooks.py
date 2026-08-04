@@ -99,15 +99,21 @@ It is formally the civil-penalty price, but it is calculated from twelve months 
 futures settlement prices, so it is market-derived rather than administrative. The £40 and £60 figures
 bracket it as a sensitivity range and are not forecasts.
 
-No exchange rate is applied anywhere. Gayu keeps the currencies apart on the grounds that the conversion
-decision belongs wherever the tables are used next, and since no rate has been sourced, they stay apart.
+Headline tables keep the two currencies apart, as Gayu's notebooks do. A GBP/EUR rate is now sourced
+(ECB, 23 July 2026) and is applied only where a single-currency comparison is explicitly labelled.
+
+The UK price has two variants. `frozen` holds the sourced 2026 official determination flat across
+every year, which is the baseline and is conservative rather than correct: only one year was ever
+sourced. `linked` runs the EU-UK ETS linkage scenario, under which the UK price converges on the EU
+price by 2029. Linkage is NOT law, so it may only ever appear as a labelled scenario.
 """),
     code("""
 pd.DataFrame([
     {'year': y, 'scenario': s,
      'eu_ets_eur_per_tco2e': rc.eu_ets_price(y, s),
-     'uk_ets_gbp_per_tco2e': rc.UK_ETS_PRICE_SCENARIOS[s]}
-    for y in (2026, 2030) for s in rc.PRICE_SCENARIOS
+     'uk_ets_gbp_frozen': rc.uk_ets_price(y, s, 'frozen'),
+     'uk_ets_gbp_linked': rc.uk_ets_price(y, s, 'linked')}
+    for y in rc.CBAM_FACTOR if y <= 2030 for s in rc.PRICE_SCENARIOS
 ])
 """),
     md("""
@@ -234,7 +240,7 @@ The asymmetry is therefore a window, not a permanent feature. Worth saying plain
 """),
     code("""
 whatif = runner.run_compliance_matrix(
-    emissions, uk_cbam_phase_in_override=1.0, skip_unresolved=False)
+    emissions, uk_cbam_rate_override=1.0, skip_unresolved=False)
 w2030 = whatif[(whatif['year'] == 2030) & (whatif['price_scenario'] == 'medium')
                & (whatif['uk_ets_variant'].isin(['n/a', 'current_scope']))]
 w2030[['corridor', 'product', 'pathway', 'currency',
@@ -279,12 +285,15 @@ ranked = sensitivity.rank_drivers(sweep)
 ## 8. External cross-check
 
 Ramsook, Boodlal and Maharaj (2025) put Trinidad and Tobago's ammonia CBAM burden at roughly 22% of export
-revenue by 2034. This model gives a very different answer on equivalent inputs, and the reason has not been
-established. The most likely explanation is that the published ratio uses total export revenue while CBAM
-applies only to the EU-bound share, in which case the two figures are not comparable and the model is fine.
+revenue by 2034. The paper has since been read directly, which settled two questions that were open when
+this check was first written. The burden is measured against EU-bound revenue only, not total export
+revenue. And reproducing their figure needs the benchmark form of the CBAM obligation,
+`max(0, embedded - benchmark x (1 - CBAM_factor))`, which lands at 20.7% against their published 22%.
 
-That needs confirming by reading the paper, not by adjusting inputs until they agree, so the check is left
-visible and marked uncalibrated.
+The form this model currently uses, `embedded x CBAM_factor`, gives 14.5% on the same inputs. Both sit side
+by side in `validation/reference_case.py` with a test that fails if the main one is switched without anyone
+noticing. Switching is an open decision, waiting on the revised 2026-2030 EU ETS benchmarks adopted on
+29 June 2026.
 """),
     code("""
 print(reference_case.format_reference_check(reference_case.run_reference_check()))
@@ -293,7 +302,8 @@ print(reference_case.format_reference_check(reference_case.run_reference_check()
 ## 9. Outputs
 """),
     code("""
-written = outputs.write_all(maritime, cbam_results, sweep, ranked, compliance)
+written = outputs.write_all(maritime, cbam_results, sweep, ranked, compliance,
+                            emissions=emissions, commercial=commercial)
 for name in written:
     print(f"cbam_model/outputs/{name}")
 """),

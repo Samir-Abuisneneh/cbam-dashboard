@@ -159,14 +159,19 @@ table_data = [
                "hydrogen. See caveat below.", cell)],
     [Paragraph("Hydrogen embedded emissions", cell),
      Paragraph("<b>Resolved</b>", cell),
-     Paragraph("From Riya, delivered 26 July 2026, both corridors, four pathways "
-               "each, all cited to named sources. Two Canadian figures (green and "
-               "blue) are provisional; Riya has flagged she may still revise them.",
-               cell)],
+     Paragraph("From Riya, delivered 26 July 2026 and revised 4 August 2026, both "
+               "corridors, four pathways each, all cited to named sources. The "
+               "4 August revision moved Canada blue from 4.89 to 2.02. All three "
+               "China hydrogen pathways were then consolidated onto a single "
+               "study (S0360319925010602), agreed with Riya, replacing figures "
+               "that had been drawn from four different papers: grey 29.02 to "
+               "20.09 and blue 7.91 to 6.28.", cell)],
     [Paragraph("Ammonia embedded emissions", cell),
-     Paragraph("<b>Not yet delivered</b>", cell),
-     Paragraph("Riya has confirmed the China figures are not yet added. Currently "
-               "running on placeholder literature ranges.", cell)],
+     Paragraph("<b>Delivered</b>", cell),
+     Paragraph("Delivered 29 July 2026 and revised 4 August 2026. Both corridors, "
+               "with CBAM regulatory defaults (1.98 Canada, 4.36 China). The 4 August "
+               "revision corrected China coal gasification from 4.60 to 6.15: the old "
+               "value was the same paper's natural-gas row, mislabelled.", cell)],
     [Paragraph("UK ETS maritime price", cell),
      Paragraph("<b>Resolved</b>", cell),
      Paragraph("GBP 49.41/tCO2e, the UK ETS Authority's official determination for "
@@ -210,14 +215,24 @@ table_data = [
                "in 2027 to 33.0% by 2030.",
                cell)],
     [Paragraph("GBP to EUR exchange rate", cell),
-     Paragraph("<b>Not applied</b>", cell),
-     Paragraph("No conversion is performed anywhere in the model. Gayu's notebooks "
-               "deliberately report the two corridors in their own currencies "
-               "rather than combining them with an assumed rate, and the model "
-               "follows the same approach.", cell)],
-    [Paragraph("Production, conversion, and shipping cost", cell),
+     Paragraph("<b>Resolved</b>", cell),
+     Paragraph("ECB reference rate for 23 July 2026, 1 GBP = 1.17209 EUR, the same "
+               "reference date used for the Canadian dollar and US dollar "
+               "conversions. Headline tables still report each corridor in its own "
+               "currency, as Gayu's notebooks do; the rate is applied only where a "
+               "single-currency comparison is explicitly labelled as such.", cell)],
+    [Paragraph("Production cost", cell),
+     Paragraph("<b>Resolved</b>", cell),
+     Paragraph("From Riya, 4 August 2026, covering every modelled pathway on both "
+               "corridors. Converted from USD at the 23 July 2026 ECB rate. Her two "
+               "sheets disagree on China green hydrogen (4.63 vs 5.72-6.62 USD/kg); "
+               "the lower figure is used and the choice needs stating in the "
+               "methodology.", cell)],
+    [Paragraph("Conversion and shipping cost", cell),
      Paragraph("<b>Not sourced, no owner</b>", cell),
-     Paragraph("See Section 4.", cell)],
+     Paragraph("See Section 4. Both are invariant to production pathway, so they "
+               "cancel out of within-corridor pathway comparisons and do not block "
+               "the marginal abatement cost results.", cell)],
 ]
 
 col_widths = [3.9 * cm, 2.6 * cm, 10.5 * cm]

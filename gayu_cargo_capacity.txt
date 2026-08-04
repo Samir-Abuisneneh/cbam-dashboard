@@ -1,0 +1,129 @@
+--- CELL 0 (markdown) ---
+# Cargo Capacity and Density — Converting Voyage Cost to Cost per Tonne (v2)
+
+
+--- CELL 1 (code) ---
+import pandas as pd
+pd.set_option('display.max_colwidth', None)
+
+--- CELL 2 (markdown) ---
+## 1. Vessel cubic capacity — now a direct citation, not an estimate
+
+ **Seo, An, Park et al.
+(2024)**, the same peer-reviewed paper already used for vessel speed and port-time assumptions, states
+directly that it "employed an 84,000 m³ class ammonia carrier."
+
+Seo, Y., An, J., Park, E. et al. (2024). 'Technical-Economic Analysis for Ammonia Ocean Transportation
+Using an Ammonia-Fueled Carrier.' *Sustainability*, 16(2), 827. 2025 Impact Factor: 4.1.
+https://www.mdpi.com/2071-1050/16/2/827
+
+Using the same paper for capacity as for speed and port time means this workstream now draws all three
+operational assumptions from a single, consistent, peer-reviewed vessel model.
+
+
+--- CELL 3 (code) ---
+vessel_cubic_capacity_m3 = 84000  # Seo et al. (2024), Sustainability - stated vessel capacity, same paper used for speed/port time
+
+
+--- CELL 4 (markdown) ---
+## 2. Filling limit / utilisation — an official IMO figure
+
+The  source is the IMO's own International Gas Carrier (IGC) Code, which sets an explicit maximum filling limit for cargo tanks at
+reference temperature:
+
+International Maritime Organization, IGC Code, Chapter 15.1.1: cargo tanks may not be filled beyond
+**98% at the reference temperature** (a higher limit may be permitted under 15.1.3 subject to additional
+conditions, but 98% is the default regulatory figure). Available via UK Government Merchant Shipping
+Notice MSN 1717 (M), which reproduces the relevant IGC Code provisions in full:
+https://assets.publishing.service.gov.uk/media/5a7c55c1e5274a2041cf3518/msn1717.pdf
+
+98% is used here as the standard default figure rather than the higher limits some tank designs and
+Administrations may permit under 15.1.3, since this workstream has no vessel-specific approval on record
+for a higher limit.
+
+
+--- CELL 5 (code) ---
+filling_limit_fraction = 0.98  # IMO IGC Code, Chapter 15.1.1 (official regulatory maximum, default case)
+
+
+--- CELL 6 (markdown) ---
+## 3. Cargo density
+
+**Liquid ammonia**: 682 kg/m³ at its boiling point (-33.3°C, 1.013 bar). Source: PubChem, the U.S.
+National Institutes of Health's public chemistry database (CID 222) — a government source, consistent in
+value with independent engineering references.
+https://pubchem.ncbi.nlm.nih.gov/compound/Ammonia
+
+**Liquid hydrogen**: 70.8 kg/m³. This figure is not just a general physical constant taken from a
+reference table — it is independently confirmed in a second peer-reviewed paper by an overlapping
+research group to the one already used for vessel speed and capacity:
+
+Seo, Y. and Han, S. (2021). 'Economic Evaluation of an Ammonia-Fueled Ammonia Carrier Depending on
+Methods of Ammonia Fuel Storage.' *Energies*, 14(24), 8326. 2025 Impact Factor: 3.9-4.0 (at/near the 4+
+target). States directly: "The hydrogen density of pure liquid hydrogen is 70.8 kg/m³."
+https://www.mdpi.com/1996-1073/14/24/8326
+
+Having the same figure independently confirmed by a peer-reviewed source, rather than only a chemistry
+database, is stronger than either alone.
+
+
+--- CELL 7 (code) ---
+ammonia_density_kg_per_m3 = 682     # PubChem (NIH), CID 222
+hydrogen_density_kg_per_m3 = 70.8   # Seo and Han (2021), Energies (MDPI) - independently confirms this figure
+
+
+--- CELL 8 (markdown) ---
+## 4. Cargo mass per voyage
+
+
+--- CELL 9 (code) ---
+usable_volume_m3 = vessel_cubic_capacity_m3 * filling_limit_fraction
+
+ammonia_cargo_tonnes = round(usable_volume_m3 * ammonia_density_kg_per_m3 / 1000)
+hydrogen_cargo_tonnes = round(usable_volume_m3 * hydrogen_density_kg_per_m3 / 1000)
+
+print(f"Usable cargo volume:      {usable_volume_m3:,.0f} m3")
+print(f"Ammonia cargo per voyage: {ammonia_cargo_tonnes:,} tonnes")
+print(f"Hydrogen cargo per voyage:{hydrogen_cargo_tonnes:,} tonnes")
+print(f"Ratio (ammonia / hydrogen): {ammonia_cargo_tonnes / hydrogen_cargo_tonnes:.1f}x")
+OUTPUT: Usable cargo volume:      82,320 m3
+Ammonia cargo per voyage: 56,142 tonnes
+Hydrogen cargo per voyage:5,828 tonnes
+Ratio (ammonia / hydrogen): 9.6x
+
+
+--- CELL 10 (markdown) ---
+## 5. Worked example: cost per tonne
+
+Using the Halifax-Hamburg EU ETS mid-price figure already established in this workstream (€43,208 per
+voyage).
+
+
+--- CELL 11 (code) ---
+eu_ets_cost_per_voyage_eur = 43208  # Halifax-Hamburg, mid-price scenario, from this workstream's own EU ETS notebook
+
+ammonia_cost_per_tonne = round(eu_ets_cost_per_voyage_eur / ammonia_cargo_tonnes, 2)
+hydrogen_cost_per_tonne = round(eu_ets_cost_per_voyage_eur / hydrogen_cargo_tonnes, 2)
+
+print(f"EU ETS cost per tonne of ammonia:  EUR {ammonia_cost_per_tonne}")
+print(f"EU ETS cost per tonne of hydrogen: EUR {hydrogen_cost_per_tonne}")
+print(f"Hydrogen costs {round(hydrogen_cost_per_tonne / ammonia_cost_per_tonne, 1)}x more per tonne than ammonia, for the identical voyage.")
+OUTPUT: EU ETS cost per tonne of ammonia:  EUR 0.77
+EU ETS cost per tonne of hydrogen: EUR 7.41
+Hydrogen costs 9.6x more per tonne than ammonia, for the identical voyage.
+
+
+--- CELL 12 (markdown) ---
+---
+## Sourcing summary
+
+| Figure | Value | Source type |
+|---|---|---|
+| Vessel cubic capacity | 84,000 m³ | Peer-reviewed (Seo et al. 2024, *Sustainability*, IF 4.1) |
+| Filling limit / utilisation | 98% | Official IMO regulation (IGC Code Ch. 15.1.1) |
+| Ammonia density | 682 kg/m³ | Government chemistry database (PubChem/NIH) |
+| Hydrogen density | 70.8 kg/m³ | Peer-reviewed (Seo and Han 2021, *Energies*, IF ~3.9-4.0) |
+
+
+
+

@@ -17,7 +17,6 @@ for both products. The container ship set exists because MCG's corridor
 reference document named two specific vessels.
 """
 
-from .unresolved import Unresolved
 from . import regulatory_constants as rc
 
 HH = rc.HALIFAX_HAMBURG

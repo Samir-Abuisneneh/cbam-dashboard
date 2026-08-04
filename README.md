@@ -101,22 +101,28 @@ pathway is anchored on the CBAM regulatory default embedded-emissions value
 (the `cbam_default` pathway) where one exists, since IR 2025/2621 sets these
 deliberately conservatively to penalise not using verified actual data.
 Literature-sourced pathways bracket it as sensitivity scenarios (green
-electrolysis = low, grey SMR / coal gasification = high). **Ammonia has no
-CBAM regulatory default yet** (pending Riya sourcing it from Annex I), so
-ammonia figures remain literature-only until then.
+electrolysis = low, grey SMR / coal gasification = high). Ammonia has CBAM
+regulatory defaults on both corridors (1.98 tCO2e/t Canada, 4.36 China),
+delivered by Riya on 3 August 2026, so it is treated the same way as hydrogen.
 
 **2026, hydrogen.** Halifax-Hamburg's primary scenario pays EUR 13.07 per
 tonne in total carbon compliance cost, bracketed by a EUR 10.03-12.55
 literature sensitivity range. Ningbo-Felixstowe pays GBP 0.50 per tonne
-regardless of pathway — about 25 times less — because UK CBAM has not started
-and UK ETS does not price the ocean leg, so pathway-specific embedded
+regardless of pathway, more than twenty times less, because UK CBAM has not
+started and UK ETS does not price the ocean leg, so pathway-specific embedded
 emissions don't yet matter for that corridor at all.
 
-**2030**, running UK CBAM at 100% as a labelled what-if since the phase-in
-factor remains unresolved: Ningbo-Felixstowe's primary scenario reaches
-GBP 1,316.78 per tonne — CBAM now dominates the total and the maritime terms
-become close to irrelevant. Halifax-Hamburg's primary scenario reaches
-EUR 411.00 per tonne.
+**2030**, with UK CBAM running at its real legislated rate (32.96% of the UK
+ETS price in 2030, derived from the 86.49% baseline free allocation and the
+Article 16(14) factor of 0.775; see `regulatory_constants.uk_cbam_rate_fraction`):
+Ningbo-Felixstowe's primary scenario reaches GBP 434.40 per tonne, against
+EUR 411.00 for Halifax-Hamburg's. CBAM dominates both totals by then and the
+maritime terms become close to irrelevant.
+
+Running UK CBAM at 100% instead, as a labelled upper-bound what-if rather than
+a forecast, Ningbo-Felixstowe's primary scenario reaches GBP 1,316.78 per tonne.
+That figure is an artefact of the override, not the legislated mechanism, and
+should be reported as such.
 
 In both years and both corridors, the CBAM-default anchor sits **above** the
 literature "high" bracket, not between the two literature brackets — a direct
@@ -139,24 +145,74 @@ hydrogen boil-off losses are not modelled.
 
 ## What is still unresolved
 
-1. **Ammonia embedded emissions** (Riya). Hydrogen emissions are real, sourced
-   data for both corridors, including CBAM regulatory default values. Ammonia
-   is still placeholder literature ranges on both corridors, and critically
-   **has no CBAM regulatory default value at all yet** — Riya's 29 July 2026
-   proposal to anchor the model on CBAM defaults as the primary scenario can't
-   fully extend to ammonia until that default is sourced from IR 2025/2621
-   Annex I. By 2030 CBAM dominates every other term, so this is now the
-   largest source of uncertainty in the study for ammonia specifically. The
-   `origin_carbon_price_eur_per_tco2e` column matters most: Canada prices
-   industrial carbon and China prices it lower, and a large enough Canadian
-   price would cut Halifax-Hamburg's CBAM liability sharply, possibly
-   reversing the corridor comparison.
-2. **Production, conversion and freight cost per tonne.** No owner assigned. The
-   only thing standing between compliance cost and full delivered cost.
-3. **The UK CBAM phase-in factor.** Blocks a non-hypothetical 2027-onward UK
-   result and drives the entire 2030 comparison. Currently only runnable as an
-   explicitly labelled what-if (see the dashboard's phase-in slider).
-4. **GBP to EUR rate.** No reference date chosen, so no conversion happens.
+1. **The EU CBAM obligation uses the wrong functional form.** The model computes
+   `chargeable = embedded x CBAM_factor`. Regulation (EU) 2023/956 Article 31
+   adjusts the obligation for the free allocation an EU installation making the
+   same good would receive, and free allocation under Article 10a of Directive
+   2003/87/EC is measured against a product benchmark, so the correct form is
+   `max(0, embedded - benchmark x (1 - CBAM_factor))`. The two agree only in
+   2034, when free allocation reaches zero. The benchmark form reproduces
+   Ramsook et al.'s published 22% burden at 20.7%; the current form gives 14.5%.
+   Both sit side by side in `validation/reference_case.py`. Switching is blocked
+   on reading out the revised 2026-2030 benchmarks the Commission adopted on
+   29 June 2026; the values in code (ammonia 1.570, hydrogen 6.84, from IR
+   2021/447) are the 2021-2025 set. Individual CBAM figures move a lot under the
+   switch, but the headline finding holds: the production cost gap dwarfs the
+   CBAM differential either way.
+2. **Two production-cost gaps are still built from separate studies, but the
+   results do not depend on it.** Canada hydrogen spans three papers (grey
+   S0957582024004336, blue S036031992206236X, green S0960148125012959) and China
+   ammonia spans two (Nature s43247-025-02056-z, S0360319922016019). Riya
+   confirmed on 4 August 2026 that no single study covers the Canadian pathways,
+   so unlike China hydrogen this cannot be fixed by swapping papers.
+
+   Rather than leave it as a bare disclaimer, `analysis.outputs
+   .abatement_source_robustness` recomputes every abatement result on the IEA
+   cost sheet, which prices all pathways on both corridors under one
+   methodology, and reports the two side by side
+   (`outputs/abatement_source_robustness.csv`). **Every verdict holds its sign
+   under both sourcings, and under both the IEA onshore wind and solar PV green
+   routes.** A test fails if that ever stops being true. The IEA figures are not
+   used as primary because they are regional (North America, not Canada) and are
+   an agency benchmark rather than a peer-reviewed country-specific study, so
+   promoting them would trade a sourcing problem for a geography problem.
+
+   Suggested methodology wording, from Riya: costs were sourced where possible
+   from studies applying a consistent techno-economic framework across multiple
+   production pathways, and where pathway-specific regional studies were
+   unavailable, supplementary literature and IEA benchmark estimates were used.
+3. **Green ammonia on the UK corridor is too close to call.** At 2030 medium
+   prices its abatement cost is EUR 57.31/tCO2 against a carbon price of
+   EUR 57.90, a margin of 1%, and that gap is one of the two built across
+   separate studies. The bare boolean says "justified"; it is not reportable as
+   one. `marginal_abatement_cost` now carries a three-state `verdict` column
+   with a 10% marginal band, and this row reads `marginal`. Under IEA costs it
+   moves to comfortably justified (EUR 27.57) on the wind route and stays
+   marginal (EUR 56.21) on solar, so the direction is stable even though the
+   confidence is not.
+4. **Conversion and freight cost per tonne.** No owner assigned. Production
+   cost is no longer in this list: Riya delivered it on 4 August 2026. Note
+   these two terms are invariant to production pathway, so they cancel out of
+   any within-corridor pathway comparison and do not block the marginal
+   abatement cost results.
+5. **UK ETS price is held flat across 2026-2030** while the EU price rises 58%
+   over the same span. Only the 2026 UK figure was ever sourced. UK-side costs
+   from 2027 on are therefore understated. The finding that the UK corridor
+   overtakes the EU one by 2030 survives this, because UK is the understated
+   side, but the assumption has to be stated. A labelled EU-UK linkage variant
+   exists in the code as an alternative price path.
+
+**Resolved 4 August 2026.** China hydrogen now comes from one study.
+`green_electrolysis`, `coal_gasification` and `blue_ccs` all take both emissions
+and production cost from S0360319925010602, agreed with Riya. Previously the row
+drew on four papers: grey emissions from S0360319921042737 (29.02, now 20.09),
+blue from S0959652622021151 (7.91, now 6.28), and all three costs from
+S097308262400214X. This moves blue hydrogen's abatement cost from EUR 8.3 to
+EUR 40.0/tCO2 and green's from EUR 106.6 to EUR 238.6. Both verdicts survive,
+blue still beats the UK carbon price and green still does not, but the EUR 8
+figure was an artefact of mixing studies and must not be published. An earlier
+proposal in this repo to switch blue to the 13.99 with-CCS figure is superseded:
+it would have paired grey and blue while leaving green on a third paper.
 
 **Resolved 25 July 2026.** UK ETS price anchors, from the UK ETS Authority
 determination of GBP 49.41/tCO2e for the scheme year beginning 1 January 2026.

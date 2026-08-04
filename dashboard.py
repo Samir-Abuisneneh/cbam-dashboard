@@ -311,8 +311,8 @@ st.markdown(
 st.title("CBAM Corridor Cost Explorer")
 st.caption(
     "Carbon compliance cost only — CBAM plus maritime ETS plus FuelEU. "
-    "Production, conversion and freight cost are not yet included (no owner "
-    "assigned in the data contracts), so this is not a full delivered cost. "
+    "Conversion and freight cost are not yet included (no owner assigned in "
+    "the data contracts), so this is not a full delivered cost. "
     "EUR (Halifax–Hamburg) and GBP (Ningbo–Felixstowe) are never "
     "converted or combined."
 )
@@ -321,11 +321,10 @@ emissions, _, _ = data_io.load_inputs()
 placeholder_inputs = data_io.using_placeholder_data()
 if placeholder_inputs:
     st.warning(
-        "Some inputs are still placeholders, not final figures. Ammonia "
-        "embedded emissions are synthetic literature-style placeholders "
-        "awaiting Riya's real data, and the commercial cost table "
-        "(production/conversion/freight) has no owner yet. Hydrogen "
-        "emissions and all maritime figures are real, sourced data. "
+        "Some inputs are still placeholders, not final figures. The "
+        "commercial cost table's conversion and shipping costs have no "
+        "owner yet; production cost is real (Riya's literature review). "
+        "Emissions and all maritime figures are real, sourced data. "
         "See data/README.md."
     )
 
@@ -439,6 +438,38 @@ if is_uk and year >= rc.UK_ETS_INTL_EXPANSION_EARLIEST_YEAR:
     )
     st.sidebar.caption(scenarios.VARIANT_LABELS[uk_ets_variant])
 
+uk_price_variant = "frozen"
+if is_uk:
+    uk_price_variant = st.sidebar.selectbox(
+        "UK carbon price path",
+        rc.UK_ETS_PRICE_VARIANTS,
+        format_func=lambda v: (
+            "Frozen at the 2026 determination (baseline)"
+            if v == "frozen"
+            else "EU-UK ETS linkage: converges to EU price (NOT law)"
+        ),
+    )
+    if uk_price_variant == "linked":
+        st.sidebar.caption(
+            f"EU-UK ETS linkage scenario, NOT law. The UK and EU committed to "
+            f"link their schemes in May 2025; EU member states backed a "
+            f"negotiating mandate in November 2025 and talks opened in January "
+            f"2026. Linked schemes mutually recognise allowances, so prices "
+            f"converge: market expectation is full alignment from "
+            f"{rc.UK_ETS_LINKAGE_FULL_ALIGNMENT_YEAR}. "
+            f"{year} price: GBP {rc.uk_ets_price(year, price_scenario, 'linked'):.2f} "
+            f"against GBP {rc.uk_ets_price(year, price_scenario, 'frozen'):.2f} frozen. "
+            f"Note the linkage also contemplates mutual EU/UK CBAM exemptions, "
+            f"which do not apply here: this corridor is China to UK, and China "
+            f"is not party to the linkage."
+        )
+    else:
+        st.sidebar.caption(
+            "Holds the sourced 2026 official determination flat across every "
+            "year. Conservative rather than correct: nobody decided UK prices "
+            "stay flat, only one year was ever sourced."
+        )
+
 uk_cbam_override = None
 if is_uk and year >= rc.UK_CBAM_START_YEAR:
     real_rate_fraction = rc.uk_cbam_rate_fraction(year)
@@ -466,9 +497,10 @@ if not is_uk:
     )
     if bunker_fuel == "green_rfnbo":
         st.sidebar.caption(
-            "Ship bunkers green hydrogen/ammonia instead of VLSFO — near-zero "
-            "combustion intensity, already compliant before the Article 5 2x "
-            "multiplier is even applied. Only changes FuelEU: EU ETS still "
+            "Ship bunkers green hydrogen/ammonia instead of VLSFO at 1.28 "
+            "gCO2e/MJ well-to-wake (Gayu), comfortably inside the target "
+            "before the Article 5 2x multiplier is even applied. Only "
+            "changes FuelEU: EU ETS still "
             "charges the voyage's actual CO2 either way, since propulsion "
             "fuel burn itself isn't re-modelled here."
         )
@@ -478,7 +510,8 @@ if not is_uk:
 # ---------------------------------------------------------------------------
 profile = vl.corridor_profile(corridor, vessel_set, speed_scenario, route)
 maritime = total_cost.maritime_cost_per_voyage(
-    profile, year, price_scenario, uk_ets_variant, bunker_fuel=bunker_fuel
+    profile, year, price_scenario, uk_ets_variant,
+    bunker_fuel=bunker_fuel, uk_price_variant=uk_price_variant,
 )
 
 row = emissions[
@@ -491,10 +524,9 @@ is_placeholder_row = str(row.get("source", "")).startswith("PLACEHOLDER")
 
 compliance = None
 blocked_message = None
-# UK CBAM's rate mechanism is fully resolved (see the caption above), so this
-# except branch no longer fires for that reason. Kept as a safety net for any
-# other Unresolved regulatory constant (e.g. FX_EUR_PER_GBP) that might end up
-# on this call path in the future.
+# UK CBAM's rate mechanism and the GBP/EUR rate are both resolved (see the
+# caption above), so this except branch no longer fires for either reason.
+# Kept as a safety net for any not-yet-sourced regulatory constant added later.
 try:
     cbam_row = total_cost.cbam_cost_per_tonne(
         corridor=corridor,
@@ -505,6 +537,7 @@ try:
         embedded_emissions_tco2e_per_tonne=row["embedded_emissions_tco2e_per_tonne"],
         origin_carbon_price_eur_per_tco2e=row["origin_carbon_price_eur_per_tco2e"],
         uk_cbam_rate_override=uk_cbam_override,
+        uk_price_variant=uk_price_variant,
     )
     compliance = total_cost.compliance_cost_per_tonne(maritime, cbam_row)
 except UnresolvedConstantError as exc:

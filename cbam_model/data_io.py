@@ -165,17 +165,25 @@ def _placeholder_emissions() -> pd.DataFrame:
     represents genuine production.
 
     Riya's table has no origin carbon price column, but this has since been
-    looked up separately and is no longer invented. Canada: CAD 110/tCO2e
-    (2026 federal OBPS rate), converted to EUR at the 23 July 2026 ECB
-    reference rate, treated as an upper bound because OBPS only charges above
-    a facility-specific benchmark and EverWind's actual performance against it
-    is unknown. China: EUR 0, because neither hydrogen nor ammonia production
-    is yet covered by China's national ETS, so there is nothing to deduct. See
-    regulatory_constants.py for full sourcing on both. Origin price is a
-    country-level fact, not a product-level one, so ammonia gets the same
-    Canada/China figures as hydrogen.
+    looked up separately and is no longer invented. Canada: federal OBPS
+    (Output-Based Pricing System) rate, CAD 95/tCO2e for 2026 as of the
+    revised price path published 15 May 2026 (corrected 5 Aug 2026 by Alex,
+    Student 4 - the earlier CAD 110 was an extrapolation from a December 2020
+    plan that was superseded before it was ever checked against a primary
+    source). This column holds the 2026 baseline only, converted to EUR at
+    the 23 July 2026 ECB reference rate; `run_cbam_matrix` and
+    `run_compliance_matrix` use `regulatory_constants.origin_carbon_price_eur`
+    instead, which carries the full year-varying schedule through 2030 and is
+    what CBAM figures are actually computed from. Either way it is an upper
+    bound, because OBPS only charges above a facility-specific benchmark and
+    EverWind's actual performance against it is unknown. China: EUR 0,
+    because neither hydrogen nor ammonia production is yet covered by China's
+    national ETS, so there is nothing to deduct. See regulatory_constants.py
+    for full sourcing on both. Origin price is a country-level fact, not a
+    product-level one, so ammonia gets the same Canada/China figures as
+    hydrogen.
     """
-    ca = rc.ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E  # EUR 68.63, upper bound, see above
+    ca = rc.ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E  # EUR 59.27, 2026 baseline, see above
     cn = rc.ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E  # EUR 0.00, neither product yet in scope
 
     rows = [

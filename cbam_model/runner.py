@@ -112,9 +112,12 @@ def run_cbam_matrix(
                             embedded_emissions_tco2e_per_tonne=e[
                                 "embedded_emissions_tco2e_per_tonne"
                             ],
-                            origin_carbon_price_eur_per_tco2e=e[
-                                "origin_carbon_price_eur_per_tco2e"
-                            ],
+                            # Year-varying, not the emissions table's flat
+                            # 2026-baseline column - see
+                            # rc.origin_carbon_price_eur's docstring.
+                            origin_carbon_price_eur_per_tco2e=rc.origin_carbon_price_eur(
+                                e["corridor"], year
+                            ),
                             using_default_values=using_default_values,
                             uk_cbam_rate_override=uk_cbam_rate_override,
                             uk_price_variant=uk_price_variant,
@@ -187,9 +190,12 @@ def run_compliance_matrix(
                                 embedded_emissions_tco2e_per_tonne=e[
                                     "embedded_emissions_tco2e_per_tonne"
                                 ],
-                                origin_carbon_price_eur_per_tco2e=e[
-                                    "origin_carbon_price_eur_per_tco2e"
-                                ],
+                                # Year-varying, not the emissions table's flat
+                                # 2026-baseline column - see
+                                # rc.origin_carbon_price_eur's docstring.
+                                origin_carbon_price_eur_per_tco2e=rc.origin_carbon_price_eur(
+                                    corridor, year
+                                ),
                                 uk_cbam_rate_override=uk_cbam_rate_override,
                                 uk_price_variant=uk_price_variant,
                             )

@@ -827,6 +827,68 @@ def test_origin_carbon_price_has_no_leverage_on_the_china_corridor():
 
 
 # ---------------------------------------------------------------------------
+# Canada origin carbon price, corrected and made year-varying 5 August 2026
+# ---------------------------------------------------------------------------
+
+
+def test_canada_origin_carbon_price_matches_the_revised_2026_path():
+    """CAD 95/100/100/100/115 for 2026-2030, the path published 15 May 2026.
+
+    Regression guard on the 5 August 2026 correction: the old CAD 110 flat
+    figure was an extrapolation from the December 2020 plan that this path
+    superseded, never checked against a primary source.
+    """
+    expected = {2026: 95.0, 2027: 100.0, 2028: 100.0, 2029: 100.0, 2030: 115.0}
+    for year, cad in expected.items():
+        assert rc.origin_carbon_price_canada_cad(year) == cad
+
+
+def test_origin_carbon_price_eur_dispatches_by_corridor():
+    """Canada varies by year; China stays zero regardless of year."""
+    for year in range(2026, 2031):
+        assert rc.origin_carbon_price_eur(rc.HALIFAX_HAMBURG, year) == pytest.approx(
+            rc.origin_carbon_price_canada_eur(year)
+        )
+        assert rc.origin_carbon_price_eur(rc.NINGBO_FELIXSTOWE, year) == 0.0
+
+
+def test_cbam_matrix_uses_the_year_varying_origin_price_not_the_flat_column():
+    """The emissions table's origin_carbon_price_eur_per_tco2e column is a
+    flat 2026 baseline (see data_io._placeholder_emissions), but
+    run_cbam_matrix must use the year-varying schedule, not that column, or
+    the 2027-2030 CBAM figures would silently apply the wrong year's origin
+    price. Checked by recomputing 2030 by hand with the flat 2026 figure and
+    confirming it does NOT match what the matrix actually produced."""
+    emissions, _, _ = data_io.load_inputs()
+    row = emissions[
+        (emissions["corridor"] == rc.HALIFAX_HAMBURG)
+        & (emissions["product"] == "hydrogen")
+        & (emissions["pathway"] == "grey_smr")
+    ].iloc[0]
+
+    cbam = runner.run_cbam_matrix(emissions, years=(2030,), skip_unresolved=False)
+    actual_2030 = cbam[
+        (cbam["corridor"] == rc.HALIFAX_HAMBURG)
+        & (cbam["product"] == "hydrogen")
+        & (cbam["pathway"] == "grey_smr")
+        & (cbam["price_scenario"] == "medium")
+    ]["eu_cbam_cost_eur_per_tonne"].iloc[0]
+
+    wrong_2030_with_flat_origin_price = total_cost.cbam_cost_per_tonne(
+        corridor=rc.HALIFAX_HAMBURG, product="hydrogen", pathway="grey_smr",
+        year=2030, price_scenario="medium",
+        embedded_emissions_tco2e_per_tonne=row["embedded_emissions_tco2e_per_tonne"],
+        origin_carbon_price_eur_per_tco2e=row["origin_carbon_price_eur_per_tco2e"],
+    ).eu_cbam_cost_eur_per_tonne
+
+    assert actual_2030 != pytest.approx(wrong_2030_with_flat_origin_price)
+    # And it should be lower, since 2030's real origin price (EUR 71.75) is
+    # higher than the flat 2026 baseline (EUR 59.27) the wrong version uses,
+    # giving a bigger deduction.
+    assert actual_2030 < wrong_2030_with_flat_origin_price
+
+
+# ---------------------------------------------------------------------------
 # EU-UK ETS linkage scenario
 # ---------------------------------------------------------------------------
 

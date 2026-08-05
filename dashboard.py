@@ -535,7 +535,11 @@ try:
         year=year,
         price_scenario=price_scenario,
         embedded_emissions_tco2e_per_tonne=row["embedded_emissions_tco2e_per_tonne"],
-        origin_carbon_price_eur_per_tco2e=row["origin_carbon_price_eur_per_tco2e"],
+        # Year-varying (rc.origin_carbon_price_eur), not the emissions
+        # table's flat 2026-baseline column - the dashboard lets the user
+        # pick any year, and the origin price genuinely differs by year for
+        # Canada since the 5 Aug 2026 correction.
+        origin_carbon_price_eur_per_tco2e=rc.origin_carbon_price_eur(corridor, year),
         uk_cbam_rate_override=uk_cbam_override,
         uk_price_variant=uk_price_variant,
     )

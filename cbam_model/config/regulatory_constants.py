@@ -405,28 +405,92 @@ def cbam_cert_price_within_ets_scenario_bounds(year: int = 2026) -> bool:
 # liability. These two figures replace the invented EUR 50 / GBP 10 placeholders
 # that were in the model until this was looked up on 26-27 July 2026.
 
-# CANADA. CAD 110/tCO2e is the federal Output-Based Pricing System (OBPS) rate
-# for the 2026 compliance year, rising from CAD 95 in 2025 by CAD 15/year to
-# CAD 170 by 2030. Source: ICAP (International Carbon Action Partnership)
-# federal OBPS factsheet. Nova Scotia, where EverWind is based, does not run
-# its own industrial carbon price and follows the federal one directly,
-# confirmed via the Nova Scotia government's own climate change pages.
+# CANADA. Federal Output-Based Pricing System (OBPS) rate, the industrial half
+# of the Greenhouse Gas Pollution Pricing Act. Nova Scotia, where EverWind is
+# based, does not run its own industrial carbon price and follows the federal
+# one directly, confirmed via the Nova Scotia government's own climate change
+# pages.
+#
+# CORRECTED 5 August 2026 (Alex, Student 4). The figure below through 4 August
+# was CAD 110/tCO2e flat, taken from the December 2020 plan (CAD 95 in 2025,
+# +15/year to CAD 170 by 2030, published in "A Healthy Environment and a
+# Healthy Economy"). That plan was superseded before this figure was ever
+# checked against a primary source. On 12 March 2026, Bill C-4 permanently
+# repealed the *consumer* fuel charge (backdated to April 2025) but left the
+# industrial system in place; the federal government published a revised
+# industrial price path on 15 May 2026 that is materially lower and flatter
+# than the abandoned 2020 plan:
+# https://www.canada.ca/en/environment-climate-change/services/climate-change/pricing-pollution-how-it-will-work/carbon-pollution-pricing-federal-benchmark-information.html
+#
+#   2026: CAD 95   2027-2029: CAD 100 (flat)   2030: CAD 115
+#   (2035: CAD 130, 2040: CAD 140 - outside this model's 2026-2030 run range)
+#
+# The old CAD 110 was never the real 2026 rate; it was an extrapolation from a
+# plan that no longer applies. This model runs 2026-2030 on a flat production
+# cost already (see `_placeholder_commercial`), but the origin carbon price
+# now has a genuinely sourced year-varying schedule, so it is treated as
+# year-varying via `origin_carbon_price_canada_eur(year)`, unlike production
+# cost.
 #
 # CAVEAT, and it is a real one: OBPS is not a flat charge on every tonne. Each
 # facility gets free allowances up to a sector-average performance benchmark
-# and only pays CAD 110 on emissions above that benchmark. A facility
+# and only pays this rate on emissions above that benchmark. A facility
 # performing at or better than the benchmark could owe close to nothing despite
 # this headline rate existing. EverWind's actual performance against its
-# benchmark is not known, so CAD 110 is the ceiling on what could be deducted,
-# not a confirmed effective price. Same shape of problem as the EU CBAM factor
-# vs free allocation distinction elsewhere in this project.
+# benchmark is not known, so this schedule is the ceiling on what could be
+# deducted, not a confirmed effective price. Same shape of problem as the EU
+# CBAM factor vs free allocation distinction elsewhere in this project.
+#
+# SECOND CAVEAT, also from Alex's 5 Aug 2026 delivery: the federal benchmark
+# price is not what a facility actually pays either, because OBPS compliance
+# units trade provincially and prices vary widely - around CAD 65/t in British
+# Columbia, CAD 72/t in Ontario, and as low as roughly CAD 37.50/t where cheap
+# Alberta-linked credits are available (mid-2026 figures, carboncredits.com).
+# The federal benchmark is used here anyway because it is what Nova Scotia,
+# EverWind's own jurisdiction, actually applies, not a shopping exercise
+# across provinces. Still worth stating as a limitation: the true effective
+# price could plausibly be lower than the federal benchmark used here.
 #
 # Converted at the ECB reference rate for 23 July 2026, 1 CAD = 0.62393 EUR.
-ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_2026 = 110.0
 FX_EUR_PER_CAD_2026_07_23 = 0.62393
-ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E = round(
-    ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_2026 * FX_EUR_PER_CAD_2026_07_23, 2
-)  # EUR 68.63/tCO2e, upper bound
+
+ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR = {
+    2026: 95.0,
+    2027: 100.0,
+    2028: 100.0,
+    2029: 100.0,
+    2030: 115.0,
+}
+
+
+def origin_carbon_price_canada_cad(year: int) -> float:
+    """Canada's federal industrial (OBPS) carbon price in CAD/tCO2e for `year`.
+
+    Holds at the nearest published figure outside 2026-2030 rather than
+    extrapolating, since the model does not run beyond that range anyway.
+    """
+    years = sorted(ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR)
+    if year in ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR:
+        return ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR[year]
+    if year < years[0]:
+        return ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR[years[0]]
+    return ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR[years[-1]]
+
+
+def origin_carbon_price_canada_eur(year: int) -> float:
+    """Canada's origin carbon price in EUR/tCO2e for `year`, for the Article 9
+    CBAM deduction."""
+    return round(origin_carbon_price_canada_cad(year) * FX_EUR_PER_CAD_2026_07_23, 2)
+
+
+# Backward-compatible flat figure, now the 2026 baseline rather than the old
+# (wrong) constant. Used only where a table genuinely cannot vary by year, for
+# example the static emissions table column consumed by the dashboard and the
+# sensitivity sweep's base case. `run_cbam_matrix` and `run_compliance_matrix`
+# do NOT use this - they call `origin_carbon_price_eur(corridor, year)` below,
+# so their outputs correctly vary year to year even though this constant does
+# not.
+ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E = origin_carbon_price_canada_eur(2026)  # EUR 59.27
 
 # CHINA. Set to zero, and this is a finding rather than a missing figure.
 # China's national ETS as of 2026 covers only power generation, steel, cement
@@ -437,6 +501,23 @@ ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E = round(
 # nothing to deduct under Article 9, which is different from simply not having
 # looked the number up.
 ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E = 0.0
+
+
+def origin_carbon_price_eur(corridor: str, year: int) -> float:
+    """Origin carbon price in EUR/tCO2e for `corridor` in `year`.
+
+    The single entry point `run_cbam_matrix` and `run_compliance_matrix` use,
+    so the Article 9 deduction actually varies by year for Canada rather than
+    applying one flat figure across 2026-2030. China stays at zero regardless
+    of year - not because no figure was sourced, but because hydrogen and
+    ammonia production are confirmed out of scope of China's national ETS
+    (see the constant above), which is itself year-independent.
+    """
+    if corridor == HALIFAX_HAMBURG:
+        return origin_carbon_price_canada_eur(year)
+    if corridor == NINGBO_FELIXSTOWE:
+        return ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E
+    raise ValueError(f"No origin carbon price sourced for corridor {corridor!r}")
 
 # RESOLVED 1 August 2026. Same reference date as the Canada FX rate above, for
 # consistency across every cross-currency conversion in the model. ECB euro

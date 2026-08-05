@@ -19,14 +19,19 @@ def eu_ets_maritime_cost(
     """EU ETS maritime cost in EUR.
 
     Args:
-        voyage_co2_t: Total voyage emissions, tCO2, before any coverage
-            fraction is applied.
+        voyage_co2_t: Total voyage emissions before any coverage fraction is
+            applied. From 1 January 2026 EU ETS maritime scope covers CH4 and
+            N2O as well as CO2, so from that year this should be the CO2e
+            figure (`vessel_logistics.voyage_co2e_tonnes`), not CO2 alone.
+            Named `_co2_t` for continuity with earlier scope; the function
+            itself is unit-agnostic and just multiplies by price.
         year: Selects the phase-in fraction. 100% from 2026 onward.
         coverage_fraction: 0.50 for voyages to or from a port outside the EEA,
             1.00 for intra-EEA voyages. Halifax-Hamburg is extra-EEA, so 0.50.
         port_in_port_emissions_t: Emissions at berth in the EU port. These fall
             under the intra-EEA 100% coverage rather than the 50% voyage rate,
-            so they are charged separately at full coverage.
+            so they are charged separately at full coverage. Also CO2e from
+            2026 (`vessel_logistics.port_co2e_tonnes`).
     """
     phase_in = rc.eu_ets_maritime_phase_in(year)
     voyage = voyage_co2_t * coverage_fraction * phase_in
@@ -57,6 +62,11 @@ def uk_ets_maritime_cost(
 
     So for Ningbo-Felixstowe the ocean crossing contributes nothing, and the
     only UK ETS cost is Felixstowe berth time.
+
+    UK ETS covers CO2, CH4 and N2O from 1 July 2026 (SI 2026/392, Schedule 2A),
+    with factors identical to the EU ETS ones, so `port_in_port_emissions_t`
+    and `voyage_co2_t` should both be CO2e from that date
+    (`vessel_logistics.port_co2e_tonnes` / `voyage_co2e_tonnes`).
 
     Args:
         include_intl_expansion: Applies the PROPOSED 50% coverage of

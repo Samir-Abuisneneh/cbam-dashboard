@@ -282,12 +282,17 @@ def _gayu_logistics(vessel: str = "gas_carrier", speed_scenario: str = "base") -
                     ),
                     "voyage_fuel_total_t": profile["voyage_fuel_total_t"],
                     "voyage_co2_t": profile["voyage_co2_t"],
+                    "voyage_co2e_t": profile["voyage_co2e_t"],
                     "port_in_port_emissions_t": profile["port_in_port_emissions_t"],
+                    "port_in_port_emissions_co2e_t": profile[
+                        "port_in_port_emissions_co2e_t"
+                    ],
                     "voyage_energy_mj": profile["voyage_energy_mj"],
                     "fueleu_actual_intensity_gco2e_mj": profile[
                         "fueleu_actual_intensity_gco2e_mj"
                     ],
-                    "source": "Gayu FINAL_shipping_maritime_cost_model.ipynb",
+                    "source": "Gayu FINAL_shipping_maritime_cost_model_updated.ipynb "
+                    "(5 Aug 2026 delivery, adds CH4/N2O CO2e)",
                 }
             )
     return pd.DataFrame(rows)
@@ -391,6 +396,75 @@ def _placeholder_commercial() -> pd.DataFrame:
                     "Literature), delivered 4 Aug 2026, converted USD to EUR at the "
                     "23 July 2026 ECB reference rate. Conversion and shipping cost: "
                     "PLACEHOLDER - no owner assigned, see data/README.md."
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+# ---------------------------------------------------------------------------
+# Ayub et al. (2024) production costs, a second robustness check on Canada
+# hydrogen specifically, found by Riya on 5 August 2026.
+# ---------------------------------------------------------------------------
+# Ayub, H.M.U., Alnouri, S.Y., Stijepovic, M., Stijepovic, V. and Hussein,
+# I.A. (2024) 'A cost comparison study for hydrogen production between
+# conventional and renewable methods', Process Safety and Environmental
+# Protection, 186, pp. 1379-1395. https://doi.org/10.1016/j.psep.2024.04.080
+#
+# USD per kg H2, Canada column, converted to USD/tonne (x1000) below. Grey
+# route is natural gas reforming without CCUS (Table 5); blue is the same
+# route with CCUS (Table 6); green is electrolysis, not the paper's separate
+# nuclear-energy route (Table 7), to match how `green_electrolysis` is used
+# elsewhere in this model.
+_AYUB_USD_PER_KG_CANADA = {
+    "grey_smr": 0.70,
+    "blue_smr_ccs": 0.91,
+    "green_electrolysis": 10.80,
+}
+
+# The paper also gives a Canada nuclear-energy H2 cost of USD 7.075/kg
+# (Table 7). Not mapped to a modelled pathway - "green_electrolysis" here
+# specifically means grid/renewable electricity into an electrolyser, and
+# nuclear-driven production is a different route this model does not
+# otherwise carry - but kept here for anyone checking the source table by
+# hand.
+AYUB_NUCLEAR_USD_PER_KG_CANADA = 7.075
+
+
+def ayub_production_costs() -> pd.DataFrame:
+    """Canada hydrogen production cost per pathway, from Ayub et al. (2024).
+
+    A second, independent robustness check alongside `iea_production_costs`,
+    covering only what that paper covers: Canada (Halifax-Hamburg corridor),
+    hydrogen only, three pathways. No China or ammonia figures exist in it, so
+    this cannot replace the IEA check, only supplement it on the one corridor
+    both the primary literature source and the IEA figures already disagree
+    on most.
+
+    Grey production cost agrees almost exactly with the current primary
+    figure (USD 700/t vs this paper's USD 700/t). Blue and, especially,
+    green diverge substantially - see `docs/` for the three-way comparison
+    against the primary literature source and the IEA check. That divergence
+    is reported as a genuine finding (production cost uncertainty, not a
+    error to resolve by picking a winner), consistent with how the IEA check
+    is already used elsewhere in this model.
+
+    Returns the same corridor/product/pathway shape as the commercial table.
+    """
+    rows = []
+    for pathway, usd_per_kg in _AYUB_USD_PER_KG_CANADA.items():
+        usd_per_tonne = usd_per_kg * 1000
+        rows.append(
+            {
+                "corridor": HH,
+                "product": "hydrogen",
+                "pathway": pathway,
+                "production_cost_eur_per_tonne": round(rc.usd_to_eur(usd_per_tonne), 1),
+                "source": (
+                    "Ayub et al. (2024), Process Safety and Environmental Protection, "
+                    "186, pp.1379-1395, https://doi.org/10.1016/j.psep.2024.04.080, "
+                    f"Canada column, USD {usd_per_kg:.2f}/kg. Found by Riya, 5 Aug 2026. "
+                    "ROBUSTNESS CHECK ONLY, not a primary input."
                 ),
             }
         )

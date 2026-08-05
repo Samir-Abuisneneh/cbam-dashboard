@@ -66,7 +66,8 @@ def _profile_with(corridor, vessel, route, overrides):
     fuel = round(days * daily, 1)
     co2 = round(fuel * factor, 1)
     aux_daily = round(daily * vl.AUXILIARY_SHARE_OF_CONSUMPTION, 2)
-    port_co2 = round(round(aux_daily * port_days, 2) * factor, 2)
+    port_fuel = round(aux_daily * port_days, 2)
+    port_co2 = round(port_fuel * factor, 2)
 
     return {
         "corridor": corridor,
@@ -81,7 +82,9 @@ def _profile_with(corridor, vessel, route, overrides):
         "voyage_days": days,
         "voyage_fuel_total_t": fuel,
         "voyage_co2_t": co2,
+        "voyage_co2e_t": vl.voyage_co2e_tonnes(fuel, co2),
         "port_in_port_emissions_t": port_co2,
+        "port_in_port_emissions_co2e_t": vl.port_co2e_tonnes(port_fuel, port_co2),
         "voyage_energy_mj": fuel * rc.VLSFO_MJ_PER_TONNE,
         "fueleu_actual_intensity_gco2e_mj": overrides.get(
             "fueleu_actual_intensity_gco2e_mj", rc.FUELEU_CONVENTIONAL_WTW_INTENSITY
@@ -201,9 +204,13 @@ def _compliance_total_per_tonne(
     """
     from ..model import cbam, ets_maritime, fueleu
 
+    voyage_co2e = profile.get("voyage_co2e_t", profile["voyage_co2_t"])
+    port_co2e = profile.get(
+        "port_in_port_emissions_co2e_t", profile["port_in_port_emissions_t"]
+    )
     if rc.CORRIDOR_REGIME[corridor] == "EU":
         ets = ets_maritime.eu_ets_maritime_cost(
-            profile["voyage_co2_t"], year, price,
+            voyage_co2e, year, price,
             rc.EU_ETS_CORRIDOR_COVERAGE[corridor], 0.0,
         )
         fe = fueleu.fueleu_cost(
@@ -215,8 +222,8 @@ def _compliance_total_per_tonne(
         maritime_pt = (ets + fe) / cargo_t
     else:
         ets = ets_maritime.uk_ets_maritime_cost(
-            profile["port_in_port_emissions_t"], year, price,
-            voyage_co2_t=profile["voyage_co2_t"],
+            port_co2e, year, price,
+            voyage_co2_t=voyage_co2e,
         )
         cbam_pt = cbam.uk_cbam_cost(embedded, year, price)
         maritime_pt = ets / cargo_t

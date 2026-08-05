@@ -1103,3 +1103,31 @@ def test_iea_ranges_are_low_then_high():
     for (region, product, route), by_year in data_io._IEA_USD_PER_TONNE.items():
         for year, (low, high) in by_year.items():
             assert low <= high, f"{region}/{product}/{route} {year} is {low}-{high}"
+
+
+def test_ayub_costs_cover_only_canada_hydrogen():
+    """Ayub et al. (2024) is a Canada-only cross-check, unlike the IEA one.
+
+    It should never silently claim coverage of China or ammonia, which it
+    does not report figures for.
+    """
+    ayub = data_io.ayub_production_costs()
+    assert set(ayub["corridor"]) == {rc.HALIFAX_HAMBURG}
+    assert set(ayub["product"]) == {"hydrogen"}
+    assert set(ayub["pathway"]) == {"grey_smr", "blue_smr_ccs", "green_electrolysis"}
+
+
+def test_ayub_grey_hydrogen_matches_the_primary_figure():
+    """Ayub's Canada natural-gas-reforming cost (USD 700/t) is the one figure
+    in this cross-check that lands on the primary literature number exactly,
+    rather than diverging from it. Worth pinning so a future edit to either
+    source doesn't erase the agreement without anyone noticing."""
+    primary = data_io._placeholder_commercial()
+    primary_grey = primary[
+        (primary["corridor"] == rc.HALIFAX_HAMBURG)
+        & (primary["product"] == "hydrogen")
+        & (primary["pathway"] == "grey_smr")
+    ]["production_cost_eur_per_tonne"].iloc[0]
+    ayub = data_io.ayub_production_costs()
+    ayub_grey = ayub[ayub["pathway"] == "grey_smr"]["production_cost_eur_per_tonne"].iloc[0]
+    assert primary_grey == pytest.approx(ayub_grey, abs=0.1)

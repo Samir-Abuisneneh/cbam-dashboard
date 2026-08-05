@@ -39,6 +39,8 @@ class MaritimeCost:
     voyage_days: float
     voyage_co2_t: float
     port_co2_t: float
+    voyage_co2e_t: float = 0.0
+    port_co2e_t: float = 0.0
     uk_price_variant: str = "frozen"
     bunker_fuel: str = "conventional"
     eu_ets_cost_eur: float = 0.0
@@ -111,18 +113,24 @@ def maritime_cost_per_voyage(
         voyage_days=profile["voyage_days"],
         voyage_co2_t=profile["voyage_co2_t"],
         port_co2_t=profile["port_in_port_emissions_t"],
+        voyage_co2e_t=profile.get("voyage_co2e_t", profile["voyage_co2_t"]),
+        port_co2e_t=profile.get(
+            "port_in_port_emissions_co2e_t", profile["port_in_port_emissions_t"]
+        ),
         uk_price_variant=uk_price_variant if regime == "UK" else "n/a",
         bunker_fuel=bunker_fuel if regime == "EU" else "n/a",
     )
 
     if regime == "EU":
         eu_price = rc.eu_ets_price(year, price_scenario)
+        # CO2e (CO2 + CH4 + N2O), not CO2 alone - EU ETS maritime scope has
+        # covered all three since 1 January 2026 (Gayu's notebook, 5 Aug 2026).
         cost.eu_ets_cost_eur = ets_maritime.eu_ets_maritime_cost(
-            profile["voyage_co2_t"],
+            cost.voyage_co2e_t,
             year,
             eu_price,
             rc.EU_ETS_CORRIDOR_COVERAGE[corridor],
-            profile["port_in_port_emissions_t"] if include_eu_berth_emissions else 0.0,
+            cost.port_co2e_t if include_eu_berth_emissions else 0.0,
         )
         if bunker_fuel == "green_rfnbo":
             fueleu_actual_intensity = fueleu.effective_intensity_with_rfnbo(
@@ -137,11 +145,13 @@ def maritime_cost_per_voyage(
         )
         cost.total_eur = cost.eu_ets_cost_eur + cost.fueleu_cost_eur
     else:
+        # CO2e, not CO2 alone - UK ETS maritime scope mirrors the EU's CH4/N2O
+        # coverage from 1 July 2026 (SI 2026/392, Schedule 2A).
         cost.uk_ets_cost_gbp = ets_maritime.uk_ets_maritime_cost(
-            profile["port_in_port_emissions_t"],
+            cost.port_co2e_t,
             year,
             rc.uk_ets_price(year, price_scenario, uk_price_variant),
-            voyage_co2_t=profile["voyage_co2_t"],
+            voyage_co2_t=cost.voyage_co2e_t,
             include_intl_expansion=(uk_ets_variant == "proposed_expansion"),
         )
         cost.total_gbp = cost.uk_ets_cost_gbp

@@ -112,6 +112,27 @@ AUXILIARY_SHARE_OF_CONSUMPTION = 0.15  # IMO GreenVoyage2050. Gayu flags this as
 
 HOURS_PER_DAY = 24
 
+# CH4 and N2O, added to Gayu's model 5 August 2026 (her notebook's section 5b,
+# "This section is new"). From 1 January 2026 EU ETS maritime scope expands
+# beyond CO2 to cover methane and nitrous oxide on a CO2e basis (EMSA, EU ETS
+# maritime extension page: https://www.emsa.europa.eu/reducing-emissions/
+# extension-ets.html). The UK ETS maritime extension mirrors this from 1 July
+# 2026 with identical factors (SI 2026/392, Schedule 2A, Table C1/C2), so one
+# set of constants serves both regimes.
+#
+# Tank-to-wake CH4 and N2O factors: IMO (2024), Resolution MEPC.391(81), 2024
+# Guidelines on Life Cycle GHG Intensity of Marine Fuels, Annex 10, Appendix 2,
+# p.49. The table gives identical non-CO2 factors for "ALL ICEs" across HFO,
+# LFO and MDO/MGO, so the HFO-vs-LFO question that matters for
+# VLSFO_CARBON_FACTOR above does not affect these two figures.
+CH4_G_PER_G_FUEL = 0.00005
+N2O_G_PER_G_FUEL = 0.00018
+
+# Global warming potentials, same guidelines Section 2.4, IPCC AR5-aligned.
+# Matches UK SI 2026/392, Schedule 2A, Table C1.
+GWP_CH4 = 28
+GWP_N2O = 265
+
 # Scenario dimensions that come from Gayu's own notebooks rather than from the
 # build spec. Carrying all three means the maritime results span the same range
 # she reports rather than collapsing to a single base case.
@@ -136,15 +157,47 @@ def voyage_fuel_and_co2(distance_nm, power_kw, speed_knots):
     return days, fuel, co2
 
 
-def port_co2_tonnes(power_kw):
-    """CO2 from auxiliary engines during the port call.
-
-    This is the only quantity that matters for UK ETS, since the ocean leg is
-    out of scope.
-    """
+def port_fuel_tonnes(power_kw):
+    """Fuel burned by auxiliary engines during the port call."""
     aux_daily = round(daily_fuel_tonnes(power_kw) * AUXILIARY_SHARE_OF_CONSUMPTION, 2)
-    port_fuel = round(aux_daily * PORT_DAYS, 2)
-    return round(port_fuel * VLSFO_CARBON_FACTOR, 2)
+    return round(aux_daily * PORT_DAYS, 2)
+
+
+def port_co2_tonnes(power_kw):
+    """CO2 (only) from auxiliary engines during the port call.
+
+    This is the only quantity that mattered for UK ETS before the CO2e
+    extension (see `port_co2e_tonnes`), since the ocean leg is out of scope.
+    """
+    return round(port_fuel_tonnes(power_kw) * VLSFO_CARBON_FACTOR, 2)
+
+
+def voyage_co2e_tonnes(fuel_tonnes, co2_tonnes):
+    """CO2e for a full ocean voyage: CO2 plus CH4 and N2O on a GWP basis.
+
+    Matches Gayu's rounding for the voyage-level figures (4dp for the gas
+    masses, 2dp for their CO2e, 1dp for the total).
+    """
+    ch4_t = round(fuel_tonnes * CH4_G_PER_G_FUEL, 4)
+    n2o_t = round(fuel_tonnes * N2O_G_PER_G_FUEL, 4)
+    ch4_co2e = round(ch4_t * GWP_CH4, 2)
+    n2o_co2e = round(n2o_t * GWP_N2O, 2)
+    return round(co2_tonnes + ch4_co2e + n2o_co2e, 1)
+
+
+def port_co2e_tonnes(fuel_tonnes, co2_tonnes):
+    """CO2e for the in-port call: CO2 plus CH4 and N2O on a GWP basis.
+
+    Matches Gayu's rounding for the port-level figures (5dp for the gas
+    masses, 3dp for their CO2e, 2dp for the total) - one decimal place finer
+    than the voyage-level figures throughout, since the port quantities are
+    themselves an order of magnitude smaller.
+    """
+    ch4_t = round(fuel_tonnes * CH4_G_PER_G_FUEL, 5)
+    n2o_t = round(fuel_tonnes * N2O_G_PER_G_FUEL, 5)
+    ch4_co2e = round(ch4_t * GWP_CH4, 3)
+    n2o_co2e = round(n2o_t * GWP_N2O, 3)
+    return round(co2_tonnes + ch4_co2e + n2o_co2e, 2)
 
 
 # ---------------------------------------------------------------------------
@@ -217,6 +270,8 @@ def corridor_profile(corridor, vessel="gas_carrier", speed_scenario="base", rout
         else DISTANCE_NM[corridor]
     )
     days, fuel, co2 = voyage_fuel_and_co2(distance, power, speed)
+    port_fuel = port_fuel_tonnes(power)
+    port_co2 = round(port_fuel * VLSFO_CARBON_FACTOR, 2)
 
     return {
         "corridor": corridor,
@@ -229,7 +284,9 @@ def corridor_profile(corridor, vessel="gas_carrier", speed_scenario="base", rout
         "voyage_days": days,
         "voyage_fuel_total_t": fuel,
         "voyage_co2_t": co2,
-        "port_in_port_emissions_t": port_co2_tonnes(power),
+        "voyage_co2e_t": voyage_co2e_tonnes(fuel, co2),
+        "port_in_port_emissions_t": port_co2,
+        "port_in_port_emissions_co2e_t": port_co2e_tonnes(port_fuel, port_co2),
         "voyage_energy_mj": fuel * rc.VLSFO_MJ_PER_TONNE,
         "fueleu_actual_intensity_gco2e_mj": rc.FUELEU_CONVENTIONAL_WTW_INTENSITY,
     }

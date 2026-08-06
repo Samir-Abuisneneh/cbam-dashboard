@@ -1,0 +1,11 @@
+corridor,product,pathway,year,price_scenario,production_cost_eur_per_tonne,cbam_cost_eur_per_tonne,pathway_visible_cost_eur_per_tonne,embedded_emissions_tco2e_per_tonne,rank,is_cheapest
+halifax_hamburg,ammonia,grey_smr,2030,medium,446.8,57.36,504.16,2.18,1,True
+halifax_hamburg,ammonia,green_electrolysis,2030,medium,927.8,16.31,944.11,0.62,2,False
+halifax_hamburg,hydrogen,grey_smr,2030,medium,614.5,264.95,879.45,10.07,1,True
+halifax_hamburg,hydrogen,blue_smr_ccs,2030,medium,1053.4,53.15,1106.55,2.02,2,False
+halifax_hamburg,hydrogen,green_electrolysis,2030,medium,3607.8,32.36,3640.16,1.23,3,False
+ningbo_felixstowe,ammonia,coal_gasification,2030,medium,416.5,117.41,533.91,6.15,1,True
+ningbo_felixstowe,ammonia,green_electrolysis,2030,medium,722.1,15.62,737.72,0.818,2,False
+ningbo_felixstowe,hydrogen,coal_gasification,2030,medium,1180.7,383.53,1564.23,20.09,1,True
+ningbo_felixstowe,hydrogen,blue_ccs,2030,medium,1733.7,119.89,1853.59,6.28,2,False
+ningbo_felixstowe,hydrogen,green_electrolysis,2030,medium,5416.1,44.67,5460.77,2.34,3,False

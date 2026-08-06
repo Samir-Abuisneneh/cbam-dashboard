@@ -1193,3 +1193,175 @@ def test_ayub_grey_hydrogen_matches_the_primary_figure():
     ayub = data_io.ayub_production_costs()
     ayub_grey = ayub[ayub["pathway"] == "grey_smr"]["production_cost_eur_per_tonne"].iloc[0]
     assert primary_grey == pytest.approx(ayub_grey, abs=0.1)
+
+
+# ---------------------------------------------------------------------------
+# Choice and timing analyses, added 5 August 2026
+# ---------------------------------------------------------------------------
+
+
+def test_pathway_ranking_excludes_the_regulatory_default():
+    """`cbam_default` is an emissions figure, not a production route a producer
+    could pick, and its production cost is only borrowed from the grey pathway.
+    Ranking it against real routes would compare a route to a bookkeeping
+    convention. Same exclusion `marginal_abatement_cost` already makes."""
+    emissions, _, commercial = data_io.load_inputs()
+    ranking = outputs.pathway_cost_ranking(emissions, commercial)
+    assert len(ranking)
+    assert "cbam_default" not in set(ranking["pathway"])
+
+
+def test_pathway_visible_cost_is_production_plus_cbam_hand_calculation():
+    """Hand-calculated against Canada green hydrogen in 2030.
+
+    Production cost EUR 3,607.8/t (Riya's literature sheet, USD 4,110 midpoint
+    at the 23 July 2026 ECB rate). CBAM: 1.23 tCO2e/t embedded, no default-value
+    mark-up because this is a literature pathway, 2030 CBAM factor 0.485, EU ETS
+    medium price EUR 126, Canada origin price EUR 71.75 (CAD 115 x 0.62393).
+
+        1.23 x 0.485 x (126 - 71.75) = 32.363 EUR/t
+    """
+    emissions, _, commercial = data_io.load_inputs()
+    ranking = outputs.pathway_cost_ranking(emissions, commercial, year=2030)
+    row = ranking[
+        (ranking["corridor"] == rc.HALIFAX_HAMBURG)
+        & (ranking["product"] == "hydrogen")
+        & (ranking["pathway"] == "green_electrolysis")
+    ].iloc[0]
+
+    expected_cbam = 1.23 * 0.485 * (126.0 - 71.75)
+    assert row["cbam_cost_eur_per_tonne"] == pytest.approx(expected_cbam, abs=0.01)
+    assert row["pathway_visible_cost_eur_per_tonne"] == pytest.approx(
+        row["production_cost_eur_per_tonne"] + expected_cbam, abs=0.01
+    )
+
+
+def test_uk_pathway_cost_is_converted_to_eur_not_left_in_gbp():
+    """The UK corridor's CBAM liability comes back in GBP while production costs
+    are EUR. Adding them unconverted would understate UK CBAM by about 17% and
+    silently mix currencies inside a single column."""
+    emissions, _, commercial = data_io.load_inputs()
+    ranking = outputs.pathway_cost_ranking(emissions, commercial, year=2030)
+    row = ranking[
+        (ranking["corridor"] == rc.NINGBO_FELIXSTOWE)
+        & (ranking["product"] == "hydrogen")
+        & (ranking["pathway"] == "green_electrolysis")
+    ].iloc[0]
+
+    # 2.34 tCO2e/t x 2030 rate fraction x UK medium price, then GBP -> EUR.
+    gbp = 2.34 * rc.uk_cbam_rate_fraction(2030) * rc.UK_ETS_PRICE_SCENARIOS["medium"]
+    assert row["cbam_cost_eur_per_tonne"] == pytest.approx(
+        rc.gbp_to_eur(gbp), abs=0.01
+    )
+    assert row["cbam_cost_eur_per_tonne"] > gbp  # converted, not left in GBP
+
+
+def test_cheapest_pathway_is_the_minimum_of_the_ranking():
+    emissions, _, commercial = data_io.load_inputs()
+    ranking = outputs.pathway_cost_ranking(emissions, commercial)
+    cheapest = outputs.cheapest_pathway(emissions, commercial)
+
+    for (corridor, product), grp in ranking.groupby(["corridor", "product"]):
+        want = grp.loc[grp["pathway_visible_cost_eur_per_tonne"].idxmin()]["pathway"]
+        got = cheapest[
+            (cheapest["corridor"] == corridor) & (cheapest["product"] == product)
+        ]["pathway"].iloc[0]
+        assert got == want
+
+
+def test_carbon_pricing_does_not_flip_the_commercial_pathway_choice():
+    """The headline finding of the choice analysis, pinned so a future input
+    change that overturns it cannot pass unnoticed.
+
+    At 2030 prices the dirtiest pathway is still the cheapest on every
+    corridor and product, because the production cost gap between grey and
+    green is an order of magnitude larger than the CBAM differential between
+    them. If this ever fails it is a genuine result, not a broken test."""
+    emissions, _, commercial = data_io.load_inputs()
+    cheapest = outputs.cheapest_pathway(emissions, commercial, year=2030)
+    assert set(cheapest["pathway"]) <= {"grey_smr", "coal_gasification"}
+
+
+def test_pathway_choice_is_stable_across_price_scenarios():
+    """If the recommendation flipped between the low and high carbon price
+    scenarios it would be a restatement of the price assumption rather than a
+    finding. Mirrors `abatement_source_robustness.verdict_stable`."""
+    emissions, _, commercial = data_io.load_inputs()
+    stability = outputs.pathway_choice_price_robustness(emissions, commercial)
+    assert len(stability)
+    assert stability["choice_stable"].all()
+
+
+def test_corridor_comparison_survives_a_csv_round_trip(tmp_path):
+    """The EU corridor stores "n/a" in the UK-only scenario columns, and pandas
+    reads that back from CSV as NaN. A base-case filter written as a plain
+    isin() therefore drops every Halifax-Hamburg row when the frame came from
+    disk, leaving a one-corridor "comparison" and no error to notice."""
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+
+    path = tmp_path / "compliance.csv"
+    compliance.to_csv(path, index=False)
+    reloaded = pd.read_csv(path)
+
+    assert reloaded["uk_ets_variant"].isna().any()  # the trap this guards
+    from_disk = outputs.corridor_cost_comparison(reloaded)
+    in_memory = outputs.corridor_cost_comparison(compliance)
+
+    assert len(from_disk) == len(in_memory)
+    assert from_disk["halifax_hamburg_gbp_equivalent"].notna().all()
+
+
+def test_corridor_crossover_happens_when_uk_cbam_starts():
+    """Ningbo-Felixstowe is cheaper in 2026 only because UK CBAM does not exist
+    yet. It starts in 2027, so that is where the ordering flips - not 2030, and
+    not gradually."""
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    crossover = outputs.corridor_crossover_year(compliance)
+
+    assert len(crossover)
+    for _, row in crossover.iterrows():
+        assert row["cheaper_corridor_first_year"] == rc.NINGBO_FELIXSTOWE
+        assert row["cheaper_corridor_last_year"] == rc.HALIFAX_HAMBURG
+        assert row["crossover_year"] == rc.UK_CBAM_START_YEAR
+
+
+def test_breakeven_flags_the_frozen_uk_price_as_unable_to_cross():
+    """A frozen carbon price cannot produce a crossing, so every UK row must
+    carry `carbon_price_varies_by_year == False` and a note saying so. Without
+    that flag a reader would take "no breakeven year" as evidence that
+    switching never pays on the UK corridor, when it is an artefact of only the
+    2026 UK price ever having been sourced."""
+    emissions, _, commercial = data_io.load_inputs()
+    breakeven = outputs.abatement_breakeven_year(emissions, commercial)
+
+    uk = breakeven[breakeven["corridor"] == rc.NINGBO_FELIXSTOWE]
+    eu = breakeven[breakeven["corridor"] == rc.HALIFAX_HAMBURG]
+    assert len(uk) and len(eu)
+
+    assert not uk["carbon_price_varies_by_year"].any()
+    assert uk["note"].str.contains("frozen").all()
+    assert (uk["verdict_first_year"] == uk["verdict_last_year"]).all()
+
+    assert eu["carbon_price_varies_by_year"].all()
+    assert (eu["note"] == "").all()
+
+
+def test_breakeven_does_not_count_a_marginal_verdict_as_a_crossing():
+    """China green ammonia sits inside the 10% marginal band, and the whole
+    point of that band is that such a row is not distinguishable from the other
+    side of the threshold. It must appear as `first_marginal_year`, never as
+    `breakeven_year`."""
+    emissions, _, commercial = data_io.load_inputs()
+    breakeven = outputs.abatement_breakeven_year(emissions, commercial)
+
+    row = breakeven[
+        (breakeven["corridor"] == rc.NINGBO_FELIXSTOWE)
+        & (breakeven["product"] == "ammonia")
+        & (breakeven["pathway"] == "green_electrolysis")
+    ].iloc[0]
+
+    assert row["verdict_first_year"] == "marginal"
+    assert row["breakeven_year"] is None or pd.isna(row["breakeven_year"])
+    assert row["first_marginal_year"] == 2026

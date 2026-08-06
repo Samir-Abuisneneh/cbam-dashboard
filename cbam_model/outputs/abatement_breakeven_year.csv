@@ -1,0 +1,7 @@
+corridor,product,pathway,reference_pathway,price_scenario,uk_price_variant,abatement_cost_eur_per_tco2,carbon_price_first_year,carbon_price_last_year,carbon_price_varies_by_year,verdict_first_year,verdict_last_year,breakeven_year,first_marginal_year,note
+halifax_hamburg,ammonia,green_electrolysis,grey_smr,medium,frozen,308.33,80.0,126.0,True,not justified,not justified,,,
+halifax_hamburg,hydrogen,blue_smr_ccs,grey_smr,medium,frozen,54.52,80.0,126.0,True,justified,justified,2026.0,,
+halifax_hamburg,hydrogen,green_electrolysis,grey_smr,medium,frozen,338.61,80.0,126.0,True,not justified,not justified,,,
+ningbo_felixstowe,ammonia,green_electrolysis,coal_gasification,medium,frozen,57.31,57.91,57.91,False,marginal,marginal,,2026.0,Carbon price is flat across the horizon because the UK ETS price is frozen at the sourced 2026 determination. The verdict cannot change by construction. Not evidence about timing.
+ningbo_felixstowe,hydrogen,blue_ccs,coal_gasification,medium,frozen,40.04,57.91,57.91,False,justified,justified,2026.0,,Carbon price is flat across the horizon because the UK ETS price is frozen at the sourced 2026 determination. The verdict cannot change by construction. Not evidence about timing.
+ningbo_felixstowe,hydrogen,green_electrolysis,coal_gasification,medium,frozen,238.61,57.91,57.91,False,not justified,not justified,,,Carbon price is flat across the horizon because the UK ETS price is frozen at the sourced 2026 determination. The verdict cannot change by construction. Not evidence about timing.

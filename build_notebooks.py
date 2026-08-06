@@ -299,6 +299,39 @@ noticing. Switching is an open decision, waiting on the revised 2026-2030 EU ETS
 print(reference_case.format_reference_check(reference_case.run_reference_check()))
 """),
     md("""
+## 8b. Choice and timing
+
+Not an optimisation - a ranking over the small set of pathways/corridors the literature actually supports.
+Answers "which one, and when," not "what does it cost."
+"""),
+    code("""
+ranking = outputs.pathway_cost_ranking(emissions, commercial)
+ranking[ranking.is_cheapest][['corridor', 'product', 'pathway', 'pathway_visible_cost_eur_per_tonne']]
+"""),
+    md("""
+Cheapest pathway is production cost + CBAM only (conversion/shipping/maritime are pathway-invariant so they
+cancel out of the ranking - see the function docstring for the caveat on why that cancellation could break).
+At 2030 medium prices the dirtiest route wins everywhere, and stays cheapest under low/medium/high prices too
+(`pathway_choice_price_robustness` below) - CBAM does not change the commercial choice.
+"""),
+    code("""
+outputs.pathway_choice_price_robustness(emissions, commercial)
+"""),
+    code("""
+outputs.corridor_crossover_year(compliance)
+"""),
+    md("""
+Ningbo-Felixstowe is cheaper only in 2026, because UK CBAM does not exist yet. The ordering flips in 2027,
+the year it starts, then the gap narrows as the EU's CBAM factor keeps ramping - one flip, not a slow overtake.
+"""),
+    code("""
+outputs.abatement_breakeven_year(emissions, commercial)
+"""),
+    md("""
+Check `carbon_price_varies_by_year` before reading a UK row: the UK ETS price is frozen (only 2026 was ever
+sourced), so a UK pathway showing no breakeven year is an artefact of that, not evidence switching never pays.
+"""),
+    md("""
 ## 9. Outputs
 """),
     code("""

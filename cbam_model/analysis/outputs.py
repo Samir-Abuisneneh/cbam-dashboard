@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from ..config import regulatory_constants as rc  # noqa: E402
+from ..config import scenarios  # noqa: E402
 
 OUTPUT_DIR = Path(__file__).parent.parent / "outputs"
 
@@ -322,6 +323,438 @@ def abatement_source_robustness(
     ].sort_values(["corridor", "product", "abatement_cost_eur_per_tco2_literature"])
 
 
+# ---------------------------------------------------------------------------
+# Choice and timing. Added 5 August 2026.
+# ---------------------------------------------------------------------------
+# Everything above reports what something costs. The four functions below
+# answer "which one should be picked, and when does the answer change" -
+# pathway choice, corridor choice, the year a pathway switch starts paying for
+# itself, and whether the pathway recommendation survives price uncertainty.
+#
+# None of this is an optimisation in the solver sense. There is no objective
+# function and no search: the candidate set is the handful of pathways that
+# exist in the literature and the two corridors the study is built on, so the
+# "best" option is found by ranking an enumerated set, exactly as the rest of
+# the model already enumerates its scenario matrix.
+
+
+def pathway_cost_ranking(
+    emissions: pd.DataFrame,
+    commercial: pd.DataFrame,
+    year: int = 2030,
+    price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
+) -> pd.DataFrame:
+    """Rank production pathways by the part of delivered cost that depends on them.
+
+    `pathway_visible_cost_eur_per_tonne` is production cost plus CBAM
+    liability. It is deliberately NOT a delivered cost, and must never be
+    reported as one: conversion cost, shipping cost and the maritime ETS/FuelEU
+    terms are all excluded.
+
+    Excluding them is what makes this answerable at all while conversion and
+    freight are still unsourced. Each of those three terms is invariant to
+    production pathway as the model currently holds them - maritime cost
+    depends on corridor, vessel, route, year and price but never on how the
+    cargo was made; conversion cost is keyed by product alone and shipping cost
+    by corridor and product. For a fixed corridor, product and year they are
+    therefore one additive constant across every pathway, and a constant cannot
+    change which pathway is cheapest. This is the same cancellation
+    `marginal_abatement_cost` relies on, applied to a ranking instead of a
+    pairwise difference.
+
+    THE ASSUMPTION THAT CARRIES IT, and it should be stated in the methodology
+    rather than left implicit: pathway-invariance of conversion and shipping
+    cost is a property of how those two terms are currently populated, not an
+    established fact about the world. Liquefying hydrogen made by electrolysis
+    plausibly does not cost exactly what liquefying hydrogen made by coal
+    gasification costs. If either term is ever sourced at pathway level, this
+    cancellation breaks and the ranking becomes as blocked as full delivered
+    cost already is.
+
+    Costs are in EUR for both corridors, because production costs are. The UK
+    corridor's CBAM liability is computed in GBP and converted, matching how
+    `marginal_abatement_cost` already converts the UK carbon price so its
+    comparison is like for like.
+
+    `cbam_default` rows are excluded on the same grounds as in
+    `marginal_abatement_cost`: it is a regulatory default emissions figure, not
+    a production route a producer could actually choose, and its production
+    cost is only borrowed from the corridor's grey pathway.
+    """
+    from ..model import cbam as cbam_model
+    from ..model import total_cost
+
+    df = emissions.merge(commercial, on=["corridor", "product", "pathway"])
+    df = df[~df["pathway"].map(cbam_model.is_cbam_default_pathway)]
+    if df.empty:
+        return pd.DataFrame()
+
+    rows = []
+    for _, r in df.iterrows():
+        corridor = r["corridor"]
+        cbam_row = total_cost.cbam_cost_per_tonne(
+            corridor=corridor,
+            product=r["product"],
+            pathway=r["pathway"],
+            year=year,
+            price_scenario=price_scenario,
+            embedded_emissions_tco2e_per_tonne=r[
+                "embedded_emissions_tco2e_per_tonne"
+            ],
+            # Year-varying, matching run_cbam_matrix rather than the emissions
+            # table's flat 2026-baseline column.
+            origin_carbon_price_eur_per_tco2e=rc.origin_carbon_price_eur(
+                corridor, year
+            ),
+            uk_price_variant=uk_price_variant,
+        )
+        if rc.CORRIDOR_REGIME[corridor] == "EU":
+            cbam_eur = cbam_row.eu_cbam_cost_eur_per_tonne
+        else:
+            cbam_eur = rc.gbp_to_eur(cbam_row.uk_cbam_cost_gbp_per_tonne)
+
+        production_eur = float(r["production_cost_eur_per_tonne"])
+        rows.append(
+            {
+                "corridor": corridor,
+                "product": r["product"],
+                "pathway": r["pathway"],
+                "year": year,
+                "price_scenario": price_scenario,
+                "production_cost_eur_per_tonne": round(production_eur, 2),
+                "cbam_cost_eur_per_tonne": round(cbam_eur, 2),
+                "pathway_visible_cost_eur_per_tonne": round(
+                    production_eur + cbam_eur, 2
+                ),
+                "embedded_emissions_tco2e_per_tonne": r[
+                    "embedded_emissions_tco2e_per_tonne"
+                ],
+            }
+        )
+
+    out = pd.DataFrame(rows)
+    out["rank"] = (
+        out.groupby(["corridor", "product"])["pathway_visible_cost_eur_per_tonne"]
+        .rank(method="dense")
+        .astype(int)
+    )
+    out["is_cheapest"] = out["rank"] == 1
+    return out.sort_values(["corridor", "product", "rank"]).reset_index(drop=True)
+
+
+def cheapest_pathway(
+    emissions: pd.DataFrame,
+    commercial: pd.DataFrame,
+    year: int = 2030,
+    price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
+) -> pd.DataFrame:
+    """The lowest pathway-visible-cost route per corridor and product.
+
+    A thin filter over `pathway_cost_ranking`, whose docstring carries the
+    caveats. Read that before quoting anything from this.
+    """
+    ranking = pathway_cost_ranking(
+        emissions, commercial, year, price_scenario, uk_price_variant
+    )
+    if ranking.empty:
+        return pd.DataFrame()
+    return ranking[ranking["is_cheapest"]].reset_index(drop=True)
+
+
+def pathway_choice_price_robustness(
+    emissions: pd.DataFrame,
+    commercial: pd.DataFrame,
+    year: int = 2030,
+    uk_price_variant: str = "frozen",
+) -> pd.DataFrame:
+    """Does the cheapest-pathway recommendation survive the price scenarios?
+
+    Runs `cheapest_pathway` under the low, medium and high carbon price
+    scenarios and reports whether the same pathway wins in all three.
+
+    `choice_stable` is the column that matters, and it is deliberately the same
+    shape of check as `abatement_source_robustness.verdict_stable`: a
+    recommendation that flips with the carbon price assumption is not a
+    recommendation, it is a restatement of the assumption. The three scenarios
+    are not probability-weighted and no expected value is taken, because the
+    scenario range is a sensitivity bracket rather than a distribution - the
+    2026 figures are a near-term market range and the 2030 figures a consensus
+    forecast, which are not the same kind of object.
+    """
+    picks = {}
+    for scenario in rc.PRICE_SCENARIOS:
+        ranking = pathway_cost_ranking(
+            emissions, commercial, year, scenario, uk_price_variant
+        )
+        if ranking.empty:
+            return pd.DataFrame()
+        for _, r in ranking[ranking["is_cheapest"]].iterrows():
+            picks.setdefault((r["corridor"], r["product"]), {})[scenario] = r[
+                "pathway"
+            ]
+
+    rows = []
+    for (corridor, product), by_scenario in sorted(picks.items()):
+        distinct = set(by_scenario.values())
+        row = {
+            "corridor": corridor,
+            "product": product,
+            "year": year,
+            "uk_price_variant": uk_price_variant,
+        }
+        for scenario in rc.PRICE_SCENARIOS:
+            row[f"cheapest_pathway_{scenario}"] = by_scenario.get(scenario)
+        row["choice_stable"] = len(distinct) == 1
+        row["distinct_choices"] = len(distinct)
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+# Base-case filters for the corridor comparison. The compliance matrix splits
+# the UK corridor on the proposed-expansion variant from 2028, and the EU
+# corridor on bunker fuel, so without these the comparison would silently
+# average a legislated result together with a policy-uncertain what-if.
+BASE_CASE_UK_ETS_VARIANTS = ["n/a", "current_scope"]
+BASE_CASE_UK_PRICE_VARIANTS = ["n/a", "frozen"]
+
+
+def corridor_cost_comparison(
+    compliance: pd.DataFrame,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+) -> pd.DataFrame:
+    """Total compliance cost per tonne, both corridors side by side, by year.
+
+    Converts the EU corridor's EUR figure to GBP so the two sit on one axis,
+    following the `_gbp_equivalent` convention already used by `cbam_summary`
+    and `carbon_cost_per_tonne_co2`. That conversion is the whole reason this
+    function needs reading with care: it uses a single ECB reference-date rate
+    (23 July 2026), so it holds the exchange rate fixed across a five-year
+    horizon in which it would certainly move. The comparison is robust to that
+    for large gaps and fragile for small ones, which matters most in whichever
+    year the two corridors cross.
+
+    Defaults to the `cbam_default` pathway because that is the study's primary
+    scenario per Riya's 29 July 2026 proposal, and because it is one of only
+    two pathway labels that exist on both corridors - the corridors otherwise
+    carry different production routes (grey SMR on the Canadian side, coal
+    gasification on the Chinese), so most pathway labels cannot be compared
+    across them at all.
+    """
+    hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
+
+    def _base_case(column, allowed):
+        # The EU corridor stores "n/a" in the UK-only columns, and pandas reads
+        # that literal string back from CSV as NaN. Without the isna() arm this
+        # filter silently drops every Halifax-Hamburg row whenever the frame
+        # came from disk rather than straight from run_compliance_matrix, which
+        # would leave the comparison with one corridor and no error.
+        return compliance[column].isin(allowed) | compliance[column].isna()
+
+    df = compliance[
+        (compliance["pathway"] == pathway)
+        & (compliance["price_scenario"] == price_scenario)
+        & (compliance["route_scenario"] == "suez")
+        & _base_case("uk_ets_variant", BASE_CASE_UK_ETS_VARIANTS)
+        & _base_case("uk_price_variant", BASE_CASE_UK_PRICE_VARIANTS)
+        & _base_case("bunker_fuel", BASE_CASE_BUNKERS)
+    ].copy()
+    if df.empty:
+        return pd.DataFrame()
+
+    df["total_gbp_equivalent"] = df.apply(
+        lambda r: r["total_compliance_cost_per_tonne"]
+        if r["currency"] == "GBP"
+        else rc.eur_to_gbp(r["total_compliance_cost_per_tonne"]),
+        axis=1,
+    )
+
+    wide = df.pivot_table(
+        index=["product", "year"],
+        columns="corridor",
+        values="total_gbp_equivalent",
+        aggfunc="first",
+    ).reset_index()
+    if hh not in wide.columns or nf not in wide.columns:
+        return pd.DataFrame()
+
+    wide = wide.rename(
+        columns={
+            hh: "halifax_hamburg_gbp_equivalent",
+            nf: "ningbo_felixstowe_gbp_equivalent",
+        }
+    )
+    wide["halifax_hamburg_gbp_equivalent"] = wide[
+        "halifax_hamburg_gbp_equivalent"
+    ].round(2)
+    wide["ningbo_felixstowe_gbp_equivalent"] = wide[
+        "ningbo_felixstowe_gbp_equivalent"
+    ].round(2)
+    wide["cost_gap_gbp"] = (
+        wide["ningbo_felixstowe_gbp_equivalent"]
+        - wide["halifax_hamburg_gbp_equivalent"]
+    ).round(2)
+    wide["cheaper_corridor"] = wide["cost_gap_gbp"].map(
+        lambda gap: nf if gap < 0 else hh
+    )
+    wide["pathway"] = pathway
+    wide["price_scenario"] = price_scenario
+    wide.columns.name = None
+    return wide.sort_values(["product", "year"]).reset_index(drop=True)
+
+
+def corridor_crossover_year(
+    compliance: pd.DataFrame,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+) -> pd.DataFrame:
+    """The year the cheaper corridor changes, per product.
+
+    Formalises what the README states narratively: the UK corridor's early
+    advantage is a window that closes rather than a structural feature, because
+    UK CBAM starts in 2027 and its rate fraction climbs to 2030 while the EU's
+    CBAM factor is still ramping from a very low base.
+
+    `crossover_year` is the first year whose cheaper corridor differs from the
+    first modelled year's, or None if the ordering never changes across the
+    horizon. Read it alongside the exchange-rate caveat in
+    `corridor_cost_comparison`.
+    """
+    comparison = corridor_cost_comparison(compliance, pathway, price_scenario)
+    if comparison.empty:
+        return pd.DataFrame()
+
+    rows = []
+    for product, grp in comparison.groupby("product"):
+        grp = grp.sort_values("year")
+        first = grp.iloc[0]
+        flipped = grp[grp["cheaper_corridor"] != first["cheaper_corridor"]]
+        crossover = int(flipped.iloc[0]["year"]) if len(flipped) else None
+        last = grp.iloc[-1]
+        rows.append(
+            {
+                "product": product,
+                "pathway": pathway,
+                "price_scenario": price_scenario,
+                "first_year": int(first["year"]),
+                "last_year": int(last["year"]),
+                "cheaper_corridor_first_year": first["cheaper_corridor"],
+                "cheaper_corridor_last_year": last["cheaper_corridor"],
+                "cost_gap_first_year_gbp": first["cost_gap_gbp"],
+                "cost_gap_last_year_gbp": last["cost_gap_gbp"],
+                "crossover_year": crossover,
+                "ordering_changes": crossover is not None,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def abatement_breakeven_year(
+    emissions: pd.DataFrame,
+    commercial: pd.DataFrame,
+    years=tuple(scenarios.YEARS),
+    price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
+) -> pd.DataFrame:
+    """The year a pathway switch starts paying for itself on carbon grounds.
+
+    Runs `marginal_abatement_cost` across the horizon and reports the first
+    year each pathway's verdict reaches `justified`.
+
+    READ `carbon_price_varies_by_year` BEFORE USING ANY UK-CORRIDOR ROW. The
+    abatement cost itself does not move over the horizon at all: production
+    costs are held flat (the model has no year-varying production cost
+    mechanism) and embedded emissions are flat, so the numerator and
+    denominator are both constant. Every bit of movement in the verdict comes
+    from the carbon price.
+
+    That makes this a real finding on the EU corridor, where the ETS price is a
+    sourced forecast rising through 2030, and a degenerate one on the UK
+    corridor under the default frozen price variant, where the price is held
+    flat because only the 2026 figure was ever sourced. A frozen price cannot
+    produce a crossing, so a UK row will report the same verdict in every year.
+    That is an artefact of the price assumption and must not be written up as
+    "switching never becomes worthwhile on the UK corridor". Running with
+    `uk_price_variant="linked"` gives a rising UK path, but that variant is
+    explicitly not law (see `UK_ETS_LINKAGE_IS_LAW`) and has to be labelled a
+    scenario wherever it appears.
+
+    A `marginal` verdict is not treated as a breakeven. The 10% band exists
+    precisely because those rows are not distinguishable from the other side of
+    the threshold, so `first_marginal_year` is reported separately rather than
+    folded in.
+    """
+    frames = []
+    for year in years:
+        mac = marginal_abatement_cost(
+            emissions,
+            commercial,
+            year=year,
+            price_scenario=price_scenario,
+            uk_price_variant=uk_price_variant,
+        )
+        if len(mac):
+            frames.append(mac)
+    if not frames:
+        return pd.DataFrame()
+
+    horizon = pd.concat(frames, ignore_index=True)
+
+    rows = []
+    for (corridor, product, pathway), grp in horizon.groupby(
+        ["corridor", "product", "pathway"]
+    ):
+        grp = grp.sort_values("year")
+        first, last = grp.iloc[0], grp.iloc[-1]
+        varies = bool(grp["carbon_price_eur_per_tco2"].nunique() > 1)
+
+        justified = grp[grp["verdict"] == "justified"]
+        marginal = grp[grp["verdict"] == "marginal"]
+
+        if varies:
+            note = ""
+        elif rc.CORRIDOR_REGIME[corridor] == "UK" and uk_price_variant == "frozen":
+            note = (
+                "Carbon price is flat across the horizon because the UK ETS price "
+                "is frozen at the sourced 2026 determination. The verdict cannot "
+                "change by construction. Not evidence about timing."
+            )
+        else:
+            note = (
+                "Carbon price is flat across the horizon, so the verdict cannot "
+                "change by construction. Not evidence about timing."
+            )
+
+        rows.append(
+            {
+                "corridor": corridor,
+                "product": product,
+                "pathway": pathway,
+                "reference_pathway": first["reference_pathway"],
+                "price_scenario": price_scenario,
+                "uk_price_variant": uk_price_variant,
+                "abatement_cost_eur_per_tco2": first["abatement_cost_eur_per_tco2"],
+                "carbon_price_first_year": first["carbon_price_eur_per_tco2"],
+                "carbon_price_last_year": last["carbon_price_eur_per_tco2"],
+                "carbon_price_varies_by_year": varies,
+                "verdict_first_year": first["verdict"],
+                "verdict_last_year": last["verdict"],
+                "breakeven_year": (
+                    int(justified.iloc[0]["year"]) if len(justified) else None
+                ),
+                "first_marginal_year": (
+                    int(marginal.iloc[0]["year"]) if len(marginal) else None
+                ),
+                "note": note,
+            }
+        )
+    return pd.DataFrame(rows).sort_values(
+        ["corridor", "product", "abatement_cost_eur_per_tco2"]
+    ).reset_index(drop=True)
+
+
 def _data_io():
     """Imported lazily; data_io imports this package's siblings at module load."""
     from .. import data_io
@@ -439,9 +872,36 @@ def write_all(
             )
             written.append("abatement_source_robustness.csv")
 
+        ranking = pathway_cost_ranking(emissions, commercial)
+        if len(ranking):
+            ranking.to_csv(OUTPUT_DIR / "pathway_cost_ranking.csv", index=False)
+            written.append("pathway_cost_ranking.csv")
+
+        stability = pathway_choice_price_robustness(emissions, commercial)
+        if len(stability):
+            stability.to_csv(
+                OUTPUT_DIR / "pathway_choice_price_robustness.csv", index=False
+            )
+            written.append("pathway_choice_price_robustness.csv")
+
+        breakeven = abatement_breakeven_year(emissions, commercial)
+        if len(breakeven):
+            breakeven.to_csv(OUTPUT_DIR / "abatement_breakeven_year.csv", index=False)
+            written.append("abatement_breakeven_year.csv")
+
     if compliance is not None and len(compliance):
         compliance.to_csv(OUTPUT_DIR / "compliance_cost_per_tonne.csv", index=False)
         written.append("compliance_cost_per_tonne.csv")
+
+        comparison = corridor_cost_comparison(compliance)
+        if len(comparison):
+            comparison.to_csv(OUTPUT_DIR / "corridor_cost_comparison.csv", index=False)
+            written.append("corridor_cost_comparison.csv")
+
+        crossover = corridor_crossover_year(compliance)
+        if len(crossover):
+            crossover.to_csv(OUTPUT_DIR / "corridor_crossover_year.csv", index=False)
+            written.append("corridor_crossover_year.csv")
 
     maritime.to_csv(OUTPUT_DIR / "maritime_cost_per_voyage.csv", index=False)
     written.append("maritime_cost_per_voyage.csv")

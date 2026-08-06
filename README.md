@@ -105,19 +105,31 @@ electrolysis = low, grey SMR / coal gasification = high). Ammonia has CBAM
 regulatory defaults on both corridors (1.98 tCO2e/t Canada, 4.36 China),
 delivered by Riya on 3 August 2026, so it is treated the same way as hydrogen.
 
-**2026, hydrogen.** Halifax-Hamburg's primary scenario pays EUR 13.07 per
-tonne in total carbon compliance cost, bracketed by a EUR 10.03-12.55
+Figures below regenerated 5 August 2026 after the Canada origin carbon price
+correction and Gayu's CO2e update. Both moved the Halifax-Hamburg column and
+neither touched Ningbo-Felixstowe, since Canada's origin price is a EU-side
+Article 9 deduction and China's is zero either way. The earlier text quoted
+EUR 13.07 (2026) and EUR 411.00 (2030); those are pre-correction and must not
+be cited.
+
+**2026, hydrogen.** Halifax-Hamburg's primary scenario pays EUR 15.97 per
+tonne in total carbon compliance cost, bracketed by a EUR 10.44-15.02
 literature sensitivity range. Ningbo-Felixstowe pays GBP 0.50 per tonne
-regardless of pathway, more than twenty times less, because UK CBAM has not
+regardless of pathway, more than thirty times less, because UK CBAM has not
 started and UK ETS does not price the ocean leg, so pathway-specific embedded
 emissions don't yet matter for that corridor at all.
 
 **2030**, with UK CBAM running at its real legislated rate (32.96% of the UK
 ETS price in 2030, derived from the 86.49% baseline free allocation and the
 Article 16(14) factor of 0.775; see `regulatory_constants.uk_cbam_rate_fraction`):
-Ningbo-Felixstowe's primary scenario reaches GBP 434.40 per tonne, against
-EUR 411.00 for Halifax-Hamburg's. CBAM dominates both totals by then and the
+Ningbo-Felixstowe's primary scenario reaches GBP 434.41 per tonne, against
+EUR 389.90 for Halifax-Hamburg's. CBAM dominates both totals by then and the
 maritime terms become close to irrelevant.
+
+The 2026 figure rose and the 2030 figure fell for the same reason: the
+corrected Canada carbon price path is *lower* than the old flat CAD 110 in
+2026 (CAD 95, so less is deducted and CBAM costs more) and *higher* by 2030
+(CAD 115, so more is deducted and CBAM costs less).
 
 Running UK CBAM at 100% instead, as a labelled upper-bound what-if rather than
 a forecast, Ningbo-Felixstowe's primary scenario reaches GBP 1,316.78 per tonne.
@@ -129,8 +141,14 @@ literature "high" bracket, not between the two literature brackets — a direct
 consequence of the regulation's deliberate mark-up design, not a modelling
 artefact.
 
-The corridor asymmetry is a window, not a permanent feature. That belongs in
-the discussion chapter.
+The corridor asymmetry is a window, not a permanent feature, and it closes
+earlier than the 2026-versus-2030 contrast above suggests. `analysis.outputs
+.corridor_crossover_year` puts the flip in **2027**, the year UK CBAM starts,
+for both products: Ningbo-Felixstowe is cheaper in 2026 only because UK CBAM
+does not exist yet. From 2027 the ordering reverses and the gap then *narrows*
+year on year as the EU's CBAM factor ramps (hydrogen: GBP 181 in 2027 down to
+GBP 102 by 2030). So the story is one flip in 2027 followed by convergence,
+not a slow overtake completing in 2030. That belongs in the discussion chapter.
 
 ### A caveat to label in the write-up
 

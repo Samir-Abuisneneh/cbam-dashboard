@@ -532,6 +532,24 @@ def eur_to_gbp(amount_eur: float) -> float:
     return amount_eur / FX_EUR_PER_GBP
 
 
+def gbp_to_eur(amount_gbp: float) -> float:
+    """Convert a GBP amount to EUR at the 23 July 2026 ECB reference rate.
+
+    The inverse of `eur_to_gbp`, added 5 August 2026 for the pathway-choice
+    analysis in `analysis/outputs.py`. That comparison has to run in EUR
+    because production costs are denominated in EUR for both corridors, while
+    UK CBAM liability comes back in GBP - the same direction of conversion
+    `marginal_abatement_cost` already performs inline on the UK carbon price.
+
+    Conversion here is for a within-corridor pathway comparison, never for
+    presenting one corridor's headline cost in the other's currency. The
+    project's rule that EUR and GBP are not mixed in a reported cost still
+    holds; see `cbam_summary` for the labelled `_gbp_equivalent` convention
+    used when the two corridors genuinely have to sit side by side.
+    """
+    return amount_gbp * FX_EUR_PER_GBP
+
+
 # RESOLVED 4 August 2026. Needed to convert Riya's USD-denominated production
 # cost literature review (Assumptions Table, "Production Costs - Literature")
 # into EUR for commercial_inputs.csv. Same 23 July 2026 reference date as the

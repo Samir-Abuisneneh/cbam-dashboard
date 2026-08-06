@@ -1739,3 +1739,110 @@ def test_the_mechanism_choice_inverts_the_corridor_finding():
         "the two mechanisms now agree; the open decision recorded in "
         "regulatory_constants.EU_CBAM_DEFAULT_MECHANISM may be resolvable"
     )
+
+
+# ---------------------------------------------------------------------------
+# Competitiveness burden
+# ---------------------------------------------------------------------------
+
+
+def test_competitiveness_burden_hand_calculation():
+    """Ammonia, Halifax-Hamburg, 2026, medium, cbam_default.
+
+    Compliance EUR 2.15/t against Riya's production cost of EUR 446.80/t:
+    2.15 / 446.80 = 0.48%. The EU corridor needs no currency conversion, so
+    this arm also pins that the EUR side is passed through untouched.
+    """
+    emissions, _, commercial = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    burden = outputs.competitiveness_burden(compliance, commercial)
+    assert len(burden)
+
+    row = burden[
+        (burden["corridor"] == rc.HALIFAX_HAMBURG)
+        & (burden["product"] == "ammonia")
+        & (burden["year"] == 2026)
+    ].iloc[0]
+    assert row["production_cost_eur_per_tonne"] == pytest.approx(446.8)
+    assert row["burden_share_pct"] == pytest.approx(0.48, abs=0.01)
+    assert not row["currency_converted"]
+
+
+def test_competitiveness_burden_converts_only_the_uk_side():
+    """The production cost table is EUR throughout, so the GBP compliance
+    figure is the one that moves. Converting the denominator instead would
+    change the EU corridor's burden, which must stay untouched."""
+    emissions, _, commercial = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    burden = outputs.competitiveness_burden(compliance, commercial)
+
+    eu = burden[burden["corridor"] == rc.HALIFAX_HAMBURG]
+    uk = burden[burden["corridor"] == rc.NINGBO_FELIXSTOWE]
+    assert len(eu) and len(uk)
+    assert not eu["currency_converted"].any()
+    assert uk["currency_converted"].all()
+
+    # UK 2030 ammonia: GBP 71.07 -> EUR at the 23 July 2026 ECB rate.
+    uk_2030 = uk[(uk["product"] == "ammonia") & (uk["year"] == 2030)].iloc[0]
+    assert uk_2030["compliance_cost_eur_per_tonne"] == pytest.approx(
+        rc.gbp_to_eur(71.07), abs=0.05
+    )
+
+
+def test_competitiveness_excludes_placeholder_cost_terms():
+    """Conversion and freight are still placeholders and a declared scope
+    boundary, so the denominator must be production cost alone. If they ever
+    leak in, ammonia's denominator moves off 446.80 and this fails."""
+    emissions, _, commercial = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    burden = outputs.competitiveness_burden(compliance, commercial)
+
+    assert (burden["value_basis"] == "production_cost").all()
+    eu_ammonia = burden[
+        (burden["corridor"] == rc.HALIFAX_HAMBURG) & (burden["product"] == "ammonia")
+    ]
+    assert set(eu_ammonia["production_cost_eur_per_tonne"].round(2)) == {446.8}
+
+
+def test_burden_ranking_can_diverge_from_the_absolute_cost_ranking():
+    """The finding this output exists to expose.
+
+    By 2030 hydrogen costs more per tonne on Ningbo-Felixstowe in absolute
+    terms, yet Halifax-Hamburg carries the heavier burden relative to what the
+    product costs to make (63.45% against 43.12%), because Chinese hydrogen
+    production cost is nearly double the Canadian figure. Absolute cost and
+    competitive exposure point in opposite directions, and reporting only the
+    first would state the asymmetry backwards.
+    """
+    emissions, _, commercial = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+
+    comparison = outputs.corridor_cost_comparison(compliance)
+    absolute = comparison[
+        (comparison["product"] == "hydrogen") & (comparison["year"] == 2030)
+    ].iloc[0]
+    assert absolute["cheaper_corridor"] == rc.HALIFAX_HAMBURG
+
+    asymmetry = outputs.competitiveness_asymmetry(compliance, commercial)
+    relative = asymmetry[
+        (asymmetry["product"] == "hydrogen") & (asymmetry["year"] == 2030)
+    ].iloc[0]
+    assert relative["more_exposed_corridor"] == rc.HALIFAX_HAMBURG
+    assert relative["asymmetry_verdict"] == "clear"
+    assert relative["halifax_hamburg_burden_pct"] == pytest.approx(63.45, abs=0.05)
+    assert relative["ningbo_felixstowe_burden_pct"] == pytest.approx(43.12, abs=0.05)
+
+
+def test_a_near_tie_in_burden_is_reported_as_marginal():
+    """Hydrogen 2029 splits the two corridors by 0.04 percentage points on a
+    base of about 29%. Without the marginal band that reads as a direction,
+    which is the exact failure mode already documented for green ammonia."""
+    emissions, _, commercial = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    asymmetry = outputs.competitiveness_asymmetry(compliance, commercial)
+
+    row = asymmetry[
+        (asymmetry["product"] == "hydrogen") & (asymmetry["year"] == 2029)
+    ].iloc[0]
+    assert abs(row["gap_percentage_points"]) < 0.1
+    assert row["asymmetry_verdict"] == "marginal"

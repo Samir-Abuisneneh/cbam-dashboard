@@ -1,0 +1,11 @@
+product,pathway,price_scenario,year,halifax_hamburg_burden_pct,ningbo_felixstowe_burden_pct,gap_percentage_points,relative_margin_pct,more_exposed_corridor,asymmetry_verdict,value_basis
+ammonia,cbam_default,medium,2026,0.48,0.01,0.47,191.84,halifax_hamburg,clear,production_cost
+ammonia,cbam_default,medium,2027,1.03,9.51,-8.48,160.91,ningbo_felixstowe,clear,production_cost
+ammonia,cbam_default,medium,2028,2.62,10.82,-8.2,122.02,ningbo_felixstowe,clear,production_cost
+ammonia,cbam_default,medium,2029,7.06,13.44,-6.38,62.24,ningbo_felixstowe,clear,production_cost
+ammonia,cbam_default,medium,2030,15.62,20.0,-4.38,24.59,ningbo_felixstowe,clear,production_cost
+hydrogen,cbam_default,medium,2026,2.6,0.05,2.55,192.45,halifax_hamburg,clear,production_cost
+hydrogen,cbam_default,medium,2027,4.85,20.52,-15.67,123.53,ningbo_felixstowe,clear,production_cost
+hydrogen,cbam_default,medium,2028,11.24,23.34,-12.1,69.98,ningbo_felixstowe,clear,production_cost
+hydrogen,cbam_default,medium,2029,28.96,29.0,-0.04,0.14,ningbo_felixstowe,marginal,production_cost
+hydrogen,cbam_default,medium,2030,63.45,43.12,20.33,38.15,halifax_hamburg,clear,production_cost

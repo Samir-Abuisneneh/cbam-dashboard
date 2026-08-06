@@ -171,6 +171,42 @@ of knowledge, not at its edge.
 
 ---
 
+## 5a. Objective-by-objective review
+
+Frano read the research proposal's objectives back and marked each one off.
+
+| Objective | His verdict |
+|---|---|
+| Estimate and compare embedded emissions and CBAM exposure | Done |
+| Develop the model | Done |
+| Asymmetry between the EU and UK regimes, and the effect on **competitiveness** | Partly. The corridor comparison covers the asymmetry; competitiveness is where transaction cost economics and policy uncertainty enter |
+| Evaluate strategic implications for low-carbon supply chain decision making and corridor development | **"Probably one of the main contributions, important one"** |
+
+The objective that depended on company-held data is dropped (section 1).
+
+He then began reading the proposal's own theoretical framework text and the
+meeting broke there. The sentence he got to is worth keeping, because it is the
+seed of the whole framework and it is exactly what the lock-in analysis now
+operationalises:
+
+> The two corridors in the study do not just differ in production costs and
+> shipping distances. They sit under two carbon border regimes that start at
+> different times.
+
+## 5b. Literature review is split three ways
+
+Not a single shared reading list. The team's own division, which Frano did not
+object to:
+
+| Owner | Papers |
+|---|---|
+| Riya | CBAM and production-related |
+| Samir | ETS and EU maritime |
+| Alex | Policy |
+
+Six to eight articles each is the floor, and they must be management or
+economics papers, not engineering or LCA.
+
 ## 6. Dissertation structure and where the 8,000 words go
 
 Frano's preferred shape, with his priority ordering.
@@ -183,7 +219,7 @@ Frano's preferred shape, with his priority ordering.
 | Methodology | Relevant here and not to be cut much. No case study, no survey: the method *is* the model build. Cover data sources, construction, assumptions. Detail goes to appendix. | Keep |
 | Findings / results | Model comparisons and scenario outputs. No citations in this chapter. | High priority |
 | Discussion | The most important chapter. Compare findings against the literature reviewed. Add subsections for theoretical implications and practical implications. | Highest priority |
-| Conclusion | Relatively short, plus future research. Not a summary. | Light |
+| Conclusion | Relatively short. **Evaluation and recommendations**, plus future research. Explicitly not a summary. | Light |
 | Appendix | Full policy tables, per-policy detail, model detail. Everything that supports the body without consuming its word count. | Unlimited-ish |
 
 Frano checked the assessment brief: it gives headings but no per-chapter word
@@ -208,7 +244,9 @@ where the model output is counterintuitive, and explain the mechanism.
 | Alex | Rebuild the policy timeline as two tracks, with document links, instrument classification and quantified per-date impacts. |
 | Alex | Add the new UK PM's position. |
 | Riya | Develop the TCE asset-specificity argument beyond vessels, per section 5. |
-| All | Six to eight academic articles each; find an existing framework to apply. |
+| All | Six to eight academic articles each, split per section 5b; find an existing framework to apply. |
+| Samir | Add a competitiveness output: compliance cost as a share of product value, per corridor. The objective asks for it and the model reports absolute cost per tonne only. |
+| Riya | Desk-research whether route concessions, berthing rights and long-tenor charters actually carry material sunk costs in this trade. The lock-in module returns a threshold; without evidence there is nothing to argue it against. |
 | All | Drop the company-data objective from the write-up; strengthen theory to compensate. |
 
 ---

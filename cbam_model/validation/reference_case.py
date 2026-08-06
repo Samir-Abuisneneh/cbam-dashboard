@@ -131,6 +131,11 @@ def run_reference_check(
                 cert_price_eur=carbon_price,
                 origin_carbon_price_eur_per_tco2e=TT_ORIGIN_CARBON_PRICE,
                 using_default_values=False,
+                # Pinned explicitly. This arm exists to reproduce the
+                # factor-scaled form and the divergence it caused, so it must
+                # not follow the model default, which moved to the benchmark
+                # mechanism on 6 August 2026.
+                mechanism="factor_scaled",
             )
         )
         benchmark_model.append(
@@ -192,7 +197,12 @@ def benchmark_mechanism_gap(
         theirs = _benchmark_mechanism_cost(
             embedded_tco2e, year, carbon_price, benchmark
         )
-        ours = eu_cbam_cost(embedded_tco2e, year, carbon_price, 0.0, False)
+        # Pinned to the old form for the same reason as in run_reference_check:
+        # this function exists to contrast the two mechanisms, so following the
+        # model default would make both arms identical.
+        ours = eu_cbam_cost(
+            embedded_tco2e, year, carbon_price, 0.0, False, mechanism="factor_scaled"
+        )
         out.append(
             {
                 "year": year,

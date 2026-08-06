@@ -25,9 +25,11 @@ Outputs land in `cbam_model/outputs/`: the long-format scenario table, a
 compliance cost table, a corridor comparison, the sensitivity sweep and three
 charts.
 
-`dashboard.py` is a Streamlit UI over the same fixed scenario matrix, for MCG
-to explore interactively (pick corridor, product, pathway, year, price/vessel/
-route scenario) without reading CSVs or running the notebook. It calls
+`dashboard.py` is a Streamlit UI over the same fixed scenario matrix (pick
+corridor, product, pathway, year, price/vessel/route scenario) without reading
+CSVs or running the notebook. It was originally built as a client-facing tool;
+since the industry partner withdrew on 6 August 2026 it is an internal one,
+used to generate figures for the dissertation and the defence presentation. It calls
 `cbam_model` live, so it can never drift from the tested regulatory logic. It
 does not accept arbitrary routes or ports — only the two corridors already
 built and covered by the test suite. Placeholder inputs (ammonia emissions,
@@ -150,6 +152,49 @@ year on year as the EU's CBAM factor ramps (hydrogen: GBP 181 in 2027 down to
 GBP 102 by 2030). So the story is one flip in 2027 followed by convergence,
 not a slow overtake completing in 2030. That belongs in the discussion chapter.
 
+### Lock-in: the 2026 cost ranking is a trap
+
+Added 6 August 2026, after the supervisor asked for the transaction-cost layer
+to go into the model rather than sit beside it. `analysis.outputs
+.corridor_lock_in` and `model/switching.py`.
+
+The crossover result above assumes corridor choice is remade every year at no
+cost. Under Transaction Cost Economics it is not: route concessions, port
+access, insurance written against a named route and fixed shore infrastructure
+are all corridor-specific and non-redeployable, and offtake is contracted over
+roughly a decade because that is what finances specific assets.
+
+Once the decision is a commitment rather than an annual re-pick, **the corridor
+that is cheaper in 2026 is the wrong one to commit to, on both products.** A
+firm reading the 2026 cost table picks Ningbo-Felixstowe; the present value of
+the tenor says Halifax-Hamburg. At 8% real over the modelled years:
+
+| Product | Spot-cheapest 2026 | PV-cheapest | Lock-in regret | Breakeven switching cost |
+|---|---|---|---|---|
+| Ammonia | Ningbo-Felixstowe | Halifax-Hamburg | 95% | GBP 75.36 |
+| Hydrogen | Ningbo-Felixstowe | Halifax-Hamburg | 109% | GBP 491.95 |
+
+Switching costs are **GBP per tonne of annual contracted volume**, not per tonne
+shipped. Read the units note in `model/switching.py` before quoting either.
+
+The reversal is confined to 2026 and survives both beyond-horizon treatments, so
+it is not an artefact of the extrapolation assumption; a test enforces that. The
+mechanism is regulatory timing alone: UK CBAM starting a year later than the EU's
+creates a one-year advantage that a ten-year commitment converts into a
+liability. That is the institutional-theory half of the argument and the
+asset-specificity half meeting in one number.
+
+No switching cost is claimed. The finding is the **threshold**, and the
+discussion argues about which side of it real corridor-specific sunk costs fall.
+
+**This result is conditional on the CBAM mechanism choice.** The figures above
+are under the current `factor_scaled` default. Under `benchmark_shielded` the
+lock-in reversal still exists but moves to the 2027 decision year, with the
+committed choice becoming Ningbo-Felixstowe and regret falling to 11% (ammonia)
+and 4% (hydrogen). The *existence* of a myopia trap survives both mechanisms;
+its year, direction and magnitude do not. See unresolved item 1 below, and
+settle that decision before writing this section up.
+
 ### A caveat to label in the write-up
 
 An 84,000 m3 ammonia carrier operates at about -33 C and cannot physically hold
@@ -171,12 +216,55 @@ hydrogen boil-off losses are not modelled.
    `max(0, embedded - benchmark x (1 - CBAM_factor))`. The two agree only in
    2034, when free allocation reaches zero. The benchmark form reproduces
    Ramsook et al.'s published 22% burden at 20.7%; the current form gives 14.5%.
-   Both sit side by side in `validation/reference_case.py`. Switching is blocked
-   on reading out the revised 2026-2030 benchmarks the Commission adopted on
-   29 June 2026; the values in code (ammonia 1.570, hydrogen 6.84, from IR
-   2021/447) are the 2021-2025 set. Individual CBAM figures move a lot under the
-   switch, but the headline finding holds: the production cost gap dwarfs the
-   CBAM differential either way.
+   Both sit side by side in `validation/reference_case.py`.
+
+   **Benchmarks sourced 6 August 2026, and the blocker is gone.** Commission
+   Implementing Regulation (EU) 2026/1412 of 26 June 2026, published 29 June
+   2026, Annex section 2, read off the adopted Official Journal text:
+
+   | Benchmark | 2021-2025 (IR 2021/447) | 2026-2030 (IR 2026/1412) | Change |
+   |---|---|---|---|
+   | Ammonia | 1.570 | 1.522 | -3.1% |
+   | Hydrogen | 6.84 | 7.98 | **+16.7%** |
+
+   The directions differ and the hydrogen rise is not an error. Delegated
+   Regulation (EU) 2024/873 folded hydrogen from water electrolysis into the
+   hydrogen benchmark, and section 2 benchmarks now count indirect emissions
+   from electricity consumption, so a wider and more electricity-intensive
+   population lifts the hydrogen benchmark even while the overall free
+   allocation envelope falls by more than 16%. Do not cite the draft annex
+   circulated on 11 May 2026: it differs from the adopted text on several rows
+   (heat 7,4 to 7,2, fuel 10,7 to 10,4, aromatics 0,0117 to 0,0116), though
+   ammonia and hydrogen happen to be unchanged.
+
+   **The default mechanism is now an open decision, not a blocked one, and it
+   needs the supervisor.** The plan was to flip `EU_CBAM_DEFAULT_MECHANISM` to
+   `benchmark_shielded` once the benchmarks landed. Doing so was tested and it
+   does not rescale the results, it **inverts the headline corridor finding**:
+
+   | | Cheaper corridor | Lock-in reversal | Regret |
+   |---|---|---|---|
+   | `factor_scaled` (current default) | Halifax-Hamburg, 2027 onward | 2026 decision year | 95% ammonia, 109% hydrogen |
+   | `benchmark_shielded` | Ningbo-Felixstowe in every year but 2027 | 2027 decision year | 11% ammonia, 4% hydrogen |
+
+   The asymmetry is structural: the EU corridor's liability rises roughly
+   tenfold in the early years under the benchmark form, while the UK corridor
+   is untouched, because the UK scheme nets free allocation off inside its own
+   rate fraction. So this is not a neutral modelling refinement, it changes
+   which regime the study concludes is more exposed. The default was left on
+   `factor_scaled` pending that decision, and
+   `test_the_mechanism_choice_inverts_the_corridor_finding` fails loudly if
+   anyone changes it without rewriting the findings.
+
+   The gap is also not uniform in sign across pathways. Under the benchmark
+   form **every green pathway on the EU corridor owes zero CBAM in every
+   modelled year**, because they sit below the benchmark and free allocation
+   shields it. Pathways above the benchmark owe much more: `cbam_default`
+   hydrogen goes from EUR 6.17 to EUR 85.44 per tonne in 2026 (13.9x) and from
+   EUR 370.09 to EUR 540.13 in 2030 (1.5x). So the current default materially
+   **understates how far CBAM closes the green premium**, and the primary
+   `cbam_default` scenario sits on the understated side. The finding that the
+   production cost gap dwarfs the CBAM differential holds either way.
 2. **Two production-cost gaps are still built from separate studies, but the
    results do not depend on it.** Canada hydrogen spans three papers (grey
    S0957582024004336, blue S036031992206236X, green S0960148125012959) and China
@@ -208,7 +296,11 @@ hydrogen boil-off losses are not modelled.
    moves to comfortably justified (EUR 27.57) on the wind route and stays
    marginal (EUR 56.21) on solar, so the direction is stable even though the
    confidence is not.
-4. **Conversion and freight cost per tonne.** No owner assigned. Production
+4. **Conversion and freight cost per tonne.** A stated scope boundary, not a
+   pending input. No public source was identified and the industry partner
+   route closed on 6 August 2026, so the study reports carbon compliance cost
+   per tonne rather than delivered cost, and says so in the methodology.
+   Production
    cost is no longer in this list: Riya delivered it on 4 August 2026. Note
    these two terms are invariant to production pathway, so they cancel out of
    any within-corridor pathway comparison and do not block the marginal
@@ -251,6 +343,7 @@ cbam_model/
     cbam.py                   EU and UK CBAM
     ets_maritime.py           EU and UK maritime ETS
     fueleu.py                 FuelEU penalty and the RFNBO reward factor
+    switching.py              corridor lock-in under asset specificity
     total_cost.py             the two layers and the compliance join
   validation/
     unit_checks.py            data contract enforcement
@@ -314,15 +407,16 @@ ratio means each tonne of hydrogen absorbs 9.6 times more of a voyage's carbon
 cost.
 
 **Data contract gaps.** Three of the six cost terms (production, conversion,
-shipping) have no owner.
+shipping) had no owner. Production was delivered by Riya on 4 August 2026.
+Conversion and shipping are now a declared scope boundary, per item 4 above:
+the study reports carbon compliance cost per tonne, not delivered cost.
 
-**The reference case does not reconcile.** Fed the Part C grey ammonia intensity
-and a plausible ammonia price, the model puts Trinidad and Tobago's 2034 CBAM
-burden at 98% of export value against the 22% published by Ramsook et al. The
-most likely explanation is that the published ratio is measured against total
-export revenue while CBAM applies only to the EU-bound share, which would mean
-the two figures are not comparable and the model is fine. This is left visible
-and uncalibrated rather than tuned until it agrees. See
+**The reference case reconciled on 4 August 2026, and the answer was not the
+one expected.** The divergence against Ramsook et al. was never about inputs or
+about the burden being measured against total rather than EU-bound export
+revenue. It is that the two compute the free allocation adjustment in
+structurally different ways: this model scales the importer's own emissions by
+the CBAM factor, while Article 31 shields a product benchmark. See
 `validation/reference_case.py`.
 
 ## What the tests protect
@@ -334,6 +428,16 @@ The suite pins the three facts this project has already got wrong once each:
 - UK ETS ignores the international voyage. Tested by showing a 10,000 tCO2 ocean
   crossing changes the Felixstowe cost by nothing at all.
 - The proposed UK ETS extension is opt-in and cannot be selected before 2028.
+
+It also guards the two results most likely to be misread:
+
+- The lock-in reversal is confined to 2026 and holds under **both**
+  beyond-horizon treatments, which err in opposite directions. A finding that
+  survived only one of them would be an artefact of the extrapolation.
+- No benchmark-based CBAM figure can be produced without the
+  `benchmark_is_current` flag travelling with it, and the benchmark mechanism
+  refuses to run without an explicit benchmark rather than defaulting to zero,
+  which would silently collapse it into the factor-scaled form.
 
 Expected values are hand-calculated in the test bodies rather than copied from a
 previous run.

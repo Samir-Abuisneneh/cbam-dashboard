@@ -170,6 +170,7 @@ def cbam_cost_per_tonne(
     using_default_values: bool = None,
     uk_cbam_rate_override=None,
     uk_price_variant: str = "frozen",
+    cbam_mechanism: str = None,
 ) -> CbamCost:
     """CBAM liability per tonne of product landed.
 
@@ -179,6 +180,11 @@ def cbam_cost_per_tonne(
             applies only to the `cbam_default` pathway, never to literature
             LCA pathways. Pass an explicit True/False only to override that
             per-row behaviour deliberately, e.g. in a reference-case check.
+        cbam_mechanism: EU free-allocation treatment, see
+            `regulatory_constants.EU_CBAM_MECHANISMS`. This function is safe to
+            use with "benchmark_shielded" because its emissions argument is per
+            tonne of product by construction, which is the basis the benchmark
+            is defined on.
     """
     if using_default_values is None:
         using_default_values = cbam.is_cbam_default_pathway(pathway)
@@ -195,12 +201,21 @@ def cbam_cost_per_tonne(
     )
 
     if regime == "EU":
+        mechanism = rc.EU_CBAM_DEFAULT_MECHANISM if cbam_mechanism is None else cbam_mechanism
         cost.eu_cbam_cost_eur_per_tonne = cbam.eu_cbam_cost(
             embedded_emissions_tco2e_per_tonne,
             year,
             rc.eu_ets_price(year, price_scenario),
             origin_carbon_price_eur_per_tco2e,
             using_default_values,
+            mechanism,
+            # Looked up per product, so the caller cannot pair a hydrogen row
+            # with an ammonia benchmark. Only read when the benchmark
+            # mechanism is selected, so an unknown product does not break the
+            # default path.
+            rc.eu_product_benchmark(product)
+            if mechanism == "benchmark_shielded"
+            else None,
         )
     else:
         cost.uk_cbam_cost_gbp_per_tonne = cbam.uk_cbam_cost(

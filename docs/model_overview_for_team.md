@@ -20,8 +20,8 @@ The central question: **what does carbon regulation cost per tonne of product on
 corridor, and how does that cost compare between hydrogen and ammonia, between
 production pathways, and between the EU and UK regimes?**
 
-The model is *not* yet a full "delivered cost" model (see §6 — two of six cost terms
-still have no owner). What it *does* fully answer, end to end, is the **carbon
+The model is deliberately *not* a full "delivered cost" model (see §6 — two of six
+cost terms are a declared scope boundary). What it *does* fully answer, end to end, is the **carbon
 compliance cost per tonne** — CBAM plus maritime ETS plus FuelEU — for every
 corridor/product/pathway/year/price-scenario combination, and a bounded but real answer
 to which production pathway is worth switching to on carbon-cost grounds alone
@@ -234,7 +234,7 @@ This matters a lot for how confidently each of you can state results in your sec
 | `emissions_table.csv` | **Real.** Riya, both products, both corridors, literature + IR 2025/2621 defaults. |
 | `corridor_logistics.csv` | **Real.** Generated directly from Gayu's notebooks, pinned by 31 automated reproduction checks. |
 | `commercial_inputs.csv` — production cost | **Real** as of 4 Aug 2026 (Riya). |
-| `commercial_inputs.csv` — conversion & shipping cost | **Still placeholder, no owner assigned.** This is the main open gap. |
+| `commercial_inputs.csv` — conversion & shipping cost | **Placeholder, and a declared scope boundary rather than a pending input.** No public source identified; the partner data route closed 6 Aug 2026. Both terms are pathway-invariant, so they cancel out of every within-corridor comparison the study actually makes. |
 
 Because two of six delivered-cost terms (conversion, shipping) are still unsourced,
 `run_delivered_cost()` in the code deliberately **raises an error** rather than silently
@@ -402,11 +402,14 @@ switching never pays there.
 - `cbam_model/data/README.md` — the data contract for each of the three input tables:
   exact columns, units, and what's enforced automatically.
 
-## 10. Open items that still need an owner
+## 10. Open items
 
-1. **Conversion and shipping cost per tonne** — no owner assigned. This is what blocks
-   a true delivered-cost figure (as opposed to the compliance-cost figure, which is
-   unblocked and complete).
+1. **Conversion and shipping cost per tonne** — a declared scope boundary, not a
+   pending input, since 6 August 2026. It is what would be needed for a true
+   delivered-cost figure (as opposed to the compliance-cost figure, which is
+   unblocked and complete), and it is stated as a limitation in the methodology
+   rather than left open. Both terms are pathway-invariant as currently held, so
+   they cancel out of the within-corridor comparisons the study reports.
 2. **UK ETS price held flat 2026-2030** — only the 2026 figure was ever sourced from a
    primary source; a labelled EU-UK linkage scenario exists as an alternative but isn't
    the baseline.

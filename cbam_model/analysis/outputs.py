@@ -6,16 +6,32 @@ are never mixed on a chart axis.
 
 from pathlib import Path
 
-import matplotlib
+import pandas as pd
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import pandas as pd  # noqa: E402
-
-from ..config import regulatory_constants as rc  # noqa: E402
-from ..config import scenarios  # noqa: E402
+from ..config import regulatory_constants as rc
+from ..config import scenarios
 
 OUTPUT_DIR = Path(__file__).parent.parent / "outputs"
+
+
+def _plt():
+    """Lazy matplotlib import, so importing this module doesn't require it.
+
+    matplotlib is a notebook/output-generation dependency, not in
+    requirements.txt (the Streamlit Cloud deployment's dependency set) - the
+    dashboard never plotted with it before it started importing this module
+    for the pathway/corridor choice analyses added 5 August 2026, and a
+    module-level `import matplotlib` broke the deployed app with a
+    ModuleNotFoundError that had nothing to do with the code actually being
+    used. Only the two plotting functions below need it; everything else in
+    this module is pandas-only and must stay importable without it.
+    """
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    return plt
 
 
 BASE_CASE_BUNKERS = ["conventional", "n/a"]  # "n/a" is the UK corridor, which FuelEU does not price
@@ -785,7 +801,7 @@ def plot_effective_carbon_cost(maritime: pd.DataFrame, price_scenario: str = "me
     grouped = df.pivot_table(
         index="corridor", columns="year", values="effective_cost_per_tonne_co2"
     )
-    fig, ax = plt.subplots(figsize=(7, 5))
+    fig, ax = _plt().subplots(figsize=(7, 5))
     grouped.plot(kind="bar", ax=ax)
     ax.set_ylabel("Carbon cost per tonne of voyage CO2\n(EUR for EU corridor, GBP for UK)")
     ax.set_xlabel("")
@@ -808,7 +824,7 @@ def plot_maritime_cost_by_corridor(maritime: pd.DataFrame, year: int = 2026):
     if df.empty:
         return None
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axes = _plt().subplots(1, 2, figsize=(12, 5))
     eu = df[df["corridor"] == rc.HALIFAX_HAMBURG]
     uk = df[df["corridor"] == rc.NINGBO_FELIXSTOWE]
 
@@ -950,7 +966,7 @@ def write_all(
     fig = plot_effective_carbon_cost(maritime)
     if fig:
         fig.savefig(OUTPUT_DIR / "effective_carbon_cost.png", dpi=150)
-        plt.close(fig)
+        _plt().close(fig)
         written.append("effective_carbon_cost.png")
 
     for year in sorted(maritime["year"].unique()):
@@ -958,7 +974,7 @@ def write_all(
         if fig:
             name = f"maritime_cost_{year}.png"
             fig.savefig(OUTPUT_DIR / name, dpi=150)
-            plt.close(fig)
+            _plt().close(fig)
             written.append(name)
 
     return written

@@ -152,6 +152,42 @@ year on year as the EU's CBAM factor ramps (hydrogen: GBP 181 in 2027 down to
 GBP 102 by 2030). So the story is one flip in 2027 followed by convergence,
 not a slow overtake completing in 2030. That belongs in the discussion chapter.
 
+### Competitiveness: absolute cost and exposure point opposite ways
+
+Added 6 August 2026. `analysis.outputs.competitiveness_burden` and
+`competitiveness_asymmetry`, answering the competitiveness half of the EU-UK
+asymmetry objective. Every other output reports compliance cost in absolute
+terms, which says how much carbon regulation costs but not whether it is
+material to the traded good.
+
+Compliance cost as a share of production cost, `cbam_default`, medium prices:
+
+| Product | Year | Halifax-Hamburg | Ningbo-Felixstowe | More exposed |
+|---|---|---|---|---|
+| Ammonia | 2027 | 1.03% | 9.51% | UK |
+| Ammonia | 2030 | 15.62% | 20.00% | UK |
+| Hydrogen | 2027 | 4.85% | 20.52% | UK |
+| Hydrogen | 2029 | 28.96% | 29.00% | **marginal, do not report a direction** |
+| Hydrogen | 2030 | 63.45% | 43.12% | **EU** |
+
+The 2030 hydrogen row is the finding. In absolute terms Halifax-Hamburg is the
+cheaper corridor that year, but it carries the **heavier** burden relative to
+what the product costs to make, because Chinese hydrogen production cost
+(EUR 1,180.7/t) is nearly double the Canadian figure (EUR 614.5/t). Reporting
+only absolute cost would state the competitiveness asymmetry backwards. A test
+pins that divergence.
+
+Hydrogen 2029 splits the corridors by 0.04 percentage points and is banded
+`marginal` on the same 10% relative rule used for abatement verdicts.
+
+Three caveats travel with any figure here. The denominator is **production
+cost, not market price**, because no price series exists for these corridors;
+since a traded price normally exceeds production cost this **overstates** the
+burden against a revenue-based measure like Ramsook et al.'s 22%, though the
+direction is consistent across both corridors so the asymmetry is more robust
+than either level. Conversion and freight are excluded because they remain
+placeholders. The UK figure is converted at the single 23 July 2026 ECB rate.
+
 ### Lock-in: the 2026 cost ranking is a trap
 
 Added 6 August 2026, after the supervisor asked for the transaction-cost layer

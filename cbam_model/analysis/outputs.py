@@ -561,21 +561,10 @@ def corridor_cost_comparison(
     """
     hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
 
-    def _base_case(column, allowed):
-        # The EU corridor stores "n/a" in the UK-only columns, and pandas reads
-        # that literal string back from CSV as NaN. Without the isna() arm this
-        # filter silently drops every Halifax-Hamburg row whenever the frame
-        # came from disk rather than straight from run_compliance_matrix, which
-        # would leave the comparison with one corridor and no error.
-        return compliance[column].isin(allowed) | compliance[column].isna()
-
     df = compliance[
         (compliance["pathway"] == pathway)
         & (compliance["price_scenario"] == price_scenario)
-        & (compliance["route_scenario"] == "suez")
-        & _base_case("uk_ets_variant", BASE_CASE_UK_ETS_VARIANTS)
-        & _base_case("uk_price_variant", BASE_CASE_UK_PRICE_VARIANTS)
-        & _base_case("bunker_fuel", BASE_CASE_BUNKERS)
+        & _base_case_mask(compliance)
     ].copy()
     if df.empty:
         return pd.DataFrame()
@@ -783,6 +772,177 @@ def corridor_lock_in(
                 }
             )
     return pd.DataFrame(rows)
+
+
+def _base_case_mask(compliance: pd.DataFrame):
+    """Boolean mask selecting the study's primary scenario rows.
+
+    Suez routing, UK ETS as currently legislated, frozen UK price, conventional
+    bunker. Extracted so `corridor_cost_comparison` and
+    `competitiveness_burden` cannot drift apart on what "base case" means.
+
+    The `isna()` arm matters. The EU corridor stores "n/a" in the UK-only
+    columns, and pandas reads that literal string back from CSV as NaN, so
+    without it this silently drops every Halifax-Hamburg row whenever the frame
+    came from disk rather than straight from `run_compliance_matrix`.
+    """
+
+    def col(column, allowed):
+        return compliance[column].isin(allowed) | compliance[column].isna()
+
+    return (
+        (compliance["route_scenario"] == "suez")
+        & col("uk_ets_variant", BASE_CASE_UK_ETS_VARIANTS)
+        & col("uk_price_variant", BASE_CASE_UK_PRICE_VARIANTS)
+        & col("bunker_fuel", BASE_CASE_BUNKERS)
+    )
+
+
+def competitiveness_burden(
+    compliance: pd.DataFrame,
+    commercial: pd.DataFrame,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+) -> pd.DataFrame:
+    """Carbon compliance cost as a share of production cost, per corridor.
+
+    Answers the competitiveness half of the EU-UK asymmetry objective. Every
+    other output in this module reports compliance cost in absolute terms per
+    tonne, which says how much carbon regulation costs but not whether it is
+    material to the traded good. A burden share does.
+
+    This is the same construction `validation/reference_case.py` uses to
+    reproduce Ramsook et al.'s published 22% figure, applied to this study's
+    own corridors rather than to their Trinidad case.
+
+    THREE THINGS TO STATE WHEREVER A FIGURE FROM HERE IS QUOTED.
+
+    1. The denominator is **production cost, not market price**. Ramsook et al.
+       divide by export revenue. No price series exists for these corridors, and
+       production cost is the only sourced value basis available (Riya,
+       4 August 2026). Since a traded price normally exceeds production cost,
+       this **overstates** the burden relative to a revenue-based measure. The
+       direction is consistent across both corridors, so the asymmetry between
+       them is more robust than either level.
+    2. Conversion and freight are excluded from the denominator even though
+       they sit in `commercial`, because both are still placeholders and a
+       declared scope boundary. Including them would move the denominator by an
+       unsourced amount.
+    3. The UK corridor's compliance cost is converted GBP to EUR at the single
+       23 July 2026 ECB reference rate, held fixed across the horizon. Same
+       caveat as `corridor_cost_comparison`, and it bites hardest wherever the
+       two corridors' burden shares are close.
+    """
+    df = compliance[
+        (compliance["pathway"] == pathway)
+        & (compliance["price_scenario"] == price_scenario)
+        & _base_case_mask(compliance)
+    ].copy()
+    if df.empty:
+        return pd.DataFrame()
+
+    costs = commercial[commercial["pathway"] == pathway][
+        ["corridor", "product", "pathway", "production_cost_eur_per_tonne"]
+    ]
+    df = df.merge(costs, on=["corridor", "product", "pathway"], how="inner")
+    if df.empty:
+        return pd.DataFrame()
+
+    # The compliance layer reports each corridor in its own currency; the
+    # production cost table is EUR throughout. Convert the GBP side rather than
+    # the EUR side so the denominator is never touched.
+    df["currency_converted"] = df["currency"] == "GBP"
+    df["compliance_cost_eur_per_tonne"] = df.apply(
+        lambda r: rc.gbp_to_eur(r["total_compliance_cost_per_tonne"])
+        if r["currency"] == "GBP"
+        else r["total_compliance_cost_per_tonne"],
+        axis=1,
+    )
+    df["burden_share_pct"] = (
+        100.0
+        * df["compliance_cost_eur_per_tonne"]
+        / df["production_cost_eur_per_tonne"]
+    )
+
+    out = df[
+        [
+            "corridor",
+            "product",
+            "pathway",
+            "year",
+            "price_scenario",
+            "compliance_cost_eur_per_tonne",
+            "production_cost_eur_per_tonne",
+            "burden_share_pct",
+            "currency_converted",
+        ]
+    ].copy()
+    out["compliance_cost_eur_per_tonne"] = out["compliance_cost_eur_per_tonne"].round(2)
+    out["burden_share_pct"] = out["burden_share_pct"].round(2)
+    out["value_basis"] = "production_cost"
+    return out.sort_values(["product", "year", "corridor"]).reset_index(drop=True)
+
+
+def competitiveness_asymmetry(
+    compliance: pd.DataFrame,
+    commercial: pd.DataFrame,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+) -> pd.DataFrame:
+    """The EU-UK competitiveness gap, in percentage points of production cost.
+
+    `competitiveness_burden` gives the level per corridor; this gives the
+    asymmetry between them, which is what the objective actually asks about.
+
+    `more_exposed_corridor` is the one carrying the larger carbon burden
+    relative to what its product costs to make. Note this can differ from the
+    corridor with the higher absolute cost per tonne in
+    `corridor_cost_comparison`, because the two corridors' production costs are
+    not the same: a corridor can carry more absolute carbon cost while being
+    less exposed relative to the value of the good, and that divergence is
+    itself a reportable finding.
+
+    `asymmetry_verdict` bands the result, using the same 10% relative margin as
+    `_abatement_verdict` and `switching.switch_verdict`. A `marginal` row means
+    the two corridors' burdens are not distinguishable given how the inputs
+    were built, and `more_exposed_corridor` on that row must not be reported as
+    a direction. Hydrogen in 2029 is exactly such a row.
+    """
+    burden = competitiveness_burden(compliance, commercial, pathway, price_scenario)
+    if burden.empty:
+        return pd.DataFrame()
+
+    hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
+    rows = []
+    for (product, year), grp in burden.groupby(["product", "year"]):
+        by_corridor = grp.set_index("corridor")
+        if hh not in by_corridor.index or nf not in by_corridor.index:
+            continue
+        eu = by_corridor.loc[hh]
+        uk = by_corridor.loc[nf]
+        gap = eu["burden_share_pct"] - uk["burden_share_pct"]
+        mean_burden = (eu["burden_share_pct"] + uk["burden_share_pct"]) / 2.0
+        relative_margin_pct = 100.0 * abs(gap) / mean_burden if mean_burden else 0.0
+        rows.append(
+            {
+                "product": product,
+                "pathway": pathway,
+                "price_scenario": price_scenario,
+                "year": int(year),
+                "halifax_hamburg_burden_pct": eu["burden_share_pct"],
+                "ningbo_felixstowe_burden_pct": uk["burden_share_pct"],
+                "gap_percentage_points": round(gap, 2),
+                "relative_margin_pct": round(relative_margin_pct, 2),
+                "more_exposed_corridor": hh if gap > 0 else nf,
+                "asymmetry_verdict": (
+                    "marginal"
+                    if relative_margin_pct <= MARGINAL_VERDICT_BAND_PCT
+                    else "clear"
+                ),
+                "value_basis": "production_cost",
+            }
+        )
+    return pd.DataFrame(rows).sort_values(["product", "year"]).reset_index(drop=True)
 
 
 def cbam_mechanism_comparison(
@@ -1210,6 +1370,21 @@ def write_all(
                 OUTPUT_DIR / "switching_cost_sensitivity.csv", index=False
             )
             written.append("switching_cost_sensitivity.csv")
+
+        if commercial is not None and len(commercial):
+            burden = competitiveness_burden(compliance, commercial)
+            if len(burden):
+                burden.to_csv(
+                    OUTPUT_DIR / "competitiveness_burden.csv", index=False
+                )
+                written.append("competitiveness_burden.csv")
+
+            asymmetry = competitiveness_asymmetry(compliance, commercial)
+            if len(asymmetry):
+                asymmetry.to_csv(
+                    OUTPUT_DIR / "competitiveness_asymmetry.csv", index=False
+                )
+                written.append("competitiveness_asymmetry.csv")
 
     maritime.to_csv(OUTPUT_DIR / "maritime_cost_per_voyage.csv", index=False)
     written.append("maritime_cost_per_voyage.csv")

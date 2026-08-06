@@ -217,7 +217,15 @@ def _compliance_total_per_tonne(
             profile["fueleu_actual_intensity_gco2e_mj"], profile["voyage_energy_mj"], year
         )
         cbam_pt = cbam.eu_cbam_cost(
-            embedded, year, price, origin_price, cbam.is_cbam_default_pathway(pathway)
+            embedded,
+            year,
+            price,
+            origin_price,
+            cbam.is_cbam_default_pathway(pathway),
+            # Follows the model default, so the sweep ranks drivers of the same
+            # number the results chapter reports. `embedded` here is per tonne
+            # of product, which is the basis the benchmark is defined on.
+            benchmark_tco2e_per_tonne=rc.eu_product_benchmark(product),
         )
         maritime_pt = (ets + fe) / cargo_t
     else:

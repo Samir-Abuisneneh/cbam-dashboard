@@ -1044,12 +1044,27 @@ def test_uk_cbam_relief_converts_eur_to_gbp():
 
 
 def test_product_benchmarks_match_the_regulation():
-    """IR (EU) 2021/447 Annex. The ammonia figure is independently corroborated
-    by Ramsook et al. (2025), who quote it as 1.57."""
+    """IR (EU) 2026/1412 Annex section 2, read off the adopted Official Journal
+    text on 6 August 2026. Supersedes IR 2021/447 for the 2026-2030 period.
+
+    The two products move in opposite directions and that is not a typo:
+    ammonia falls 1.570 -> 1.522, hydrogen RISES 6.84 -> 7.98 because
+    Delegated Regulation (EU) 2024/873 folded electrolytic hydrogen into the
+    benchmark and section 2 benchmarks now count indirect emissions from
+    electricity consumption. A future edit that "corrects" hydrogen downward
+    to look consistent with ammonia would be wrong.
+    """
     b = rc.EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE
-    assert b["ammonia"] == pytest.approx(1.570)
-    assert b["hydrogen"] == pytest.approx(6.84)
+    assert b["ammonia"] == pytest.approx(1.522)
+    assert b["hydrogen"] == pytest.approx(7.98)
     assert set(b) == set(rc.PRODUCTS)
+    assert rc.EU_ETS_PRODUCT_BENCHMARK_PERIOD == "2026-2030"
+    assert rc.EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT
+
+    # The superseded set is retained for the Ramsook calibration only.
+    old = rc.EU_ETS_PRODUCT_BENCHMARK_2021_2025
+    assert old["ammonia"] == pytest.approx(1.570)
+    assert old["hydrogen"] == pytest.approx(6.84)
 
 
 def test_benchmarks_are_not_the_cbam_default_values():
@@ -1365,3 +1380,362 @@ def test_breakeven_does_not_count_a_marginal_verdict_as_a_crossing():
     assert row["verdict_first_year"] == "marginal"
     assert row["breakeven_year"] is None or pd.isna(row["breakeven_year"])
     assert row["first_marginal_year"] == 2026
+
+
+# ---------------------------------------------------------------------------
+# Lock-in and corridor switching
+# ---------------------------------------------------------------------------
+
+
+def test_present_value_leaves_the_decision_year_undiscounted():
+    """The commitment is made at the start of the decision year, so t=0 there.
+
+    If this ever shifts to t=1 every threshold in `corridor_lock_in` becomes
+    incomparable with a capital cost incurred at signature, which is exactly
+    the kind of silent basis mismatch this project has been bitten by before.
+    """
+    from cbam_model.model import switching
+
+    assert switching.present_value([100.0], 0.08) == pytest.approx(100.0)
+    # 100 + 100/1.08 = 192.5926
+    assert switching.present_value([100.0, 100.0], 0.08) == pytest.approx(
+        192.59259, rel=1e-5
+    )
+
+
+def test_extend_to_tenor_truncates_by_default_and_holds_final_on_request():
+    from cbam_model.model import switching
+
+    modelled = [1.0, 2.0, 3.0]
+    assert switching.extend_to_tenor(modelled, 5, "truncate") == [1.0, 2.0, 3.0]
+    assert switching.extend_to_tenor(modelled, 5, "hold_final") == [
+        1.0, 2.0, 3.0, 3.0, 3.0,
+    ]
+    # A tenor shorter than the modelled horizon clips under both methods.
+    assert switching.extend_to_tenor(modelled, 2, "hold_final") == [1.0, 2.0]
+
+    with pytest.raises(ValueError):
+        switching.extend_to_tenor(modelled, 5, "linear_trend")
+
+
+def test_breakeven_switching_cost_floors_at_zero():
+    """If the alternative corridor is dearer over the tenor, no switching cost
+    however small justifies the move. The floor must not be allowed to report a
+    negative "saving"."""
+    from cbam_model.model import switching
+
+    dearer = switching.breakeven_switching_cost(
+        incumbent_annual_costs=[10.0, 10.0],
+        alternative_annual_costs=[50.0, 50.0],
+        tenor_years=2,
+    )
+    assert dearer == 0.0
+
+    cheaper = switching.breakeven_switching_cost(
+        incumbent_annual_costs=[50.0, 50.0],
+        alternative_annual_costs=[10.0, 10.0],
+        tenor_years=2,
+        discount_rate=0.08,
+    )
+    # 40 + 40/1.08 = 77.037
+    assert cheaper == pytest.approx(77.03704, rel=1e-5)
+
+
+def test_switch_verdict_bands_a_thin_margin_as_marginal():
+    """Same guard as `_abatement_verdict`, and for the same documented reason:
+    a bare boolean once reported "justified" on a 1% margin in this project."""
+    from cbam_model.model import switching
+
+    assert switching.switch_verdict(101.0, 100.0) == "marginal"
+    assert switching.switch_verdict(99.0, 100.0) == "marginal"
+    assert switching.switch_verdict(200.0, 100.0) == "justified"
+    assert switching.switch_verdict(50.0, 100.0) == "locked_in"
+
+
+def test_switch_verdict_separates_never_justified_from_locked_in():
+    """`never_justified` means the alternative is not cheaper over the tenor at
+    any price. `locked_in` means it is cheaper but not by enough. Collapsing
+    the two would let the write-up claim a corridor is unreachable when it is
+    merely expensive to reach."""
+    from cbam_model.model import switching
+
+    assert switching.switch_verdict(0.0, 100.0) == "never_justified"
+    assert switching.switch_verdict(0.0, 0.0) == "never_justified"
+    assert switching.switch_verdict(50.0, 100.0) == "locked_in"
+
+
+def test_lock_in_reverses_the_2026_corridor_choice():
+    """The headline lock-in finding, hand-calculated.
+
+    Ningbo-Felixstowe is cheaper in 2026 on both products, because UK CBAM does
+    not start until 2027. Committing to it on that basis is wrong: from 2027 the
+    ordering flips and stays flipped for the rest of the horizon, so the
+    present value of the tenor favours Halifax-Hamburg.
+
+    Ammonia, medium prices, 8% real, truncate:
+        HH  1.83, 3.91, 9.98, 26.90, 59.54  ->  PV 79.12
+        NF  0.05, 33.80, 38.46, 47.77, 71.07 -> PV 154.48
+        breakeven = 154.48 - 79.12 = 75.36
+    """
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    lock_in = outputs.corridor_lock_in(compliance, beyond_horizon="truncate")
+    assert len(lock_in)
+
+    for product in ("ammonia", "hydrogen"):
+        row = lock_in[
+            (lock_in["product"] == product) & (lock_in["decision_year"] == 2026)
+        ].iloc[0]
+        assert row["myopic_choice"] == rc.NINGBO_FELIXSTOWE
+        assert row["committed_choice"] == rc.HALIFAX_HAMBURG
+        assert row["decision_reverses"]
+        assert row["breakeven_switching_cost_gbp_per_tonne_annual_volume"] > 0
+
+    ammonia = lock_in[
+        (lock_in["product"] == "ammonia") & (lock_in["decision_year"] == 2026)
+    ].iloc[0]
+    assert ammonia["pv_halifax_hamburg_gbp_per_tonne_annual_volume"] == pytest.approx(
+        79.12, abs=0.05
+    )
+    assert ammonia["pv_ningbo_felixstowe_gbp_per_tonne_annual_volume"] == pytest.approx(
+        154.48, abs=0.05
+    )
+    assert ammonia[
+        "breakeven_switching_cost_gbp_per_tonne_annual_volume"
+    ] == pytest.approx(75.36, abs=0.05)
+
+
+def test_lock_in_reversal_survives_both_beyond_horizon_treatments():
+    """The two beyond-horizon treatments err in opposite directions, so a
+    finding that only holds under one of them is an artefact of the assumption
+    rather than a result. Mirrors the robustness guard on
+    `abatement_source_robustness`.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+
+    for method in ("truncate", "hold_final"):
+        lock_in = outputs.corridor_lock_in(compliance, beyond_horizon=method)
+        reversals = lock_in[lock_in["decision_reverses"]]
+        assert set(reversals["decision_year"]) == {2026}, (
+            f"under {method}, the reversal is no longer confined to 2026"
+        )
+        assert (reversals["committed_choice"] == rc.HALIFAX_HAMBURG).all()
+
+
+def test_lock_in_reports_no_switch_once_the_orderings_agree():
+    """From 2027 the spot-cheapest and tenor-cheapest corridors are the same, so
+    the breakeven must be exactly zero. A non-zero figure there would imply a
+    switch is worth paying for when there is nothing to switch to."""
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    lock_in = outputs.corridor_lock_in(compliance)
+
+    settled = lock_in[lock_in["decision_year"] >= 2027]
+    assert len(settled)
+    assert not settled["decision_reverses"].any()
+    assert (
+        settled["breakeven_switching_cost_gbp_per_tonne_annual_volume"] == 0.0
+    ).all()
+
+
+def test_switching_cost_sensitivity_flips_the_verdict_around_the_breakeven():
+    """Below the breakeven the switch is justified, well above it the firm is
+    locked in, and rows where nothing is gained read `never_justified`."""
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    sweep = outputs.switching_cost_sensitivity(compliance)
+    assert len(sweep)
+
+    ammonia_2026 = sweep[
+        (sweep["product"] == "ammonia") & (sweep["decision_year"] == 2026)
+    ]
+    breakeven = ammonia_2026[
+        "breakeven_switching_cost_gbp_per_tonne_annual_volume"
+    ].iloc[0]
+
+    cheap = ammonia_2026[
+        ammonia_2026["assumed_switching_cost_gbp_per_tonne_annual_volume"]
+        < breakeven * 0.9
+    ]
+    dear = ammonia_2026[
+        ammonia_2026["assumed_switching_cost_gbp_per_tonne_annual_volume"]
+        > breakeven * 1.1
+    ]
+    assert len(cheap) and len(dear)
+    assert (cheap["verdict"] == "justified").all()
+    assert (dear["verdict"] == "locked_in").all()
+
+    settled = sweep[sweep["decision_year"] >= 2027]
+    assert (settled["verdict"] == "never_justified").all()
+
+
+# ---------------------------------------------------------------------------
+# EU CBAM free-allocation mechanism
+# ---------------------------------------------------------------------------
+
+
+def test_default_cbam_mechanism_is_unchanged():
+    """Adding the benchmark mechanism must not move any existing result.
+
+    The default stays factor-scaled while the benchmarks in code are the stale
+    2021-2025 set, so this is the guard that the new option is genuinely opt-in.
+    """
+    assert rc.EU_CBAM_DEFAULT_MECHANISM == "factor_scaled"
+    # 10 tCO2e, 2026 factor 0.025, EUR 80 => 10 * 0.025 * 80 = 20.00
+    assert cbam.eu_cbam_cost(10.0, 2026, 80.0) == pytest.approx(20.0)
+    assert cbam.eu_cbam_cost(
+        10.0, 2026, 80.0, mechanism="factor_scaled"
+    ) == pytest.approx(20.0)
+
+
+def test_benchmark_mechanism_hand_calculation():
+    """chargeable = max(0, embedded - benchmark x (1 - CBAM_factor)).
+
+    Ammonia 2026: factor 0.025, so free allocation share 0.975.
+    chargeable = 2.18 - 1.570 * 0.975 = 2.18 - 1.53075 = 0.64925
+    cost       = 0.64925 * 80 = 51.94
+    """
+    cost = cbam.eu_cbam_cost(
+        2.18, 2026, 80.0, mechanism="benchmark_shielded",
+        benchmark_tco2e_per_tonne=1.570,
+    )
+    assert cost == pytest.approx(51.94, abs=0.01)
+
+
+def test_benchmark_mechanism_zeroes_a_producer_below_the_benchmark():
+    """A producer at or below the benchmark owes nothing while free allocation
+    is still phasing out. The factor-scaled form has no such behaviour and
+    charges them a small amount, which is the substantive difference between
+    the two mechanisms for green pathways."""
+    green = cbam.eu_cbam_cost(
+        0.62, 2026, 80.0, mechanism="benchmark_shielded",
+        benchmark_tco2e_per_tonne=1.570,
+    )
+    assert green == 0.0
+    assert cbam.eu_cbam_cost(0.62, 2026, 80.0) > 0.0
+
+
+def test_the_two_mechanisms_converge_when_free_allocation_ends():
+    """In 2034 the CBAM factor reaches 1.00 and free allocation is gone, so the
+    benchmark shields nothing and the two forms must agree exactly. If this
+    ever fails, one of them has drifted from the phase-in schedule."""
+    assert rc.cbam_factor(2034) == pytest.approx(1.0)
+    for embedded in (0.62, 2.18, 10.07):
+        scaled = cbam.eu_cbam_cost(embedded, 2034, 80.0)
+        shielded = cbam.eu_cbam_cost(
+            embedded, 2034, 80.0, mechanism="benchmark_shielded",
+            benchmark_tco2e_per_tonne=1.570,
+        )
+        assert scaled == pytest.approx(shielded)
+
+
+def test_benchmark_mechanism_refuses_to_run_without_a_benchmark():
+    """Defaulting the benchmark to zero would silently collapse the benchmark
+    mechanism into the factor-scaled one and look like the two agreeing."""
+    with pytest.raises(ValueError, match="benchmark_tco2e_per_tonne"):
+        cbam.eu_cbam_cost(2.18, 2026, 80.0, mechanism="benchmark_shielded")
+
+
+def test_unknown_cbam_mechanism_raises():
+    with pytest.raises(ValueError, match="Unknown EU CBAM mechanism"):
+        cbam.eu_cbam_cost(2.18, 2026, 80.0, mechanism="benchmark")
+
+
+def test_eu_product_benchmark_raises_on_unknown_product():
+    """A zero benchmark would be indistinguishable from agreement between the
+    mechanisms, so an unknown product must fail rather than default."""
+    assert rc.eu_product_benchmark("ammonia") == pytest.approx(1.522)
+    assert rc.eu_product_benchmark("hydrogen") == pytest.approx(7.98)
+    with pytest.raises(KeyError):
+        rc.eu_product_benchmark("methanol")
+
+
+def test_cbam_cost_per_tonne_pairs_each_product_with_its_own_benchmark():
+    """The lookup is by product inside `cbam_cost_per_tonne`, so a caller cannot
+    pair a hydrogen row with the ammonia benchmark."""
+    ammonia = total_cost.cbam_cost_per_tonne(
+        corridor=rc.HALIFAX_HAMBURG, product="ammonia", pathway="grey_smr",
+        year=2026, price_scenario="medium",
+        embedded_emissions_tco2e_per_tonne=2.18,
+        cbam_mechanism="benchmark_shielded",
+    ).eu_cbam_cost_eur_per_tonne
+    hydrogen = total_cost.cbam_cost_per_tonne(
+        corridor=rc.HALIFAX_HAMBURG, product="hydrogen", pathway="grey_smr",
+        year=2026, price_scenario="medium",
+        embedded_emissions_tco2e_per_tonne=2.18,
+        cbam_mechanism="benchmark_shielded",
+    ).eu_cbam_cost_eur_per_tonne
+    # Same emissions, different benchmark (1.570 vs 6.84), so hydrogen's larger
+    # benchmark shields it entirely while ammonia still owes something.
+    assert ammonia > 0.0
+    assert hydrogen == 0.0
+
+
+def test_mechanism_comparison_carries_the_benchmark_provenance():
+    """Every benchmark-based figure must carry which benchmark period produced
+    it. The flag was False while the constants held the 2021-2025 set; it went
+    True on 6 August 2026 when IR 2026/1412 was read off the Official Journal.
+    Keeping the columns means a stale rerun cannot masquerade as a current one.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    comparison = outputs.cbam_mechanism_comparison(emissions)
+    assert len(comparison)
+
+    assert comparison["benchmark_is_current"].all()
+    assert (comparison["benchmark_period"] == "2026-2030").all()
+    # EU corridor only: the UK rate fraction nets free allocation off already.
+    assert set(comparison["corridor"]) == {rc.HALIFAX_HAMBURG}
+
+
+def test_mechanism_switch_moves_clean_and_dirty_pathways_in_opposite_directions():
+    """The headline of the mechanism gap, and the reason it matters for this
+    dissertation: under the benchmark form green pathways owe nothing at all,
+    while pathways above the benchmark owe substantially more. The current
+    model therefore understates how far CBAM closes the green premium."""
+    emissions, _, _ = data_io.load_inputs()
+    comparison = outputs.cbam_mechanism_comparison(emissions)
+
+    clean = comparison[comparison["cleaner_than_benchmark"]]
+    dirty = comparison[~comparison["cleaner_than_benchmark"]]
+    assert len(clean) and len(dirty)
+
+    assert (clean["benchmark_shielded_eur_per_tonne"] == 0.0).all()
+    assert (clean["difference_eur_per_tonne"] <= 0).all()
+    assert (dirty["difference_eur_per_tonne"] > 0).all()
+
+
+def test_the_mechanism_choice_inverts_the_corridor_finding():
+    """A guard on the open methodological decision, not on a settled result.
+
+    Switching `EU_CBAM_DEFAULT_MECHANISM` does not merely rescale the corridor
+    comparison, it reverses which corridor is cheaper across most of the
+    horizon, because the EU corridor's liability rises steeply under the
+    benchmark form while the UK corridor is untouched (the UK scheme nets free
+    allocation off inside its own rate fraction).
+
+    This test exists so that a future change to the default cannot pass
+    silently. If it fails, the corridor findings in the README and the results
+    chapter need rewriting, not just regenerating.
+    """
+    emissions, _, _ = data_io.load_inputs()
+
+    orderings = {}
+    for mechanism in rc.EU_CBAM_MECHANISMS:
+        compliance = runner.run_compliance_matrix(
+            emissions, cbam_mechanism=mechanism
+        )
+        comparison = outputs.corridor_cost_comparison(compliance)
+        ammonia = comparison[comparison["product"] == "ammonia"]
+        orderings[mechanism] = list(ammonia.sort_values("year")["cheaper_corridor"])
+
+    hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
+    # Factor-scaled: UK cheaper in 2026 only, then EU for the rest.
+    assert orderings["factor_scaled"] == [nf, hh, hh, hh, hh]
+    # Benchmark-shielded: EU cheaper in 2027 only, UK for the rest.
+    assert orderings["benchmark_shielded"] == [nf, hh, nf, nf, nf]
+
+    assert orderings["factor_scaled"] != orderings["benchmark_shielded"], (
+        "the two mechanisms now agree; the open decision recorded in "
+        "regulatory_constants.EU_CBAM_DEFAULT_MECHANISM may be resolvable"
+    )

@@ -86,14 +86,105 @@ CBAM_CERT_PRICE_Q1_2026_ACTUAL = 75.36  # EUR/tCO2e, confirmed published figure 
 # (2025) quote the EU ammonia benchmark as 1.57 tCO2/tNH3, matching 1.570 here
 # exactly. See validation/reference_case.py.
 #
-# CAVEAT: these are the 2021-2025 values. The Commission adopted revised
-# benchmarks for 2026-2030 on 29 June 2026, cutting free allocation by more
-# than 16% on average, with ammonia and hydrogen explicitly among the sectors
-# revised. The 2026-2030 figures have NOT been read out yet. Use these to size
-# the effect, not to produce a final result.
-EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE = {"hydrogen": 6.84, "ammonia": 1.570}
-EU_ETS_PRODUCT_BENCHMARK_PERIOD = "2021-2025"
-EU_ETS_PRODUCT_BENCHMARK_SOURCE = "Commission Implementing Regulation (EU) 2021/447, Annex"
+# SOURCED 6 August 2026 from the adopted Official Journal text of Commission
+# Implementing Regulation (EU) 2026/1412 of 26 June 2026, published 29 June
+# 2026, Annex section 2 ("Product benchmarks with collection of data on
+# electricity consumption"). Read off the OJ itself, not a summary: the draft
+# annex circulated for consultation on 11 May 2026 does NOT match the adopted
+# text on every row (heat 7,4 -> 7,2, fuel 10,7 -> 10,4, aromatics 0,0117 ->
+# 0,0116), so the draft must not be cited. Ammonia and hydrogen happen to be
+# unchanged between draft and adoption, but that could not be known in advance.
+#
+# Decimal commas again: the OJ prints "1,522" for 1.522 and "7,98" for 7.98.
+#
+# Superseding IR 2021/447 (2021-2025): ammonia 1.570 -> 1.522, a 3.1% cut;
+# hydrogen 6.84 -> 7.98, a 16.7% RISE. The directions differ, and the hydrogen
+# rise is not an error. Recital: Delegated Regulation (EU) 2024/873 "included
+# hydrogen produced from water electrolysis in the hydrogen benchmark or
+# ammonia benchmark", and for section 2 benchmarks the 10%-most-efficient
+# average now "take[s] into account their indirect emissions from electricity
+# consumption". A wider, electricity-inclusive population raises the hydrogen
+# benchmark even as the overall free allocation envelope falls by more than 16%.
+#
+# Consequence for this model, and it is large: a higher hydrogen benchmark
+# shields MORE under the Article 31 mechanism, so hydrogen CBAM liability falls.
+EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE = {"hydrogen": 7.98, "ammonia": 1.522}
+EU_ETS_PRODUCT_BENCHMARK_PERIOD = "2026-2030"
+EU_ETS_PRODUCT_BENCHMARK_SOURCE = (
+    "Commission Implementing Regulation (EU) 2026/1412, Annex, section 2"
+)
+# The superseded 2021-2025 set, kept because `validation/reference_case.py`
+# calibrates against Ramsook et al. (2025), who worked under that regime. Do
+# not use these for any 2026-2030 result.
+EU_ETS_PRODUCT_BENCHMARK_2021_2025 = {"hydrogen": 6.84, "ammonia": 1.570}
+EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT = True
+
+
+# How the EU CBAM obligation accounts for free allocation.
+#
+#   "factor_scaled"       chargeable = embedded x CBAM_factor
+#   "benchmark_shielded"  chargeable = max(0, embedded - benchmark x (1 - CBAM_factor))
+#
+# The second is the one that matches Regulation (EU) 2023/956 Article 31: free
+# allocation under Article 10a of Directive 2003/87/EC is calculated against a
+# product benchmark, so what is shielded is the benchmark, not a share of the
+# importer's own emissions. The two agree only in 2034, when free allocation
+# reaches zero.
+#
+# THE DEFAULT IS AN OPEN DECISION, NOT A SETTLED ONE. Read this before
+# changing it.
+#
+# The 2026-2030 benchmark blocker was cleared on 6 August 2026, so the
+# stale-data reason for defaulting to "factor_scaled" is gone. The default was
+# nevertheless left on "factor_scaled", because switching it was found to
+# invert the study's headline corridor finding rather than merely rescale it:
+#
+#   factor_scaled       Halifax-Hamburg is cheaper from 2027 onward. Lock-in
+#                       reversal at the 2026 decision year, regret 95% (ammonia)
+#                       and 109% (hydrogen).
+#   benchmark_shielded  Ningbo-Felixstowe is cheaper in every year except 2027.
+#                       Lock-in reversal moves to the 2027 decision year, regret
+#                       11% (ammonia) and 4% (hydrogen).
+#
+# The mechanism drives that because the EU corridor's liability rises roughly
+# tenfold in the early years under the benchmark form, while the UK corridor is
+# untouched (the UK scheme nets free allocation off inside its own rate
+# fraction). The two regimes are therefore not being treated symmetrically by
+# this choice, which is exactly why it cannot be made silently.
+#
+# Evidence for "benchmark_shielded" being the legally correct form: Article 31
+# of Regulation (EU) 2023/956 adjusts for free allocation, and free allocation
+# under Article 10a of Directive 2003/87/EC is measured against a product
+# benchmark. It also reproduces Ramsook et al.'s published 22% burden at 20.7%,
+# against 14.5% for the factor-scaled form (validation/reference_case.py).
+#
+# Evidence the other way: most practitioner guidance describes the phase-in as
+# surrendering certificates for the CBAM-factor share of embedded emissions,
+# which is the factor-scaled reading, and it is what every result in this
+# project has been generated and reviewed under to date.
+#
+# Escalate this to the supervisor rather than resolving it in code. Until then
+# `analysis.outputs.cbam_mechanism_comparison` reports both forms side by side
+# on the correct 2026-2030 benchmarks, so the size of the choice is visible.
+EU_CBAM_MECHANISMS = ("factor_scaled", "benchmark_shielded")
+EU_CBAM_DEFAULT_MECHANISM = "factor_scaled"
+
+
+def eu_product_benchmark(product: str) -> float:
+    """EU ETS product benchmark in tCO2e per tonne of product.
+
+    Raises on an unknown product rather than returning a zero, because a zero
+    benchmark silently turns the benchmark mechanism back into the factor-scaled
+    one and would look like agreement between the two forms.
+    """
+    try:
+        return EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE[product]
+    except KeyError:
+        raise KeyError(
+            f"No EU ETS product benchmark for {product!r}. "
+            f"Known products: {sorted(EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE)}. "
+            f"Source: {EU_ETS_PRODUCT_BENCHMARK_SOURCE}"
+        ) from None
 
 # Hydrogen has no de minimis mass exemption. Every shipment is in scope.
 EU_CBAM_HYDROGEN_DE_MINIMIS_EXEMPTION = False

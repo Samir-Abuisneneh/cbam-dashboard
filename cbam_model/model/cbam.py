@@ -40,6 +40,8 @@ def eu_cbam_cost(
     cert_price_eur: float,
     origin_carbon_price_eur_per_tco2e: float = 0.0,
     using_default_values: bool = False,
+    mechanism: str = None,
+    benchmark_tco2e_per_tonne: float = None,
 ) -> float:
     """EU CBAM certificate cost in EUR for one shipment.
 
@@ -50,6 +52,19 @@ def eu_cbam_cost(
         origin_carbon_price_eur_per_tco2e: Carbon price effectively paid in the
             country of origin, EUR/tCO2e. Zero if none.
         using_default_values: If True, the IR 2025/2621 mark-up is applied.
+        mechanism: How free allocation is netted off. See
+            `regulatory_constants.EU_CBAM_MECHANISMS`. Defaults to
+            `EU_CBAM_DEFAULT_MECHANISM`.
+        benchmark_tco2e_per_tonne: EU ETS product benchmark. Required by, and
+            only used by, the "benchmark_shielded" mechanism.
+
+    UNIT WARNING on the benchmark mechanism. The benchmark is defined per tonne
+    of product, so it can only be netted off `embedded_emissions_tco2e` when
+    that argument is itself expressed per tonne of product. Every caller in
+    this model passes it that way, but a caller passing whole-shipment
+    emissions would get a benchmark netted off a shipment-scale figure and a
+    silently near-zero deduction. There is no way to detect that from inside
+    this function, so it is the caller's contract to honour.
 
     Note on the origin carbon price adjustment:
         The build spec wrote this as a flat subtraction of
@@ -66,12 +81,36 @@ def eu_cbam_cost(
     if year < 2026:
         return 0.0
 
+    mechanism = rc.EU_CBAM_DEFAULT_MECHANISM if mechanism is None else mechanism
+    if mechanism not in rc.EU_CBAM_MECHANISMS:
+        raise ValueError(
+            f"Unknown EU CBAM mechanism {mechanism!r}. "
+            f"Expected one of {rc.EU_CBAM_MECHANISMS}."
+        )
+
     emissions = embedded_emissions_tco2e
     if using_default_values:
         emissions = apply_default_value_markup(emissions, year)
 
     factor = rc.cbam_factor(year)
-    chargeable_tco2e = emissions * factor
+
+    if mechanism == "factor_scaled":
+        chargeable_tco2e = emissions * factor
+    else:
+        if benchmark_tco2e_per_tonne is None:
+            raise ValueError(
+                "The benchmark_shielded mechanism requires "
+                "benchmark_tco2e_per_tonne. Pass "
+                "regulatory_constants.eu_product_benchmark(product), and read "
+                "the unit warning in this function's docstring first."
+            )
+        # Free allocation shields the benchmark, not a share of the importer's
+        # own emissions. Floors at zero: a producer at or below the benchmark
+        # owes nothing while free allocation is still being phased out.
+        free_allocation_share = 1.0 - factor
+        chargeable_tco2e = max(
+            0.0, emissions - benchmark_tco2e_per_tonne * free_allocation_share
+        )
 
     net_price = cert_price_eur - origin_carbon_price_eur_per_tco2e
     return max(0.0, chargeable_tco2e * net_price)
@@ -141,8 +180,15 @@ def cbam_cost_for_corridor(
     origin_carbon_price_eur_per_tco2e: float = 0.0,
     using_default_values: bool = False,
     uk_rate_fraction=None,
+    cbam_mechanism: str = None,
+    benchmark_tco2e_per_tonne: float = None,
 ) -> float:
-    """Dispatch to the right CBAM regime. Returns cost in the regime's currency."""
+    """Dispatch to the right CBAM regime. Returns cost in the regime's currency.
+
+    `cbam_mechanism` and `benchmark_tco2e_per_tonne` apply to the EU regime
+    only. The UK scheme's rate fraction already nets off free allocation
+    directly (see `uk_cbam_rate_fraction`), so it has no equivalent choice.
+    """
     regime = rc.CORRIDOR_REGIME[corridor]
     if regime == "EU":
         return eu_cbam_cost(
@@ -151,6 +197,8 @@ def cbam_cost_for_corridor(
             eu_cert_price_eur,
             origin_carbon_price_eur_per_tco2e,
             using_default_values,
+            cbam_mechanism,
+            benchmark_tco2e_per_tonne,
         )
     return uk_cbam_cost(
         embedded_emissions_tco2e,

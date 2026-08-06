@@ -317,7 +317,7 @@ st.caption(
     "converted or combined."
 )
 
-emissions, _, _ = data_io.load_inputs()
+emissions, _, commercial = data_io.load_inputs()
 placeholder_inputs = data_io.using_placeholder_data()
 if placeholder_inputs:
     st.warning(
@@ -576,8 +576,8 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # Main panel
 # ---------------------------------------------------------------------------
-tab_compliance, tab_maritime, tab_sensitivity = st.tabs(
-    ["Compliance cost", "Maritime layer only", "Sensitivity"]
+tab_compliance, tab_maritime, tab_sensitivity, tab_choice = st.tabs(
+    ["Compliance cost", "Maritime layer only", "Sensitivity", "Which pathway / corridor"]
 )
 
 with tab_compliance:
@@ -768,3 +768,178 @@ with tab_sensitivity:
                 hide_index=True,
                 use_container_width=True,
             )
+
+with tab_choice:
+    st.caption(
+        "Not an optimisation — a ranking over the small set of pathways and "
+        "corridors the literature actually supports. Answers \"which one, and "
+        "when\", not \"what does it cost\" (that's the Compliance cost tab)."
+    )
+    from cbam_model.analysis import outputs
+    from cbam_model import runner
+
+    st.subheader("Which pathway is cheapest?")
+    st.caption(
+        "Production cost + CBAM only, not a delivered cost: conversion, "
+        "shipping and maritime cost are held pathway-invariant in the current "
+        "data, so they cancel out of *which pathway wins* even though they'd "
+        "be needed for an absolute delivered-cost figure. Same reasoning "
+        "`marginal_abatement_cost` already relies on."
+    )
+
+    ranking = outputs.pathway_cost_ranking(
+        emissions, commercial, year=year, price_scenario=price_scenario,
+        uk_price_variant=uk_price_variant,
+    )
+    ranking_here = ranking[
+        (ranking["corridor"] == corridor) & (ranking["product"] == product)
+    ].sort_values("rank")
+
+    if ranking_here.empty:
+        st.info("No commercial (production cost) data for this corridor/product.")
+    else:
+        cheapest_row = ranking_here.iloc[0]
+        colors = [
+            TOKENS["fueleu"] if p == cheapest_row["pathway"] else TOKENS["ink_muted"]
+            for p in ranking_here["pathway"]
+        ]
+        fig = go.Figure(
+            go.Bar(
+                x=ranking_here["pathway_visible_cost_eur_per_tonne"],
+                y=[_pathway_display(p) for p in ranking_here["pathway"]],
+                orientation="h",
+                marker=dict(color=colors, cornerradius=4),
+                text=[f"EUR {v:,.0f}" for v in ranking_here["pathway_visible_cost_eur_per_tonne"]],
+                textposition="outside",
+                cliponaxis=False,
+                textfont=dict(color=TOKENS["ink"]),
+                hovertemplate="%{y}: EUR %{x:,.2f}/t<extra></extra>",
+            )
+        )
+        fig.update_yaxes(autorange="reversed")
+        fig.update_xaxes(
+            title="Production + CBAM cost (EUR/tonne)",
+            **_headroom(list(ranking_here["pathway_visible_cost_eur_per_tonne"])),
+        )
+        st.plotly_chart(
+            _chart_layout(fig, height=90 + 46 * len(ranking_here)),
+            use_container_width=True,
+            config={"displayModeBar": False},
+        )
+        st.write(
+            f"**Cheapest: {_pathway_display(cheapest_row['pathway'])}** "
+            f"at EUR {cheapest_row['pathway_visible_cost_eur_per_tonne']:,.2f}/t "
+            f"({year}, {price_scenario} price)."
+        )
+
+        robustness = outputs.pathway_choice_price_robustness(
+            emissions, commercial, year=year, uk_price_variant=uk_price_variant,
+        )
+        r_here = robustness[
+            (robustness["corridor"] == corridor) & (robustness["product"] == product)
+        ]
+        if not r_here.empty:
+            stable = bool(r_here.iloc[0]["choice_stable"])
+            if stable:
+                st.markdown(
+                    _badge("Stable across low/medium/high price scenarios", dot=TOKENS["fueleu"]),
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown(
+                    _badge("Recommendation changes with the price scenario", warn=True),
+                    unsafe_allow_html=True,
+                )
+                st.caption(
+                    "Low: " + _pathway_display(r_here.iloc[0]["cheapest_pathway_low"])
+                    + " · Medium: " + _pathway_display(r_here.iloc[0]["cheapest_pathway_medium"])
+                    + " · High: " + _pathway_display(r_here.iloc[0]["cheapest_pathway_high"])
+                )
+
+    st.divider()
+    st.subheader("Corridor comparison")
+    st.caption(
+        "Both corridors on one axis (GBP-equivalent, 23 July 2026 ECB rate), "
+        "for the CBAM regulatory-default pathway — the only pathway label that "
+        "exists on both corridors, since Halifax-Hamburg and Ningbo-Felixstowe "
+        "otherwise run different production routes."
+    )
+    compliance_matrix = runner.run_compliance_matrix(emissions)
+    comparison = outputs.corridor_cost_comparison(
+        compliance_matrix, pathway="cbam_default", price_scenario=price_scenario
+    )
+    comp_here = comparison[comparison["product"] == product].sort_values("year")
+
+    if comp_here.empty:
+        st.info("No corridor comparison available for this product/price scenario.")
+    else:
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=comp_here["year"], y=comp_here["halifax_hamburg_gbp_equivalent"],
+            name="Halifax-Hamburg", mode="lines+markers",
+            line=dict(color=TOKENS["cbam"], width=3),
+            hovertemplate="Halifax-Hamburg %{x}: GBP %{y:,.2f}<extra></extra>",
+        ))
+        fig.add_trace(go.Scatter(
+            x=comp_here["year"], y=comp_here["ningbo_felixstowe_gbp_equivalent"],
+            name="Ningbo-Felixstowe", mode="lines+markers",
+            line=dict(color=TOKENS["ets"], width=3),
+            hovertemplate="Ningbo-Felixstowe %{x}: GBP %{y:,.2f}<extra></extra>",
+        ))
+        fig.update_layout(showlegend=True, legend=dict(orientation="h", y=1.15))
+        fig.update_xaxes(title="Year", dtick=1)
+        fig.update_yaxes(title="Total compliance cost (GBP-equivalent/t)")
+        st.plotly_chart(
+            _chart_layout(fig, height=320), use_container_width=True,
+            config={"displayModeBar": False},
+        )
+
+        crossover = outputs.corridor_crossover_year(
+            compliance_matrix, pathway="cbam_default", price_scenario=price_scenario
+        )
+        c_here = crossover[crossover["product"] == product]
+        if not c_here.empty and c_here.iloc[0]["ordering_changes"]:
+            cy = int(c_here.iloc[0]["crossover_year"])
+            st.write(
+                f"**Cheaper corridor flips in {cy}** "
+                f"({_corridor_short(c_here.iloc[0]['cheaper_corridor_first_year'])} "
+                f"→ {_corridor_short(c_here.iloc[0]['cheaper_corridor_last_year'])}), "
+                f"the year UK CBAM starts — not a gradual overtake."
+            )
+
+    st.divider()
+    st.subheader("When does switching pathway start paying for itself?")
+    st.caption(
+        "First year each pathway's marginal abatement cost drops below the "
+        "corridor's carbon price. Check `carbon_price_varies_by_year` before "
+        "reading a UK row: the UK ETS price is frozen (only 2026 was ever "
+        "sourced), so \"no breakeven year\" there is an artefact of that "
+        "assumption, not evidence switching never pays."
+    )
+    breakeven = outputs.abatement_breakeven_year(
+        emissions, commercial, price_scenario=price_scenario,
+        uk_price_variant=uk_price_variant,
+    )
+    b_here = breakeven[
+        (breakeven["corridor"] == corridor) & (breakeven["product"] == product)
+    ]
+    if b_here.empty:
+        st.info("No abatement pathways to compare for this corridor/product.")
+    else:
+        display = b_here.copy()
+        display["pathway"] = display["pathway"].map(_pathway_display)
+        display["reference_pathway"] = display["reference_pathway"].map(_pathway_display)
+        st.dataframe(
+            display[[
+                "pathway", "reference_pathway", "abatement_cost_eur_per_tco2",
+                "verdict_first_year", "verdict_last_year", "breakeven_year",
+                "first_marginal_year", "carbon_price_varies_by_year", "note",
+            ]].rename(columns={
+                "reference_pathway": "vs. reference pathway",
+                "abatement_cost_eur_per_tco2": "MAC (EUR/tCO2)",
+                "verdict_first_year": f"verdict {scenarios.YEARS[0]}",
+                "verdict_last_year": f"verdict {scenarios.YEARS[-1]}",
+            }),
+            hide_index=True,
+            use_container_width=True,
+        )

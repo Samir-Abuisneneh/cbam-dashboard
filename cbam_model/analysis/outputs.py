@@ -667,6 +667,268 @@ def corridor_crossover_year(
     return pd.DataFrame(rows)
 
 
+# ---------------------------------------------------------------------------
+# Lock-in and corridor switching. Added 6 August 2026.
+# ---------------------------------------------------------------------------
+# `corridor_crossover_year` above finds the year the cheaper corridor changes.
+# It says nothing about whether a firm could act on that, because it treats
+# corridor choice as a decision remade every year at no cost.
+#
+# The two functions below relax that. See `model/switching.py` for the
+# transaction-cost reasoning and, importantly, for the unit convention: these
+# thresholds are GBP per tonne of *annual contracted volume*, not per tonne
+# shipped.
+
+
+def corridor_lock_in(
+    compliance: pd.DataFrame,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+    tenor_years: int = None,
+    discount_rate: float = None,
+    beyond_horizon: str = "truncate",
+) -> pd.DataFrame:
+    """Whether the spot-cheapest corridor is also the right one to commit to.
+
+    For each product and each possible decision year, compares two rules:
+
+      myopic     pick whichever corridor is cheaper in the decision year, which
+                 is what `corridor_cost_comparison` supports on its own
+      committed  pick whichever corridor has the lower present value of
+                 compliance cost across the whole contract tenor, which is what
+                 a firm actually buys when the enabling assets are corridor
+                 specific and cannot be redeployed
+
+    `decision_reverses` marks the rows where the two disagree. Those rows are
+    the point of this table: they are cases where acting on the current cost
+    ranking destroys value, and the mechanism driving them is regulatory timing
+    rather than anything about the corridors themselves.
+
+    `breakeven_switching_cost_gbp_per_tonne_annual_volume` is the largest sunk
+    cost at which a firm already committed to the myopic choice should still
+    pay to move. Zero means the myopic choice was also the committed choice, so
+    nothing is gained by switching at any price.
+
+    READ THE BEYOND-HORIZON CAVEAT. The model covers 2026-2030 and the default
+    tenor is ten years, so most decision years run past the modelled data. The
+    default "truncate" evaluates only modelled years, which understates the
+    tenor and therefore understates lock-in. "hold_final" flatters the EU
+    corridor, because the EU-UK gap narrows across the horizon and freezing it
+    projects an advantage the trend is eroding. `years_evaluated` reports how
+    many years each row actually used, and it should be quoted alongside any
+    figure taken from here.
+    """
+    from ..model import switching
+
+    tenor_years = (
+        switching.DEFAULT_CONTRACT_TENOR_YEARS if tenor_years is None else tenor_years
+    )
+    discount_rate = (
+        switching.DEFAULT_DISCOUNT_RATE if discount_rate is None else discount_rate
+    )
+
+    comparison = corridor_cost_comparison(compliance, pathway, price_scenario)
+    if comparison.empty:
+        return pd.DataFrame()
+
+    hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
+    rows = []
+    for product, grp in comparison.groupby("product"):
+        grp = grp.sort_values("year").reset_index(drop=True)
+        for i, decision in grp.iterrows():
+            forward = grp.iloc[i:]
+            hh_path = list(forward["halifax_hamburg_gbp_equivalent"])
+            nf_path = list(forward["ningbo_felixstowe_gbp_equivalent"])
+
+            pv_hh = switching.committed_present_cost(
+                hh_path, tenor_years, discount_rate, beyond_horizon
+            )
+            pv_nf = switching.committed_present_cost(
+                nf_path, tenor_years, discount_rate, beyond_horizon
+            )
+            years_evaluated = len(
+                switching.extend_to_tenor(hh_path, tenor_years, beyond_horizon)
+            )
+
+            myopic = decision["cheaper_corridor"]
+            committed = hh if pv_hh <= pv_nf else nf
+            pv_myopic = pv_hh if myopic == hh else pv_nf
+            pv_committed = min(pv_hh, pv_nf)
+            breakeven = max(0.0, pv_myopic - pv_committed)
+
+            rows.append(
+                {
+                    "product": product,
+                    "pathway": pathway,
+                    "price_scenario": price_scenario,
+                    "decision_year": int(decision["year"]),
+                    "tenor_years": tenor_years,
+                    "years_evaluated": years_evaluated,
+                    "discount_rate": discount_rate,
+                    "beyond_horizon": beyond_horizon,
+                    "spot_cost_gap_gbp_per_tonne": decision["cost_gap_gbp"],
+                    "myopic_choice": myopic,
+                    "committed_choice": committed,
+                    "decision_reverses": committed != myopic,
+                    "pv_halifax_hamburg_gbp_per_tonne_annual_volume": round(pv_hh, 2),
+                    "pv_ningbo_felixstowe_gbp_per_tonne_annual_volume": round(pv_nf, 2),
+                    "breakeven_switching_cost_gbp_per_tonne_annual_volume": round(
+                        breakeven, 2
+                    ),
+                    "lock_in_regret_pct": (
+                        round(100.0 * breakeven / pv_committed, 2)
+                        if pv_committed
+                        else None
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def cbam_mechanism_comparison(
+    emissions: pd.DataFrame,
+    years=tuple(scenarios.YEARS),
+    price_scenario: str = "medium",
+) -> pd.DataFrame:
+    """EU CBAM liability under both free-allocation mechanisms, side by side.
+
+    Sizes the open item this project has carried since 4 August 2026. The model
+    computes `chargeable = embedded x CBAM_factor`, but Regulation (EU) 2023/956
+    Article 31 shields a product benchmark rather than a share of the importer's
+    own emissions, giving `max(0, embedded - benchmark x (1 - CBAM_factor))`.
+    The two agree only in 2034.
+
+    EU corridor rows only. The UK scheme nets free allocation off inside its
+    rate fraction and has no equivalent choice, so including UK rows would
+    imply a comparison that does not exist.
+
+    TWO THINGS THAT MUST TRAVEL WITH ANY FIGURE FROM HERE.
+
+    First, `benchmark_is_current` is False until the 2026-2030 benchmarks
+    adopted on 29 June 2026 are read out of the Official Journal. The
+    benchmarks in code are the 2021-2025 set and the revision cut free
+    allocation by more than 16% on average, so the benchmark column understates
+    the true liability by an amount this model cannot yet quantify.
+
+    Second, the direction of the error is not uniform. For a producer dirtier
+    than the benchmark the current model understates CBAM cost; for one cleaner
+    than the benchmark the benchmark mechanism can floor at zero, meaning
+    genuinely clean production owes nothing rather than owing a small scaled
+    amount. `cleaner_than_benchmark` marks which side each row sits on. That
+    split is the substantive finding here, because it is what would make CBAM
+    materially better at closing the green premium than the current model shows.
+    """
+    from ..model import total_cost
+
+    eu_rows = emissions[
+        emissions["corridor"].map(lambda c: rc.CORRIDOR_REGIME[c] == "EU")
+    ]
+    if eu_rows.empty:
+        return pd.DataFrame()
+
+    rows = []
+    for _, r in eu_rows.iterrows():
+        for year in years:
+            costs = {}
+            for mechanism in rc.EU_CBAM_MECHANISMS:
+                costs[mechanism] = total_cost.cbam_cost_per_tonne(
+                    corridor=r["corridor"],
+                    product=r["product"],
+                    pathway=r["pathway"],
+                    year=year,
+                    price_scenario=price_scenario,
+                    embedded_emissions_tco2e_per_tonne=r[
+                        "embedded_emissions_tco2e_per_tonne"
+                    ],
+                    origin_carbon_price_eur_per_tco2e=rc.origin_carbon_price_eur(
+                        r["corridor"], year
+                    ),
+                    cbam_mechanism=mechanism,
+                ).eu_cbam_cost_eur_per_tonne
+
+            benchmark = rc.eu_product_benchmark(r["product"])
+            embedded = float(r["embedded_emissions_tco2e_per_tonne"])
+            current = costs["factor_scaled"]
+            shielded = costs["benchmark_shielded"]
+            rows.append(
+                {
+                    "corridor": r["corridor"],
+                    "product": r["product"],
+                    "pathway": r["pathway"],
+                    "year": year,
+                    "price_scenario": price_scenario,
+                    "embedded_emissions_tco2e_per_tonne": embedded,
+                    "benchmark_tco2e_per_tonne": benchmark,
+                    "benchmark_period": rc.EU_ETS_PRODUCT_BENCHMARK_PERIOD,
+                    "benchmark_is_current": rc.EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT,
+                    "cleaner_than_benchmark": embedded < benchmark,
+                    "factor_scaled_eur_per_tonne": round(current, 2),
+                    "benchmark_shielded_eur_per_tonne": round(shielded, 2),
+                    "difference_eur_per_tonne": round(shielded - current, 2),
+                    "ratio": round(shielded / current, 3) if current else None,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+# Illustrative grid of corridor-specific sunk costs, GBP per tonne of annual
+# contracted volume. NOT SOURCED, and must never be presented as if it were.
+# Its only job is to show where the verdict flips, so the discussion can argue
+# about which side of the breakeven real switching costs plausibly fall.
+ILLUSTRATIVE_SWITCHING_COSTS = (10.0, 25.0, 50.0, 100.0, 250.0, 500.0)
+
+
+def switching_cost_sensitivity(
+    compliance: pd.DataFrame,
+    switching_costs=ILLUSTRATIVE_SWITCHING_COSTS,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+    tenor_years: int = None,
+    discount_rate: float = None,
+    beyond_horizon: str = "truncate",
+) -> pd.DataFrame:
+    """Verdict on switching corridor across a grid of assumed sunk costs.
+
+    Long format, one row per product, decision year and assumed switching cost.
+    The verdict is three-state via `switching.switch_verdict`, so a result
+    inside 10% of the breakeven reads `marginal` rather than being reported as
+    a decision. `never_justified` is distinct from `locked_in`: the first means
+    the alternative corridor is not cheaper over the tenor at any price, the
+    second means it is cheaper but not by enough to cover this sunk cost.
+
+    The switching costs are illustrative. See `ILLUSTRATIVE_SWITCHING_COSTS`.
+    """
+    from ..model import switching
+
+    base = corridor_lock_in(
+        compliance, pathway, price_scenario, tenor_years, discount_rate, beyond_horizon
+    )
+    if base.empty:
+        return pd.DataFrame()
+
+    rows = []
+    for _, r in base.iterrows():
+        breakeven = r["breakeven_switching_cost_gbp_per_tonne_annual_volume"]
+        for cost in switching_costs:
+            rows.append(
+                {
+                    "product": r["product"],
+                    "pathway": pathway,
+                    "price_scenario": price_scenario,
+                    "decision_year": r["decision_year"],
+                    "tenor_years": r["tenor_years"],
+                    "years_evaluated": r["years_evaluated"],
+                    "beyond_horizon": r["beyond_horizon"],
+                    "myopic_choice": r["myopic_choice"],
+                    "committed_choice": r["committed_choice"],
+                    "assumed_switching_cost_gbp_per_tonne_annual_volume": cost,
+                    "breakeven_switching_cost_gbp_per_tonne_annual_volume": breakeven,
+                    "verdict": switching.switch_verdict(breakeven, cost),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def abatement_breakeven_year(
     emissions: pd.DataFrame,
     commercial: pd.DataFrame,
@@ -905,6 +1167,12 @@ def write_all(
             breakeven.to_csv(OUTPUT_DIR / "abatement_breakeven_year.csv", index=False)
             written.append("abatement_breakeven_year.csv")
 
+    if emissions is not None and len(emissions):
+        mechanism = cbam_mechanism_comparison(emissions)
+        if len(mechanism):
+            mechanism.to_csv(OUTPUT_DIR / "cbam_mechanism_comparison.csv", index=False)
+            written.append("cbam_mechanism_comparison.csv")
+
     if compliance is not None and len(compliance):
         compliance.to_csv(OUTPUT_DIR / "compliance_cost_per_tonne.csv", index=False)
         written.append("compliance_cost_per_tonne.csv")
@@ -918,6 +1186,30 @@ def write_all(
         if len(crossover):
             crossover.to_csv(OUTPUT_DIR / "corridor_crossover_year.csv", index=False)
             written.append("corridor_crossover_year.csv")
+
+        # Both beyond-horizon treatments, for the same reason
+        # abatement_source_robustness reports both cost sourcings: they err in
+        # opposite directions and a finding that survives only one of them is
+        # an artefact of the assumption. Stacked into one file with the method
+        # as a column so the results chapter cannot quote one without the
+        # other being visible.
+        lock_in = pd.concat(
+            [
+                corridor_lock_in(compliance, beyond_horizon=m)
+                for m in ("truncate", "hold_final")
+            ],
+            ignore_index=True,
+        )
+        if len(lock_in):
+            lock_in.to_csv(OUTPUT_DIR / "corridor_lock_in.csv", index=False)
+            written.append("corridor_lock_in.csv")
+
+        switch_sweep = switching_cost_sensitivity(compliance)
+        if len(switch_sweep):
+            switch_sweep.to_csv(
+                OUTPUT_DIR / "switching_cost_sensitivity.csv", index=False
+            )
+            written.append("switching_cost_sensitivity.csv")
 
     maritime.to_csv(OUTPUT_DIR / "maritime_cost_per_voyage.csv", index=False)
     written.append("maritime_cost_per_voyage.csv")

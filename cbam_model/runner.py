@@ -84,6 +84,7 @@ def run_cbam_matrix(
     using_default_values: bool = None,
     skip_unresolved: bool = True,
     uk_price_variant: str = "frozen",
+    cbam_mechanism: str = None,
 ) -> pd.DataFrame:
     """CBAM liability per tonne of product.
 
@@ -121,6 +122,7 @@ def run_cbam_matrix(
                             using_default_values=using_default_values,
                             uk_cbam_rate_override=uk_cbam_rate_override,
                             uk_price_variant=uk_price_variant,
+                            cbam_mechanism=cbam_mechanism,
                         ).as_dict()
                     )
                 except UnresolvedConstantError:
@@ -150,6 +152,7 @@ def run_compliance_matrix(
     uk_cbam_rate_override=None,
     skip_unresolved: bool = True,
     uk_price_variant: str = "frozen",
+    cbam_mechanism: str = None,
 ) -> pd.DataFrame:
     """Total carbon compliance cost per tonne of product, both layers joined.
 
@@ -198,6 +201,7 @@ def run_compliance_matrix(
                                 ),
                                 uk_cbam_rate_override=uk_cbam_rate_override,
                                 uk_price_variant=uk_price_variant,
+                                cbam_mechanism=cbam_mechanism,
                             )
                         except UnresolvedConstantError:
                             if not skip_unresolved:

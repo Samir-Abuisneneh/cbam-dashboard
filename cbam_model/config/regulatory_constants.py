@@ -158,21 +158,44 @@ EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT = True
 #
 # The 2026-2030 benchmark blocker was cleared on 6 August 2026, so the
 # stale-data reason for defaulting to "factor_scaled" is gone. The default was
-# nevertheless left on "factor_scaled", because switching it was found to
-# invert the study's headline corridor finding rather than merely rescale it:
+# nevertheless left on "factor_scaled", because switching it inverts the study's
+# headline corridor finding for hydrogen rather than merely rescaling it.
 #
-#   factor_scaled       Halifax-Hamburg is cheaper from 2027 onward. Lock-in
-#                       reversal at the 2026 decision year, regret 95% (ammonia)
-#                       and 109% (hydrogen).
-#   benchmark_shielded  Ningbo-Felixstowe is cheaper in every year except 2027.
-#                       Lock-in reversal moves to the 2027 decision year, regret
-#                       11% (ammonia) and 4% (hydrogen).
+# FIGURES BELOW RE-DERIVED 7 August 2026, after the fertiliser mark-up fix.
+# That fix cut ammonia's default-value mark-up from 30% to the legislated 1%,
+# which lowered EU ammonia liability enough that the benchmark shield no longer
+# flips the ammonia ordering. The decision's blast radius therefore halved: it
+# is now a hydrogen-only question. The pre-fix version of this table said
+# "Ningbo-Felixstowe is cheaper in every year except 2027" for both products
+# and quoted regret of 95%/109% and 11%/4%; all of that is superseded.
 #
-# The mechanism drives that because the EU corridor's liability rises roughly
-# tenfold in the early years under the benchmark form, while the UK corridor is
-# untouched (the UK scheme nets free allocation off inside its own rate
-# fraction). The two regimes are therefore not being treated symmetrically by
-# this choice, which is exactly why it cannot be made silently.
+#   Cheaper corridor by year (2026-2030), cbam_default pathway, medium price:
+#
+#     ammonia    factor_scaled       NF, HH, HH, HH, HH
+#                benchmark_shielded  NF, HH, HH, HH, HH   <- identical
+#     hydrogen   factor_scaled       NF, HH, HH, HH, HH
+#                benchmark_shielded  NF, HH, NF, NF, NF   <- inverts from 2028
+#
+#   First lock-in reversal, truncate treatment, with regret and breakeven
+#   switching cost in GBP per tonne of annual contracted volume:
+#
+#     ammonia    factor_scaled       2026, regret 145.7%, breakeven 91.60
+#                benchmark_shielded  2026, regret  33.5%, breakeven 38.72
+#     hydrogen   factor_scaled       2026, regret 108.7%, breakeven 491.95
+#                benchmark_shielded  2027, regret   4.2%, breakeven 43.24
+#
+# So the choice no longer changes WHICH corridor ammonia should commit to, only
+# how costly the wrong choice is. For hydrogen it still changes the direction.
+#
+# The mechanism drives that because the EU corridor's liability rises steeply in
+# the early years under the benchmark form, while the UK corridor is untouched
+# (the UK scheme nets free allocation off inside its own rate fraction). The two
+# regimes are therefore not being treated symmetrically by this choice, which is
+# exactly why it cannot be made silently.
+#
+# `test_the_mechanism_choice_inverts_the_corridor_finding` pins the orderings
+# above and fails if either moves, so this table cannot drift from the code
+# again without a test failure naming it.
 #
 # Evidence for "benchmark_shielded" being the legally correct form: Article 31
 # of Regulation (EU) 2023/956 adjusts for free allocation, and free allocation

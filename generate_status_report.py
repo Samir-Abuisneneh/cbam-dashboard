@@ -1,13 +1,18 @@
 """Generates CBAM_Model_Status_Report.pdf. Build tooling, not part of the model.
 
-FROZEN SNAPSHOT, 27 JULY 2026. Do not read this as the current state of the
-model and do not quote figures out of it. The prose below is deliberately left
-as it was written for that supervisor meeting, because a dated briefing that
-gets quietly edited afterwards is worse than a stale one. Re-running this script
-reproduces the 27 July document, not today's position.
+DATED BRIEFING, 27 JULY 2026. Do not read this as the current state of the
+model and do not quote figures out of it. The prose is deliberately left close
+to how it was written for that supervisor meeting, because a dated briefing
+that gets quietly edited afterwards is worse than a stale one.
 
-Several of its statements have since been superseded, and these are the ones
-most likely to be quoted by mistake:
+It is not a pure snapshot, and calling it "frozen" was overstating it: the
+assumptions table carries some 4 August 2026 corrections that were folded in
+after the meeting, while the surrounding prose was not revisited. So the two
+disagree in places. Where they do, the table is the later text and this
+docstring is the authority on what has since moved.
+
+Several statements have since been superseded, and these are the ones most
+likely to be quoted by mistake:
 
   - Canada's origin carbon price is given as CAD 110/tCO2e (EUR 68.63). That was
     an extrapolation from a December 2020 plan that had already been replaced.
@@ -19,6 +24,18 @@ most likely to be quoted by mistake:
     denominator hypothesis unconfirmed. The paper was read on 4 August 2026: the
     burden is measured against EU-bound revenue only, and it reconciles at 20.7%
     against the published 22% under the benchmark form of the obligation.
+  - The assumptions table says China green hydrogen production cost takes "the
+    lower figure" of Riya's two conflicting sheets (USD 4.63/kg). That was
+    reversed by the source-consistency switch of 4 August 2026: the whole China
+    hydrogen row now comes from one study (S0360319925010602), which puts green
+    at USD 5.72-6.62/kg, and `data_io` uses that midpoint. The higher figure is
+    in force, not the lower one.
+  - The headline "roughly 37 times lower" for 2026 hydrogen is superseded twice
+    over: by the input corrections above, and by the move to the
+    `benchmark_shielded` CBAM mechanism on 7 August 2026. It also compared EUR
+    against GBP without converting. See `README.md` for the current figures.
+  - The whole document predates the CBAM free-allocation mechanism decision.
+    Every CBAM figure in it is on the superseded `factor_scaled` form.
   - The test and reproduction-figure counts are from that date and have grown.
 
 For the current position use `run_model.ipynb`, `README.md` and the test suite.

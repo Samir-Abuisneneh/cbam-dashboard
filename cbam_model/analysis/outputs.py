@@ -74,8 +74,8 @@ def maritime_summary(maritime: pd.DataFrame, price_scenario: str = "medium") -> 
         & _maritime_base_case_mask(maritime)
     ][
         [
-            "corridor", "vessel_set", "year", "distance_nm", "voyage_days",
-            "voyage_co2_t", "eu_ets_cost_eur", "fueleu_cost_eur",
+            "corridor", "vessel_set", "vessel_class", "year", "distance_nm",
+            "voyage_days", "voyage_co2_t", "eu_ets_cost_eur", "fueleu_cost_eur",
             "uk_ets_cost_gbp", "total_eur", "total_gbp",
         ]
     ].sort_values(["year", "corridor", "vessel_set"])
@@ -108,7 +108,8 @@ def carbon_cost_per_tonne_co2(maritime: pd.DataFrame) -> pd.DataFrame:
     )
     return out[
         [
-            "corridor", "vessel_set", "route_scenario", "speed_scenario", "year",
+            "corridor", "vessel_set", "vessel_class", "route_scenario",
+            "speed_scenario", "year",
             "price_scenario", "uk_ets_variant", "uk_price_variant", "bunker_fuel",
             "voyage_co2_t", "currency", "cost_in_own_currency",
             "effective_cost_per_tonne_co2", "effective_cost_per_tonne_co2_gbp",
@@ -292,6 +293,7 @@ def abatement_source_robustness(
     year: int = 2030,
     price_scenario: str = "medium",
     green_route: str = "wind",
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """Re-run the abatement result on IEA costs and put the two side by side.
 
@@ -314,7 +316,11 @@ def abatement_source_robustness(
     same number, only the same answer.
     """
     lit = marginal_abatement_cost(
-        emissions, commercial, year=year, price_scenario=price_scenario
+        emissions,
+        commercial,
+        year=year,
+        price_scenario=price_scenario,
+        uk_price_variant=uk_price_variant,
     )
     if lit.empty:
         return pd.DataFrame()
@@ -324,6 +330,7 @@ def abatement_source_robustness(
         _data_io().iea_production_costs(year=year, green_route=green_route),
         year=year,
         price_scenario=price_scenario,
+        uk_price_variant=uk_price_variant,
     )
     if iea.empty:
         return pd.DataFrame()
@@ -602,9 +609,17 @@ def corridor_cost_comparison(
         wide["ningbo_felixstowe_gbp_equivalent"]
         - wide["halifax_hamburg_gbp_equivalent"]
     ).round(2)
+    # `cheaper_corridor` has to name one corridor, because `corridor_lock_in`
+    # compares it against the committed choice and a third value would read as
+    # a reversal. On an exact tie it therefore falls to Halifax-Hamburg, which
+    # is an arbitrary tie-break rather than a finding. `corridors_tied` is what
+    # makes that visible: a tied row's `cheaper_corridor` must not be quoted as
+    # a direction, on the same principle as the `marginal` bands elsewhere in
+    # this module.
     wide["cheaper_corridor"] = wide["cost_gap_gbp"].map(
         lambda gap: nf if gap < 0 else hh
     )
+    wide["corridors_tied"] = wide["cost_gap_gbp"] == 0
     wide["pathway"] = pathway
     wide["price_scenario"] = price_scenario
     wide.columns.name = None
@@ -913,6 +928,7 @@ def competitiveness_asymmetry(
     commercial: pd.DataFrame,
     pathway: str = "cbam_default",
     price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """The EU-UK competitiveness gap, in percentage points of production cost.
 
@@ -931,9 +947,22 @@ def competitiveness_asymmetry(
     `_abatement_verdict` and `switching.switch_verdict`. A `marginal` row means
     the two corridors' burdens are not distinguishable given how the inputs
     were built, and `more_exposed_corridor` on that row must not be reported as
-    a direction. Hydrogen in 2029 is exactly such a row.
+    a direction. Hydrogen in 2029 is exactly such a row. An exact tie also
+    lands inside that band, which is what stops the arbitrary tie-break in
+    `more_exposed_corridor` from ever being read as a direction.
+
+    `uk_price_variant` must match the variant the `compliance` frame was built
+    with, exactly as in `corridor_cost_comparison` and `corridor_lock_in`. It
+    was missing here until 7 August 2026, and the failure was worse than the
+    empty frame `_base_case_mask` warns about: the EU corridor's rows survive
+    the filter on the `"n/a"` arm while every UK row is dropped, so no
+    product/year group has both corridors, every group is skipped, and the
+    empty result raised `KeyError: 'product'` out of the sort below rather
+    than returning an empty frame.
     """
-    burden = competitiveness_burden(compliance, commercial, pathway, price_scenario)
+    burden = competitiveness_burden(
+        compliance, commercial, pathway, price_scenario, uk_price_variant
+    )
     if burden.empty:
         return pd.DataFrame()
 
@@ -967,6 +996,12 @@ def competitiveness_asymmetry(
                 "value_basis": "production_cost",
             }
         )
+    if not rows:
+        # Same guard as `marginal_abatement_cost`. Reached whenever a
+        # product/year group is missing one of the two corridors, which an
+        # empty `rows` list turns into a column-less frame that `sort_values`
+        # cannot address.
+        return pd.DataFrame()
     return pd.DataFrame(rows).sort_values(["product", "year"]).reset_index(drop=True)
 
 
@@ -1242,7 +1277,10 @@ def plot_effective_carbon_cost(maritime: pd.DataFrame, price_scenario: str = "me
         # the conventional and green-bunker rows together, which would silently
         # understate the EU corridor.
         & _maritime_base_case_mask(df)
-        & (df["vessel_set"] == "VLGC/VLAC")
+        # The gas carrier is the study's primary case. Selected by the scenario
+        # dimension, not the display class name, so this cannot silently match
+        # nothing if the vessel is ever relabelled.
+        & (df["vessel_set"] == "gas_carrier")
     ]
     if df.empty:
         return None
@@ -1281,8 +1319,11 @@ def plot_maritime_cost_by_corridor(maritime: pd.DataFrame, year: int = 2026):
     ):
         if subset.empty:
             continue
+        # Grouped by the display class rather than the scenario key, because
+        # these strings become the chart's tick labels and "VLGC/VLAC" tells a
+        # reader more than "gas_carrier". The two are one-to-one per corridor.
         pivot = subset.pivot_table(
-            index=["vessel_set", "price_scenario"], values=cols, aggfunc="first"
+            index=["vessel_class", "price_scenario"], values=cols, aggfunc="first"
         )
         pivot.plot(kind="bar", stacked=True, ax=ax)
         ax.set_ylabel(f"Cost per voyage ({currency})")
@@ -1303,7 +1344,15 @@ def write_all(
     compliance: pd.DataFrame = None,
     emissions: pd.DataFrame = None,
     commercial: pd.DataFrame = None,
+    uk_price_variant: str = "frozen",
 ):
+    """Write every result table to `cbam_model/outputs/`.
+
+    `uk_price_variant` must match the variant the `compliance` and `maritime`
+    frames were built with. It is threaded into every function whose base-case
+    filter reads that column; passing a "desnz" frame while this stays on
+    "frozen" silently drops every UK row (see `_base_case_mask`).
+    """
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     written = []
 
@@ -1313,7 +1362,9 @@ def write_all(
         written.append("bunker_fuel_comparison.csv")
 
     if emissions is not None and commercial is not None:
-        mac = marginal_abatement_cost(emissions, commercial)
+        mac = marginal_abatement_cost(
+            emissions, commercial, uk_price_variant=uk_price_variant
+        )
         if len(mac):
             mac.to_csv(OUTPUT_DIR / "marginal_abatement_cost.csv", index=False)
             written.append("marginal_abatement_cost.csv")
@@ -1322,7 +1373,12 @@ def write_all(
         # are far apart and the check is only meaningful if it covers both.
         robustness = pd.concat(
             [
-                abatement_source_robustness(emissions, commercial, green_route=r)
+                abatement_source_robustness(
+                    emissions,
+                    commercial,
+                    green_route=r,
+                    uk_price_variant=uk_price_variant,
+                )
                 for r in ("wind", "solar")
             ],
             ignore_index=True,
@@ -1333,19 +1389,25 @@ def write_all(
             )
             written.append("abatement_source_robustness.csv")
 
-        ranking = pathway_cost_ranking(emissions, commercial)
+        ranking = pathway_cost_ranking(
+            emissions, commercial, uk_price_variant=uk_price_variant
+        )
         if len(ranking):
             ranking.to_csv(OUTPUT_DIR / "pathway_cost_ranking.csv", index=False)
             written.append("pathway_cost_ranking.csv")
 
-        stability = pathway_choice_price_robustness(emissions, commercial)
+        stability = pathway_choice_price_robustness(
+            emissions, commercial, uk_price_variant=uk_price_variant
+        )
         if len(stability):
             stability.to_csv(
                 OUTPUT_DIR / "pathway_choice_price_robustness.csv", index=False
             )
             written.append("pathway_choice_price_robustness.csv")
 
-        breakeven = abatement_breakeven_year(emissions, commercial)
+        breakeven = abatement_breakeven_year(
+            emissions, commercial, uk_price_variant=uk_price_variant
+        )
         if len(breakeven):
             breakeven.to_csv(OUTPUT_DIR / "abatement_breakeven_year.csv", index=False)
             written.append("abatement_breakeven_year.csv")
@@ -1360,12 +1422,16 @@ def write_all(
         compliance.to_csv(OUTPUT_DIR / "compliance_cost_per_tonne.csv", index=False)
         written.append("compliance_cost_per_tonne.csv")
 
-        comparison = corridor_cost_comparison(compliance)
+        comparison = corridor_cost_comparison(
+            compliance, uk_price_variant=uk_price_variant
+        )
         if len(comparison):
             comparison.to_csv(OUTPUT_DIR / "corridor_cost_comparison.csv", index=False)
             written.append("corridor_cost_comparison.csv")
 
-        crossover = corridor_crossover_year(compliance)
+        crossover = corridor_crossover_year(
+            compliance, uk_price_variant=uk_price_variant
+        )
         if len(crossover):
             crossover.to_csv(OUTPUT_DIR / "corridor_crossover_year.csv", index=False)
             written.append("corridor_crossover_year.csv")
@@ -1378,7 +1444,11 @@ def write_all(
         # other being visible.
         lock_in = pd.concat(
             [
-                corridor_lock_in(compliance, beyond_horizon=m)
+                corridor_lock_in(
+                    compliance,
+                    beyond_horizon=m,
+                    uk_price_variant=uk_price_variant,
+                )
                 for m in ("truncate", "hold_final")
             ],
             ignore_index=True,
@@ -1387,7 +1457,9 @@ def write_all(
             lock_in.to_csv(OUTPUT_DIR / "corridor_lock_in.csv", index=False)
             written.append("corridor_lock_in.csv")
 
-        switch_sweep = switching_cost_sensitivity(compliance)
+        switch_sweep = switching_cost_sensitivity(
+            compliance, uk_price_variant=uk_price_variant
+        )
         if len(switch_sweep):
             switch_sweep.to_csv(
                 OUTPUT_DIR / "switching_cost_sensitivity.csv", index=False
@@ -1395,14 +1467,18 @@ def write_all(
             written.append("switching_cost_sensitivity.csv")
 
         if commercial is not None and len(commercial):
-            burden = competitiveness_burden(compliance, commercial)
+            burden = competitiveness_burden(
+                compliance, commercial, uk_price_variant=uk_price_variant
+            )
             if len(burden):
                 burden.to_csv(
                     OUTPUT_DIR / "competitiveness_burden.csv", index=False
                 )
                 written.append("competitiveness_burden.csv")
 
-            asymmetry = competitiveness_asymmetry(compliance, commercial)
+            asymmetry = competitiveness_asymmetry(
+                compliance, commercial, uk_price_variant=uk_price_variant
+            )
             if len(asymmetry):
                 asymmetry.to_csv(
                     OUTPUT_DIR / "competitiveness_asymmetry.csv", index=False
@@ -1441,7 +1517,11 @@ def write_all(
         for _, row in emissions.iterrows():
             frames.append(
                 _sens.sweep_compliance(
-                    row["corridor"], row["product"], row["pathway"], emissions_row=row
+                    row["corridor"],
+                    row["product"],
+                    row["pathway"],
+                    emissions_row=row,
+                    uk_price_variant=uk_price_variant,
                 )
             )
         if frames:

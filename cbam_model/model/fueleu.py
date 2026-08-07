@@ -85,10 +85,14 @@ def effective_intensity_with_rfnbo(
     Args:
         rfnbo_energy_share: Fraction of on-board energy from RFNBO, 0 to 1.
     """
-    if year > rc.FUELEU_RFNBO_MULTIPLIER_EXPIRES:
-        return intensity_gco2e_mj
+    # Validate before the expiry check, not after. With the order reversed an
+    # out-of-range share was accepted silently for any year past 2033 and
+    # rejected before it, so the same bad call failed or passed depending on
+    # the scenario year.
     if not 0.0 <= rfnbo_energy_share <= 1.0:
         raise ValueError(f"rfnbo_energy_share must be between 0 and 1, got {rfnbo_energy_share}")
+    if year > rc.FUELEU_RFNBO_MULTIPLIER_EXPIRES:
+        return intensity_gco2e_mj
 
     # Doubling the RFNBO energy in the denominator dilutes the fleet-average
     # intensity by that share.

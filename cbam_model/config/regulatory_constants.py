@@ -441,7 +441,59 @@ PRICE_SCENARIOS = ("low", "medium", "high")
 UK_ETS_LINKAGE_IS_LAW = False
 UK_ETS_LINKAGE_ANCHOR_YEAR = 2026  # last year on the sourced official figure
 UK_ETS_LINKAGE_FULL_ALIGNMENT_YEAR = 2029
-UK_ETS_PRICE_VARIANTS = ("frozen", "linked")
+
+
+# ---------------------------------------------------------------------------
+# DESNZ official traded carbon values
+# ---------------------------------------------------------------------------
+# The third UK price path, added 6 August 2026. Unlike "frozen" (one sourced
+# year held flat) and "linked" (a market expectation that is not law), this is
+# the UK government's own published price series, which makes it the only
+# forward UK path in the model with an official source behind it.
+#
+# Source: Department for Energy Security and Net Zero, "Traded carbon values
+# used for modelling purposes, 2025", published 3 February 2026.
+# https://www.gov.uk/government/publications/traded-carbon-values-used-for-modelling-purposes-2025
+#
+# FOUR CAVEATS, and the first is the one that bites.
+#
+# 1. THESE ARE REAL 2025 PRICES. Every other price in this module is nominal.
+#    Converting would require an inflation assumption that this study has no
+#    basis to pick, so the figures are used as published and the mismatch is
+#    declared rather than papered over. The effect is that this variant
+#    understates nominal UK cost in later years, increasingly so with distance
+#    from 2025. It is therefore a conservative path for any finding that turns
+#    on the UK corridor being expensive.
+# 2. DESNZ states plainly these are not forecasts. They are scenario-based
+#    projections and actual prices may fall outside the range.
+# 3. They model a standalone UK ETS and explicitly do not account for UK-EU
+#    linking. So "desnz" and "linked" are alternative views of the same
+#    uncertainty, not compatible ones, and must never be combined.
+# 4. The 2026 central value of GBP 38 sits well below the GBP 49.41 the model
+#    uses as its baseline anchor. The two are not rival estimates of one
+#    quantity: 49.41 is a backward-looking 12-month average of actual UKA
+#    futures settlements, published for civil-penalty purposes, while 38 is a
+#    forward policy-appraisal scenario in real terms. Neither is wrong. The gap
+#    is itself worth reporting, because it brackets how much the UK price path
+#    assumption can move the corridor comparison.
+#
+# DESNZ low/central/high map onto the model's low/medium/high scenarios.
+UK_ETS_PRICE_DESNZ_BY_YEAR = {
+    2026: {"low": 22.0, "medium": 38.0, "high": 47.0},
+    2027: {"low": 23.0, "medium": 41.0, "high": 52.0},
+    2028: {"low": 23.0, "medium": 40.0, "high": 54.0},
+    2029: {"low": 22.0, "medium": 43.0, "high": 58.0},
+    2030: {"low": 25.0, "medium": 50.0, "high": 66.0},
+}
+UK_ETS_PRICE_DESNZ_PRICE_BASE_YEAR = 2025  # real prices, not nominal
+UK_ETS_PRICE_DESNZ_IS_FORECAST = False
+UK_ETS_PRICE_DESNZ_INCLUDES_EU_LINKING = False
+UK_ETS_PRICE_DESNZ_SOURCE = (
+    "DESNZ, Traded carbon values used for modelling purposes, 2025, "
+    "published 3 February 2026"
+)
+
+UK_ETS_PRICE_VARIANTS = ("frozen", "linked", "desnz")
 
 
 def eu_ets_price(year: int, scenario: str) -> float:
@@ -666,7 +718,12 @@ def uk_ets_price(year: int, scenario: str = "medium", variant: str = "frozen") -
             than correct: nobody decided UK prices stay flat, only one year was
             ever sourced. "linked" runs the EU-UK ETS linkage scenario, which
             is NOT law (see UK_ETS_LINKAGE_IS_LAW) and must be labelled as a
-            scenario wherever it appears.
+            scenario wherever it appears. "desnz" runs the UK government's own
+            published traded carbon values, the only forward UK path here with
+            an official source; read its four caveats at
+            UK_ETS_PRICE_DESNZ_BY_YEAR before quoting it, especially that it is
+            in real 2025 prices while everything else in this module is
+            nominal.
 
     The linked path narrows the discount to the EU price to zero by
     UK_ETS_LINKAGE_FULL_ALIGNMENT_YEAR, rather than interpolating the price
@@ -679,6 +736,15 @@ def uk_ets_price(year: int, scenario: str = "medium", variant: str = "frozen") -
             f"Unknown UK ETS price variant {variant!r}. "
             f"Expected one of {UK_ETS_PRICE_VARIANTS}."
         )
+
+    if variant == "desnz":
+        # Clamp outside the published range rather than extrapolating, matching
+        # how eu_ets_price handles its anchors. DESNZ publishes to 2050, but
+        # only the 2026-2030 rows have been read out, so a year beyond that is
+        # a silent extrapolation waiting to happen.
+        years = sorted(UK_ETS_PRICE_DESNZ_BY_YEAR)
+        clamped = min(max(year, years[0]), years[-1])
+        return UK_ETS_PRICE_DESNZ_BY_YEAR[clamped][scenario]
 
     frozen = UK_ETS_PRICE_SCENARIOS[scenario]
     if variant == "frozen":

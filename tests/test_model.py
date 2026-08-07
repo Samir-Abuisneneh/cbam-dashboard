@@ -2087,3 +2087,88 @@ def test_uk_cbam_indirect_emissions_gap_is_recorded_as_unimplemented():
     row = events.loc["UK-16"]
     assert "Direct emissions only" in row["quantified_effect"]
     assert "NOT YET IMPLEMENTED" in row["why_it_matters"]
+
+
+# ---------------------------------------------------------------------------
+# Scenario labelling
+# ---------------------------------------------------------------------------
+# Added 7 August 2026. Every other test here checks that a number is right.
+# These check that the number is presented under the right name, which this
+# project treats as the same class of error: two of the three UK price paths
+# and one of the two UK ETS scope variants are explicitly not law, so a
+# mislabelled figure is a policy-uncertain what-if quoted as a legislated
+# result.
+
+
+def test_every_uk_price_variant_has_its_own_label():
+    """Regression test for a real mislabelling bug, fixed 7 August 2026.
+
+    The dashboard built its UK carbon price selector by branching
+    `if v == "frozen" ... else <linkage label>`. That was correct while there
+    were two variants. When "desnz" was added on 6 August 2026 it fell into the
+    else arm, so the selector showed DESNZ prices captioned as the EU-UK
+    linkage scenario, and the caption underneath claimed the price was frozen
+    at the 2026 determination when it was not.
+
+    Nothing failed. The numbers were the right DESNZ numbers, carrying the
+    wrong scenario's name, which is the hardest kind of error to catch by
+    reading the screen. This test fails the moment a fourth variant is added
+    without a label of its own.
+    """
+    labels = scenarios.UK_PRICE_VARIANT_LABELS
+
+    assert set(labels) == set(rc.UK_ETS_PRICE_VARIANTS), (
+        "every UK price variant needs its own label; missing "
+        f"{sorted(set(rc.UK_ETS_PRICE_VARIANTS) - set(labels))}"
+    )
+
+    # Distinctness is the actual invariant. A dict can cover every variant and
+    # still be wrong if two of them share a label, which is exactly what the
+    # if/else did.
+    assert len(set(labels.values())) == len(labels), (
+        f"two UK price variants share a label: {sorted(labels.values())}"
+    )
+
+    # The linkage path is not law, and its label is the only place a reader of
+    # the dashboard is told so.
+    assert not rc.UK_ETS_LINKAGE_IS_LAW
+    assert "NOT law" in labels["linked"], (
+        "the linked label must say it is not law: UK_ETS_LINKAGE_IS_LAW is "
+        "False, the agreement was never confirmed, and a linkage figure shown "
+        "without that caveat reads as a legislated price path"
+    )
+
+    # DESNZ is official but in real 2025 prices while every other price in the
+    # model is nominal, so its label has to carry that or the two read as
+    # directly comparable when they are not.
+    assert rc.UK_ETS_PRICE_DESNZ_PRICE_BASE_YEAR == 2025
+    assert "real" in labels["desnz"].lower(), (
+        "the desnz label must say the series is in real 2025 prices; every "
+        "other price in the model is nominal, so without it the DESNZ path "
+        "looks like a like-for-like alternative to the frozen baseline"
+    )
+
+
+def test_every_uk_ets_scope_variant_has_its_own_label():
+    """Same invariant on the other variant axis, which has the same exposure.
+
+    `proposed_expansion` is the UK ETS extension to international voyages. The
+    consultation closed in January 2026 with no legislative decision, so it may
+    only ever appear captioned as policy-uncertain.
+    """
+    labels = scenarios.VARIANT_LABELS
+
+    assert set(labels) == set(scenarios.UK_ETS_VARIANTS), (
+        "every UK ETS scope variant needs its own label; missing "
+        f"{sorted(set(scenarios.UK_ETS_VARIANTS) - set(labels))}"
+    )
+    assert len(set(labels.values())) == len(labels), (
+        f"two UK ETS scope variants share a label: {sorted(labels.values())}"
+    )
+
+    assert not rc.UK_ETS_INTL_EXPANSION_IS_LAW
+    assert "NOT LAW" in labels["proposed_expansion"], (
+        "the proposed-expansion label must say it is not law: the consultation "
+        "closed in January 2026 with no legislative decision, and this variant "
+        "roughly doubles the UK corridor's maritime cost where it applies"
+    )

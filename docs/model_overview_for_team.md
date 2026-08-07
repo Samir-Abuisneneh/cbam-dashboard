@@ -4,6 +4,17 @@
 does with the inputs each of you has supplied, so each of you can write the dissertation
 section you own with an accurate picture of how it fits together.*
 
+*Revised 7 August 2026. Unlike the dated `findings_*.md` notes, this document is meant to
+track the current model, so it is updated in place rather than left as a snapshot. Three
+things changed since the 5 August version and all three affect what you write:*
+
+- ***Ammonia's CBAM default-value mark-up is 1%, not 30%.*** *Any ammonia CBAM or
+  compliance figure taken from this model before 7 August is overstated (8.9% in 2026,
+  28.7% from 2028) on the EU corridor. Regenerate, do not reuse.*
+- ***The EU CBAM benchmark question is no longer blocked on data,*** *and now only
+  changes the answer for hydrogen. See §7.*
+- ***A third UK carbon price path exists*** *(`desnz`), alongside `frozen` and `linked`.*
+
 ---
 
 ## 1. What this model answers
@@ -91,7 +102,7 @@ emissions, when it crosses into the EU or UK.
 **EU CBAM:**
 
 ```
-emissions_used   = embedded_emissions × (1 + markup(year))   [only if using a regulatory-default value]
+emissions_used   = embedded_emissions × (1 + markup(year, product))   [only if using a regulatory-default value]
 EU CBAM cost/t   = max(0, emissions_used × cbam_factor(year) × (cert_price − origin_carbon_price))
 ```
 
@@ -99,10 +110,18 @@ EU CBAM cost/t   = max(0, emissions_used × cbam_factor(year) × (cert_price −
   to 100% by 2034**. (Note: this is *not* the free-allocation share, which is the
   inverse — confusing the two has inverted the whole result twice already in this
   project, hence the loud warning comment in the code.)
-- `markup(year)` — 10%/20%/30% (2026/2027/2028+) — penalises using the regulatory
-  default instead of a verified actual emissions figure. It applies **only** to the
-  `cbam_default` pathway row, never to a literature pathway (this was a real bug, fixed
-  29 July — see §7).
+- `markup(year, product)` — penalises using the regulatory default instead of a verified
+  actual emissions figure. Two things about it, and both were bugs that got fixed rather
+  than design choices:
+  - It applies **only** to the `cbam_default` pathway row, never to a literature pathway
+    (fixed 29 July — see §7).
+  - It is **not uniform across goods** (fixed 7 August). Fertiliser goods carry a flat
+    **1%** in every year; everything else ramps **10%/20%/30%** (2026/2027/2028+). For
+    this study that split matters directly: **ammonia is a fertiliser good** for CBAM
+    purposes (CN 2814) and **hydrogen is not** (CN 2804). Riya and Alex in particular:
+    any ammonia CBAM figure taken from this model before 7 August was overstated by
+    8.9% in 2026 rising to 28.7% from 2028, on the EU corridor and on the study's
+    primary scenario. Regenerate rather than reuse.
 - The origin carbon price is credited **1-for-1 against the liability**, scaled by the
   same emissions and factor as the obligation itself, and floors at zero (also a fixed
   bug — the original spec had a units error here, see §7).
@@ -289,10 +308,23 @@ be adjusted against a product benchmark, not just scaled by the phase-in factor.
 formulas only agree in 2034. Reproducing a published external result (Ramsook et al.
 2025, Trinidad & Tobago ammonia) confirms the benchmark form is the legally correct one
 — the code currently understates that paper's published CBAM burden by roughly a third
-under the simpler form. Switching is blocked on reading out the Commission's revised
-2026-2030 product benchmarks (adopted 29 June 2026, not yet transcribed into the model).
-Both formulas are implemented side by side in `validation/reference_case.py` so the size
-of the effect is already visible, even though the headline model hasn't switched over.
+under the simpler form.
+
+**Updated 7 August 2026, and the status changed twice since this was written.** The data
+blocker is gone: the revised 2026-2030 product benchmarks were read out of the Official
+Journal text of IR 2026/1412 on 6 August (ammonia 1.522, hydrogen 7.98) and are in the
+model. Switching is now blocked on a **decision, not a lookup**, because flipping the
+mechanism does not rescale the results, it inverts which corridor the study concludes is
+cheaper. That is Frano's call, not a code change.
+
+The fertiliser mark-up fix then halved its scope. With ammonia's mark-up corrected, both
+mechanisms now agree on ammonia and **only hydrogen still flips**. So if you are writing
+the ammonia side, this open question no longer changes your direction, only the magnitude
+of the lock-in penalty. If you are writing hydrogen, it still changes the answer.
+
+Both formulas are implemented side by side in `validation/reference_case.py` and
+`analysis/outputs.cbam_mechanism_comparison` sizes the choice on the current benchmarks,
+so the effect is visible even though the headline model hasn't switched over.
 
 ---
 
@@ -410,12 +442,16 @@ switching never pays there.
    unblocked and complete), and it is stated as a limitation in the methodology
    rather than left open. Both terms are pathway-invariant as currently held, so
    they cancel out of the within-corridor comparisons the study reports.
-2. **UK ETS price held flat 2026-2030** — only the 2026 figure was ever sourced from a
-   primary source; a labelled EU-UK linkage scenario exists as an alternative but isn't
-   the baseline.
-3. **The EU CBAM benchmark-adjustment question** (§7) — needs the Commission's revised
-   2026-2030 benchmarks read out before the model can switch to the legally correct
-   functional form.
+2. **UK ETS price held flat 2026-2030 in the baseline** — only the 2026 figure was ever
+   sourced from a primary source. Two labelled alternatives now exist and neither is the
+   baseline: `linked` (EU-UK ETS linkage, NOT law) and `desnz` (the UK government's own
+   published traded carbon values, added 6 August, the only forward UK path with an
+   official source). The DESNZ series is in **real 2025 prices** while every other price
+   in the model is nominal, and it models a standalone UK ETS, so `desnz` and `linked`
+   are alternative views of the same uncertainty and must never be combined.
+3. **The EU CBAM benchmark-adjustment question** (§7) — no longer a lookup. The
+   2026-2030 benchmarks are in the model as of 6 August; what remains is a supervisor
+   decision, and after the fertiliser fix it only changes the answer for **hydrogen**.
 4. **Two production-cost gaps still span separate studies** (Canada hydrogen, China
    ammonia) rather than one internally-consistent source each. Every finding that
    depends on these has already been re-run against an independent IEA cost sourcing as

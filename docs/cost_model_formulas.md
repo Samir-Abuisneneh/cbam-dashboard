@@ -3,7 +3,9 @@
 This is the complete cost model, one layer at a time, matching the implementation in
 `cbam_model/model/`, `cbam_model/config/regulatory_constants.py` and
 `cbam_model/config/vessel_logistics.py` exactly. Each formula links to the function it
-comes from. Updated 5 August 2026 to include the CO2e maritime update and the
+comes from. Updated 7 August 2026 for the fertiliser mark-up correction (the mark-up now
+takes the product, and is 1% flat for ammonia rather than the 10/20/30 ramp). Previously
+updated 5 August 2026 to include the CO2e maritime update and the
 year-varying Canada origin carbon price — see `docs/findings_2026-08-05.md` for what
 changed and why.
 
@@ -27,7 +29,7 @@ Source: `compliance_cost_per_tonne()`, `cbam_model/model/total_cost.py:218`
 $$
 \text{emissions}_{\text{used}} =
 \begin{cases}
-\text{embedded emissions} \times (1 + \text{markup}(year)) & \text{using the regulatory default} \\
+\text{embedded emissions} \times (1 + \text{markup}(year, product)) & \text{using the regulatory default} \\
 \text{embedded emissions} & \text{using a literature pathway}
 \end{cases}
 $$
@@ -39,7 +41,7 @@ $$
 | Term | Meaning |
 |---|---|
 | `cbam_factor(year)` | EU's certificate-surrender phase-in: 2.5% (2026) rising to 100% by 2034 |
-| `markup(year)` | Penalty for using the default instead of verified data: 10% (2026) / 20% (2027) / 30% (2028+) |
+| `markup(year, product)` | Penalty for using the default instead of verified data. **Not uniform across goods** (corrected 7 Aug 2026): fertiliser goods, which for CBAM purposes includes **ammonia** (CN 2814), carry a flat **1%** in every year; everything else, including **hydrogen** (CN 2804), ramps **10% (2026) / 20% (2027) / 30% (2028+)**. Verified by division against the Commission's adopted default-values workbook, which publishes each value before and after mark-up |
 | origin carbon price(year) | Credited 1-for-1 against the liability, floored at zero. Year-varying for Canada as of 5 Aug 2026 — see below |
 
 Source: `eu_cbam_cost()`, `cbam_model/model/cbam.py:37` · Regulation (EU) 2023/956 Art. 9, IR 2025/2621

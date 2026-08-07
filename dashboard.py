@@ -463,17 +463,13 @@ if is_uk and year >= rc.UK_ETS_INTL_EXPANSION_EARLIEST_YEAR:
     )
     st.sidebar.caption(scenarios.VARIANT_LABELS[uk_ets_variant])
 
-# One label per entry in rc.UK_ETS_PRICE_VARIANTS. Keyed by variant rather
-# than branched on, so adding a fourth path fails visibly here (KeyError on
-# the selector) instead of silently inheriting another path's caption. That is
-# what happened when "desnz" was added on 6 August 2026: it inherited the
-# linkage label and caption, so DESNZ numbers were presented on screen as the
-# EU-UK linkage scenario.
-UK_PRICE_VARIANT_LABELS = {
-    "frozen": "Frozen at the 2026 determination (baseline)",
-    "linked": "EU-UK ETS linkage: converges to EU price (NOT law)",
-    "desnz": "DESNZ traded carbon values (official, real 2025 prices)",
-}
+# One label per entry in rc.UK_ETS_PRICE_VARIANTS, keyed by variant rather than
+# branched on, so adding a fourth path fails visibly here (KeyError on the
+# selector) instead of silently inheriting another path's caption. Defined in
+# `config.scenarios` beside the variants themselves and covered by
+# `test_every_uk_price_variant_has_its_own_label`; see that module for the
+# mislabelling bug this shape prevents.
+UK_PRICE_VARIANT_LABELS = scenarios.UK_PRICE_VARIANT_LABELS
 
 uk_price_variant = "frozen"
 if is_uk:

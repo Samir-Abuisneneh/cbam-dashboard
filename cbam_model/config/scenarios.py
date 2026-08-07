@@ -35,3 +35,25 @@ VARIANT_LABELS = {
         "(NOT LAW: consultation closed Jan 2026, no legislative decision)"
     ),
 }
+
+# Display labels for the three UK carbon price paths, one per entry in
+# `rc.UK_ETS_PRICE_VARIANTS`.
+#
+# These live here rather than in the dashboard because a scenario label is not
+# decoration, it is the only thing telling a reader which of three price paths
+# a number came from, and two of the three are explicitly not law. Keeping them
+# beside the variants they name is what lets
+# `test_every_uk_price_variant_has_its_own_label` check the two lists agree.
+#
+# THE BUG THIS EXISTS TO PREVENT, which is not hypothetical. The dashboard used
+# to build this selector by branching `if v == "frozen" ... else <linkage
+# label>`. When "desnz" was added on 6 August 2026 it fell into the else arm,
+# so DESNZ prices were displayed on screen captioned as the EU-UK linkage
+# scenario, and the caption below the selector claimed the price was held flat
+# at the 2026 determination when it was not. Both statements were false about
+# the numbers actually on the page.
+UK_PRICE_VARIANT_LABELS = {
+    "frozen": "Frozen at the 2026 determination (baseline)",
+    "linked": "EU-UK ETS linkage: converges to EU price (NOT law)",
+    "desnz": "DESNZ traded carbon values (official, real 2025 prices)",
+}

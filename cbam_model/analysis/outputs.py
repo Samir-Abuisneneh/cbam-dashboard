@@ -540,6 +540,7 @@ def corridor_cost_comparison(
     compliance: pd.DataFrame,
     pathway: str = "cbam_default",
     price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """Total compliance cost per tonne, both corridors side by side, by year.
 
@@ -564,7 +565,7 @@ def corridor_cost_comparison(
     df = compliance[
         (compliance["pathway"] == pathway)
         & (compliance["price_scenario"] == price_scenario)
-        & _base_case_mask(compliance)
+        & _base_case_mask(compliance, uk_price_variant)
     ].copy()
     if df.empty:
         return pd.DataFrame()
@@ -774,17 +775,26 @@ def corridor_lock_in(
     return pd.DataFrame(rows)
 
 
-def _base_case_mask(compliance: pd.DataFrame):
+def _base_case_mask(compliance: pd.DataFrame, uk_price_variant: str = "frozen"):
     """Boolean mask selecting the study's primary scenario rows.
 
-    Suez routing, UK ETS as currently legislated, frozen UK price, conventional
-    bunker. Extracted so `corridor_cost_comparison` and
+    Suez routing, UK ETS as currently legislated, conventional bunker, and one
+    UK price path. Extracted so `corridor_cost_comparison` and
     `competitiveness_burden` cannot drift apart on what "base case" means.
 
-    The `isna()` arm matters. The EU corridor stores "n/a" in the UK-only
-    columns, and pandas reads that literal string back from CSV as NaN, so
-    without it this silently drops every Halifax-Hamburg row whenever the frame
-    came from disk rather than straight from `run_compliance_matrix`.
+    `uk_price_variant` selects which UK price path to read. It defaults to
+    "frozen", the baseline, but must stay parameterised: a compliance frame
+    built with `run_compliance_matrix(uk_price_variant="desnz")` carries
+    "desnz" in that column, and hard-pinning "frozen" here would silently
+    return an empty frame for every alternative path. That is exactly what
+    happened when the DESNZ path was first added, and an empty frame reads as
+    "no data" rather than as a filter bug.
+
+    The `isna()` arm matters for a different reason. The EU corridor stores
+    "n/a" in the UK-only columns, and pandas reads that literal string back
+    from CSV as NaN, so without it this silently drops every Halifax-Hamburg
+    row whenever the frame came from disk rather than straight from
+    `run_compliance_matrix`.
     """
 
     def col(column, allowed):
@@ -793,7 +803,7 @@ def _base_case_mask(compliance: pd.DataFrame):
     return (
         (compliance["route_scenario"] == "suez")
         & col("uk_ets_variant", BASE_CASE_UK_ETS_VARIANTS)
-        & col("uk_price_variant", BASE_CASE_UK_PRICE_VARIANTS)
+        & col("uk_price_variant", ["n/a", uk_price_variant])
         & col("bunker_fuel", BASE_CASE_BUNKERS)
     )
 
@@ -803,6 +813,7 @@ def competitiveness_burden(
     commercial: pd.DataFrame,
     pathway: str = "cbam_default",
     price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """Carbon compliance cost as a share of production cost, per corridor.
 
@@ -836,7 +847,7 @@ def competitiveness_burden(
     df = compliance[
         (compliance["pathway"] == pathway)
         & (compliance["price_scenario"] == price_scenario)
-        & _base_case_mask(compliance)
+        & _base_case_mask(compliance, uk_price_variant)
     ].copy()
     if df.empty:
         return pd.DataFrame()

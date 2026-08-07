@@ -46,7 +46,9 @@ transcribed, and checked against her published outputs by
 | `fuel_consumption_t_per_nm` | float | tonnes fuel per nm | derived |
 | `voyage_fuel_total_t` | float | tonnes | |
 | `voyage_co2_t` | float | tCO2 | before any coverage fraction |
+| `voyage_co2e_t` | float | tCO2e | CO2 + CH4 + N2O on a GWP basis. **Required.** Added 5 Aug 2026 with Gayu's CO2e update; this, not `voyage_co2_t`, is what the EU and UK ETS costs are computed from, since both schemes cover all three gases from 2026 |
 | `port_in_port_emissions_t` | float | tCO2 | auxiliary engines during the port call |
+| `port_in_port_emissions_co2e_t` | float | tCO2e | the CO2e counterpart of the row above. **Required.** This is the only emissions figure UK ETS charges at all, since the ocean leg is out of scope |
 | `voyage_energy_mj` | float | MJ | |
 | `fueleu_actual_intensity_gco2e_mj` | float | gCO2e/MJ | 90.8, EC worked example for MDO |
 

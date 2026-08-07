@@ -152,6 +152,53 @@ year on year as the EU's CBAM factor ramps (hydrogen: GBP 181 in 2027 down to
 GBP 102 by 2030). So the story is one flip in 2027 followed by convergence,
 not a slow overtake completing in 2030. That belongs in the discussion chapter.
 
+### The corridor finding survives every UK price path
+
+Added 6 August 2026. The UK price was held flat across 2026-2030 because only
+the 2026 figure was ever sourced, which made every forward UK claim partly an
+artefact. There are now three labelled paths, selectable with
+`uk_price_variant`:
+
+| Variant | 2026 | 2030 | What it is |
+|---|---|---|---|
+| `frozen` | 49.41 | 49.41 | The sourced 2026 determination held flat. Baseline. |
+| `linked` | 49.41 | 107.50 | EU-UK ETS linkage convergence. Not law. |
+| `desnz` | 38.00 | 50.00 | The UK government's own published traded carbon values. |
+
+`desnz` comes from DESNZ, *Traded carbon values used for modelling purposes,
+2025*, published 3 February 2026. It is the only forward UK path here with an
+official source. Read its caveats at `UK_ETS_PRICE_DESNZ_BY_YEAR` before
+quoting it: it is in **real 2025 prices** while every other price in the model
+is nominal, DESNZ states plainly that these are not forecasts, and it models a
+standalone UK ETS that excludes linking, so `desnz` and `linked` are
+alternative views of the same uncertainty rather than compatible ones.
+
+The 2026 gap is worth reporting rather than resolving. DESNZ central is GBP 38
+against the GBP 49.41 the model anchors on, but these are not rival estimates
+of one quantity: 49.41 is a backward-looking average of actual UKA futures
+settlements published for civil-penalty purposes, 38 is a forward
+policy-appraisal scenario in real terms.
+
+**The result: the corridor ordering is identical under all three.**
+Ningbo-Felixstowe is cheaper in 2026 only, Halifax-Hamburg every year after,
+on both products. A test enforces it. That is a materially stronger claim than
+the finding held under any single price assumption, and it retires the
+"UK price is frozen" caveat that previously had to accompany every corridor
+statement.
+
+### Policy timeline is now machine readable
+
+`cbam_model/data/policy_events.csv`, 50 events across Canada, the UK, the EU
+and China, loaded by `data_io.load_policy_events()`. Each row carries the legal
+instrument type and status, so an Act and a consultation that closed without a
+decision are not treated as the same kind of fact, plus the quantified
+translation and the model parameter it bears on.
+
+A test cross-checks the timeline against the code, and every quantified event
+agrees. See `docs/policy_timeline_gaps.md` for what is still unfilled, and for
+the one substantive gap it surfaced: **UK CBAM charges direct emissions only
+until 2029 at the earliest, which the model does not represent.**
+
 ### Competitiveness: absolute cost and exposure point opposite ways
 
 Added 6 August 2026. `analysis.outputs.competitiveness_burden` and

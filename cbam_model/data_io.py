@@ -648,3 +648,84 @@ def iea_production_costs(year: int = 2030, green_route: str = "wind") -> pd.Data
             }
         )
     return pd.DataFrame(rows)
+
+
+# ---------------------------------------------------------------------------
+# Policy events
+# ---------------------------------------------------------------------------
+
+POLICY_EVENT_INSTRUMENT_TYPES = (
+    "primary_legislation",
+    "regulation",
+    "implementing_regulation",
+    "statutory_instrument",
+    "treaty",
+    "court_ruling",
+    "plan",
+    "consultation",
+    "proposal",
+    "procedural",
+    "market_event",
+)
+
+POLICY_EVENT_STATUSES = (
+    "in_force",
+    "superseded",
+    "proposed",
+    "pending",
+    "historic",
+    "not_law",
+)
+
+POLICY_EVENT_AFFECTS_MODEL = ("yes", "no", "sensitivity_only")
+
+
+def load_policy_events(path: Path = None) -> pd.DataFrame:
+    """Alex's policy timeline, structured for the model.
+
+    Frano asked in the 6 August 2026 meeting for two parallel tracks rather
+    than one narrative timeline: the dated policy events themselves, each
+    classified by legal instrument because that governs how likely and how
+    fast it lands, and separately the quantified translation of each into a
+    number and a date.
+
+    This table carries both. `instrument_type` and `status` are track A;
+    `quantified_effect` is track B and is deliberately left empty where the
+    numeric translation has not been established, so the gaps are visible
+    rather than guessed at.
+
+    `model_parameter` names the constant in `config.regulatory_constants` or
+    the input-table column the event bears on, which is what lets a test check
+    the timeline and the model have not drifted apart. `affects_model`
+    separates events that set a modelled value ("yes") from those that only
+    justify a sensitivity ("sensitivity_only") or supply narrative context
+    ("no").
+    """
+    if path is None:
+        path = DATA_DIR / "policy_events.csv"
+    events = pd.read_csv(Path(path)).fillna("")
+
+    bad_instrument = set(events["instrument_type"]) - set(
+        POLICY_EVENT_INSTRUMENT_TYPES
+    )
+    if bad_instrument:
+        raise ValueError(
+            f"Unknown instrument_type values: {sorted(bad_instrument)}. "
+            f"Expected one of {POLICY_EVENT_INSTRUMENT_TYPES}."
+        )
+
+    bad_status = set(events["status"]) - set(POLICY_EVENT_STATUSES)
+    if bad_status:
+        raise ValueError(
+            f"Unknown status values: {sorted(bad_status)}. "
+            f"Expected one of {POLICY_EVENT_STATUSES}."
+        )
+
+    bad_affects = set(events["affects_model"]) - set(POLICY_EVENT_AFFECTS_MODEL)
+    if bad_affects:
+        raise ValueError(
+            f"Unknown affects_model values: {sorted(bad_affects)}. "
+            f"Expected one of {POLICY_EVENT_AFFECTS_MODEL}."
+        )
+
+    return events

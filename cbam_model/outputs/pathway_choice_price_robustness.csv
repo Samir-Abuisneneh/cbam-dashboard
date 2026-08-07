@@ -1,5 +1,5 @@
 corridor,product,year,uk_price_variant,cheapest_pathway_low,cheapest_pathway_medium,cheapest_pathway_high,choice_stable,distinct_choices
 halifax_hamburg,ammonia,2030,frozen,grey_smr,grey_smr,grey_smr,True,1
-halifax_hamburg,hydrogen,2030,frozen,grey_smr,grey_smr,grey_smr,True,1
+halifax_hamburg,hydrogen,2030,frozen,grey_smr,grey_smr,blue_smr_ccs,False,2
 ningbo_felixstowe,ammonia,2030,frozen,coal_gasification,coal_gasification,coal_gasification,True,1
 ningbo_felixstowe,hydrogen,2030,frozen,coal_gasification,coal_gasification,coal_gasification,True,1

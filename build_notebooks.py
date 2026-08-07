@@ -150,7 +150,7 @@ eff[(eff['year'] == 2026) & (eff['price_scenario'] == 'medium')
     & (eff['speed_scenario'].isin(['base', 'service']))
     & (eff['route_scenario'] == 'suez')
     & (eff['uk_ets_variant'].isin(['n/a', 'current_scope']))][
-    ['corridor', 'vessel_set', 'voyage_co2_t', 'currency',
+    ['corridor', 'vessel_class', 'voyage_co2_t', 'currency',
      'cost_in_own_currency', 'effective_cost_per_tonne_co2']]
 """),
     md("""
@@ -164,7 +164,7 @@ a concrete illustration of how narrow the current UK scope is.
 uk = maritime[(maritime['corridor'] == rc.NINGBO_FELIXSTOWE)
               & (maritime['year'] == 2026) & (maritime['price_scenario'] == 'medium')
               & (maritime['speed_scenario'] == 'base')
-              & (maritime['vessel_set'] == 'VLGC/VLAC')]
+              & (maritime['vessel_set'] == 'gas_carrier')]
 uk[['route_scenario', 'distance_nm', 'voyage_co2_t', 'port_co2_t', 'uk_ets_cost_gbp']]
 """),
     md("""
@@ -235,11 +235,16 @@ v[['corridor', 'product', 'pathway', 'currency', 'cbam_cost_per_tonne',
     md("""
 ### What 2026 shows
 
-Halifax–Hamburg grey hydrogen pays about €18.35 per tonne in total carbon compliance. Ningbo–Felixstowe
-hydrogen from coal gasification, at nearly twice the embedded emissions, pays about £0.50.
+Halifax–Hamburg grey hydrogen pays about €57.26 per tonne in total carbon compliance, which is £48.85 at
+the 23 July 2026 ECB reference rate. Ningbo–Felixstowe hydrogen from coal gasification, at twice the
+embedded emissions, pays about £0.50.
 
-The dirtier product on the longer route pays roughly thirty-seven times less, purely because UK CBAM has
+The dirtier product on the longer route pays roughly ninety-seven times less, purely because UK CBAM has
 not started and UK ETS does not price the ocean leg. That is the regulatory asymmetry stated per tonne.
+
+Both figures are converted to one currency before the ratio is taken. Comparing the €57.26 against the
+£0.50 directly would quote a ratio across two currencies, which is the one thing the rest of this model
+is careful never to do.
 
 ### And what 2030 shows
 
@@ -306,15 +311,22 @@ this check was first written. The burden is measured against EU-bound revenue on
 revenue. And reproducing their figure needs the benchmark form of the CBAM obligation,
 `max(0, embedded - benchmark x (1 - CBAM_factor))`, which lands at 20.7% against their published 22%.
 
-The form this model currently uses, `embedded x CBAM_factor`, gives 14.5% on the same inputs. Both sit side
-by side in `validation/reference_case.py` with a test that fails if the main one is switched without anyone
-noticing.
+The alternative form, `embedded x CBAM_factor`, gives 14.5% on the same inputs. Both stay implemented and
+sit side by side in `validation/reference_case.py`, with a test that fails if the default moves without
+anyone noticing.
 
-Switching is still an open decision, but no longer for want of data: the revised 2026-2030 benchmarks
-were read out of the Official Journal text of IR 2026/1412 on 6 August 2026 (ammonia 1.522, hydrogen
-7.98) and are in the model. It stays open because switching **inverts the headline corridor finding**
-rather than rescaling it, and the two regimes are not treated symmetrically by the choice, so it is a
-supervisor call. `outputs.cbam_mechanism_comparison` below sizes it on the current benchmarks.
+**The model was switched to the benchmark form on 7 August 2026.** The revised 2026-2030 benchmarks were
+read out of the Official Journal text of IR 2026/1412 on 6 August 2026 (ammonia 1.522, hydrogen 7.98), so
+the data reason for staying on the factor-scaled form had already gone; what remained was that the
+factor-scaled reading is what most practitioner guidance describes and what every earlier result in this
+project was generated under. Against that sit the legal reading of Article 31, the reproduction of a
+published cross-check, and this project's own validation module, all three of which point the same way.
+
+Two things must travel with this in the write-up. The switch **inverts the headline corridor finding for
+hydrogen** rather than rescaling it, as section 6 shows, and it has not yet been confirmed by the
+supervisor. The methodology chapter has to state which form was used and why, and report both. If the
+decision is reversed, flip `rc.EU_CBAM_DEFAULT_MECHANISM` back and re-run;
+`outputs.cbam_mechanism_comparison` below sizes exactly what changes.
 """),
     code("""
 outputs.cbam_mechanism_comparison(emissions).query("price_scenario == 'medium'")[
@@ -348,8 +360,22 @@ outputs.pathway_choice_price_robustness(emissions, commercial)
 outputs.corridor_crossover_year(compliance)
 """),
     md("""
-Ningbo-Felixstowe is cheaper only in 2026, because UK CBAM does not exist yet. The ordering flips in 2027,
-the year it starts, then the gap narrows as the EU's CBAM factor keeps ramping - one flip, not a slow overtake.
+The two products no longer behave the same way, and that split is a direct consequence of the free
+allocation mechanism selected in section 8.
+
+**Ammonia** follows the pattern the earlier drafts described. Ningbo-Felixstowe is cheaper only in 2026,
+because UK CBAM does not exist yet; the ordering flips in 2027, the year it starts, and stays flipped.
+One flip, not a slow overtake.
+
+**Hydrogen** does not. It flips to Halifax-Hamburg in 2027 and then flips back from 2028, leaving
+Ningbo-Felixstowe cheaper for the rest of the horizon. The reason is the benchmark shield: the EU hydrogen
+benchmark is 7.98 tCO2e per tonne against Canadian grey hydrogen's 10.07, so only the excess over the
+shielded benchmark is chargeable, and the shield shrinks as free allocation is withdrawn. EU liability
+therefore climbs steeply from a low base while the UK rate fraction climbs far more slowly.
+
+Under the factor-scaled form this model used until 7 August 2026, hydrogen followed the ammonia pattern
+and the ordering never reverted. The inversion is the mechanism decision showing up in the headline
+result, which is exactly why section 8 treats that decision as methodological rather than as a setting.
 """),
     code("""
 outputs.abatement_breakeven_year(emissions, commercial)
@@ -390,9 +416,11 @@ reconciles once the benchmark form of the obligation is used.
 1. **Production, conversion and freight cost per tonne.** Production cost is now real; conversion and
    freight still have no owner, and they are the only thing standing between compliance cost and full
    delivered cost.
-2. **The EU CBAM free-allocation mechanism**, `factor_scaled` against `benchmark_shielded`. A
-   supervisor decision, not a sourcing task: the choice inverts the headline corridor finding. Section
-   8 sizes it.
+2. **Supervisor confirmation of the EU CBAM free-allocation mechanism.** The model moved to
+   `benchmark_shielded` on 7 August 2026 and section 8 gives the reasoning, but that is Samir's
+   decision and Frano has not yet ruled on it. It is the one open item that changes a headline
+   result rather than adding one: hydrogen's corridor ordering inverts on it. Both forms stay
+   implemented so the decision can be reversed by one constant.
 """),
     code("""
 print(f"Gayu figures reproduced: "

@@ -117,8 +117,17 @@ def test_fueleu_target_tightens_in_2030():
 
 
 def test_eu_cbam_cost_hand_calculation():
-    """10 tCO2e at 2.5% and EUR 80/t, no markup, no origin price."""
-    cost = cbam.eu_cbam_cost(10.0, 2026, 80.0, using_default_values=False)
+    """10 tCO2e at 2.5% and EUR 80/t, no markup, no origin price.
+
+    `mechanism` is pinned explicitly here and in the three tests below. These
+    are unit tests of the factor-scaled arithmetic itself, which stays a
+    supported option, so they must not follow EU_CBAM_DEFAULT_MECHANISM around.
+    They were implicit until 7 August 2026, when the default became
+    "benchmark_shielded".
+    """
+    cost = cbam.eu_cbam_cost(
+        10.0, 2026, 80.0, using_default_values=False, mechanism="factor_scaled"
+    )
     assert cost == pytest.approx(10.0 * 0.025 * 80.0)  # 20.00
     assert cost == pytest.approx(20.0)
 
@@ -126,7 +135,8 @@ def test_eu_cbam_cost_hand_calculation():
 def test_eu_cbam_cost_with_default_value_markup():
     """The 2026 markup is 10%, so 10 tCO2e becomes 11 chargeable tonnes."""
     cost = cbam.eu_cbam_cost(
-        10.0, 2026, 80.0, using_default_values=True, product="hydrogen"
+        10.0, 2026, 80.0, using_default_values=True, product="hydrogen",
+        mechanism="factor_scaled",
     )
     assert cost == pytest.approx(11.0 * 0.025 * 80.0)  # 22.00
 
@@ -144,7 +154,8 @@ def test_origin_carbon_price_scales_with_emissions_not_flat_subtraction():
     cost from a positive liability, which is the tell that the units are wrong.
     """
     cost = cbam.eu_cbam_cost(
-        10.0, 2026, 80.0, origin_carbon_price_eur_per_tco2e=30.0
+        10.0, 2026, 80.0, origin_carbon_price_eur_per_tco2e=30.0,
+        mechanism="factor_scaled",
     )
     assert cost == pytest.approx(10.0 * 0.025 * (80.0 - 30.0))  # 12.50
     assert cost > 0
@@ -153,7 +164,8 @@ def test_origin_carbon_price_scales_with_emissions_not_flat_subtraction():
 def test_origin_carbon_price_above_ets_price_floors_at_zero():
     """A higher carbon price at origin cannot generate a negative CBAM cost."""
     cost = cbam.eu_cbam_cost(
-        10.0, 2026, 80.0, origin_carbon_price_eur_per_tco2e=100.0
+        10.0, 2026, 80.0, origin_carbon_price_eur_per_tco2e=100.0,
+        mechanism="factor_scaled",
     )
     assert cost == 0.0
 
@@ -466,7 +478,32 @@ def test_maritime_matrix_spans_gayu_scenario_dimensions():
     maritime = runner.run_maritime_matrix()
     assert set(maritime["speed_scenario"].unique()) >= {"lower", "base", "upper"}
     assert set(maritime["route_scenario"].unique()) == {"suez", "cape"}
-    assert "VLGC/VLAC" in set(maritime["vessel_set"].unique())
+    assert set(maritime["vessel_set"].unique()) == set(vl.VESSEL_SETS)
+    assert "VLGC/VLAC" in set(maritime["vessel_class"].unique())
+
+
+def test_vessel_set_and_vessel_class_are_separate_columns():
+    """Regression guard. `vessel_set` used to be filled from the profile's
+    `vessel_class`, so the same column name meant the scenario dimension in
+    sensitivity frames and the ship's display name in maritime and compliance
+    frames. Filtering across the two matched nothing, silently."""
+    maritime = runner.run_maritime_matrix()
+    compliance = runner.run_compliance_matrix()
+    from cbam_model.analysis import sensitivity
+
+    sweep = sensitivity.sweep_corridor(rc.HALIFAX_HAMBURG)
+
+    for frame, name in (
+        (maritime, "maritime"),
+        (compliance, "compliance"),
+        (sweep, "sweep"),
+    ):
+        unexpected = set(frame["vessel_set"].unique()) - set(vl.VESSEL_SETS)
+        assert not unexpected, f"{name} carries non-scenario vessel_set: {unexpected}"
+
+    # And the class name is still available, just under its own column.
+    for frame, name in ((maritime, "maritime"), (compliance, "compliance")):
+        assert "VLGC/VLAC" in set(frame["vessel_class"].unique()), name
 
 
 def test_cape_routing_only_applies_to_the_uk_corridor():
@@ -494,7 +531,7 @@ def test_uk_corridor_maritime_cost_ignores_the_ocean_voyage():
         & (maritime["year"] == 2026)
         & (maritime["price_scenario"] == "medium")
         & (maritime["speed_scenario"] == "base")
-        & (maritime["vessel_set"] == "VLGC/VLAC")
+        & (maritime["vessel_set"] == "gas_carrier")
     ]
     suez = uk[uk["route_scenario"] == "suez"]["total_gbp"].iloc[0]
     cape = uk[uk["route_scenario"] == "cape"]["total_gbp"].iloc[0]
@@ -1267,7 +1304,17 @@ def test_pathway_visible_cost_is_production_plus_cbam_hand_calculation():
     mark-up because this is a literature pathway, 2030 CBAM factor 0.485, EU ETS
     medium price EUR 126, Canada origin price EUR 71.75 (CAD 115 x 0.62393).
 
-        1.23 x 0.485 x (126 - 71.75) = 32.363 EUR/t
+    Under the "benchmark_shielded" default adopted on 7 August 2026, free
+    allocation shields the hydrogen product benchmark of 7.98 tCO2e/t:
+
+        chargeable = max(0, 1.23 - 7.98 x (1 - 0.485)) = max(0, -2.880) = 0
+
+    So green hydrogen owes NOTHING. That is the substantive consequence of the
+    mechanism, not a rounding artefact: a producer this far below the benchmark
+    is fully shielded until free allocation runs out in 2034. Under the previous
+    "factor_scaled" default the same row read 1.23 x 0.485 x (126 - 71.75) =
+    EUR 32.36/t, which is asserted below as the contrast so the two forms stay
+    hand-checked side by side.
     """
     emissions, _, commercial = data_io.load_inputs()
     ranking = outputs.pathway_cost_ranking(emissions, commercial, year=2030)
@@ -1277,11 +1324,16 @@ def test_pathway_visible_cost_is_production_plus_cbam_hand_calculation():
         & (ranking["pathway"] == "green_electrolysis")
     ].iloc[0]
 
-    expected_cbam = 1.23 * 0.485 * (126.0 - 71.75)
-    assert row["cbam_cost_eur_per_tonne"] == pytest.approx(expected_cbam, abs=0.01)
+    assert 1.23 < rc.eu_product_benchmark("hydrogen") * (1 - rc.cbam_factor(2030))
+    assert row["cbam_cost_eur_per_tonne"] == pytest.approx(0.0, abs=0.01)
     assert row["pathway_visible_cost_eur_per_tonne"] == pytest.approx(
-        row["production_cost_eur_per_tonne"] + expected_cbam, abs=0.01
+        row["production_cost_eur_per_tonne"], abs=0.01
     )
+
+    # The superseded factor-scaled figure, kept as an explicit cross-check.
+    assert cbam.eu_cbam_cost(
+        1.23, 2030, 126.0, 71.75, mechanism="factor_scaled"
+    ) == pytest.approx(32.36, abs=0.01)
 
 
 def test_uk_pathway_cost_is_converted_to_eur_not_left_in_gbp():
@@ -1330,14 +1382,40 @@ def test_carbon_pricing_does_not_flip_the_commercial_pathway_choice():
     assert set(cheapest["pathway"]) <= {"grey_smr", "coal_gasification"}
 
 
-def test_pathway_choice_is_stable_across_price_scenarios():
-    """If the recommendation flipped between the low and high carbon price
-    scenarios it would be a restatement of the price assumption rather than a
-    finding. Mirrors `abatement_source_robustness.verdict_stable`."""
+def test_pathway_choice_price_stability_holds_except_for_eu_hydrogen():
+    """A robustness property that the 7 August 2026 mechanism switch COST US.
+
+    Under "factor_scaled" every corridor-product pair picked the same cheapest
+    pathway at low, medium and high carbon prices, so the recommendation did not
+    restate the price assumption. Under "benchmark_shielded" that is no longer
+    true for Halifax-Hamburg hydrogen in 2030: grey SMR wins at low and medium
+    prices, blue SMR+CCS wins at high prices. The benchmark form charges the
+    grey pathway on its full excess over the 7.98 benchmark from the start, so a
+    high price is enough to overturn the production-cost gap that previously
+    dominated.
+
+    This is a real weakening of the findings and must be reported, not smoothed
+    over: the EU hydrogen pathway recommendation is now price-contingent. The
+    test pins the exact row so any FURTHER loss of stability still fails.
+    """
     emissions, _, commercial = data_io.load_inputs()
     stability = outputs.pathway_choice_price_robustness(emissions, commercial)
     assert len(stability)
-    assert stability["choice_stable"].all()
+
+    unstable = stability[~stability["choice_stable"]]
+    assert len(unstable) == 1, (
+        "the set of price-unstable pathway choices has moved; under "
+        "benchmark_shielded exactly one row (EU hydrogen 2030) is unstable"
+    )
+    row = unstable.iloc[0]
+    assert row["corridor"] == rc.HALIFAX_HAMBURG
+    assert row["product"] == "hydrogen"
+    assert row["cheapest_pathway_low"] == "grey_smr"
+    assert row["cheapest_pathway_medium"] == "grey_smr"
+    assert row["cheapest_pathway_high"] == "blue_smr_ccs"
+
+    # Everything else still holds, which is what makes the exception reportable.
+    assert stability[stability["choice_stable"]]["distinct_choices"].eq(1).all()
 
 
 def test_corridor_comparison_survives_a_csv_round_trip(tmp_path):
@@ -1362,17 +1440,30 @@ def test_corridor_comparison_survives_a_csv_round_trip(tmp_path):
 
 def test_corridor_crossover_happens_when_uk_cbam_starts():
     """Ningbo-Felixstowe is cheaper in 2026 only because UK CBAM does not exist
-    yet. It starts in 2027, so that is where the ordering flips - not 2030, and
-    not gradually."""
+    yet. It starts in 2027, so that is where the FIRST ordering change lands on
+    both products, not 2030 and not gradually.
+
+    Where the two products part company, since the 7 August 2026 switch to
+    "benchmark_shielded": ammonia stays with Halifax-Hamburg for the rest of the
+    horizon, but hydrogen crosses back to Ningbo-Felixstowe from 2028 and ends
+    the horizon there. So 2027 is a crossover for hydrogen rather than a
+    settlement. Asserting a single last-year corridor for both products, which
+    is what this test did until the switch, would now be false for hydrogen.
+    """
     emissions, _, _ = data_io.load_inputs()
     compliance = runner.run_compliance_matrix(emissions)
     crossover = outputs.corridor_crossover_year(compliance)
 
     assert len(crossover)
+    last_year_corridor = {
+        "ammonia": rc.HALIFAX_HAMBURG,
+        "hydrogen": rc.NINGBO_FELIXSTOWE,
+    }
     for _, row in crossover.iterrows():
         assert row["cheaper_corridor_first_year"] == rc.NINGBO_FELIXSTOWE
-        assert row["cheaper_corridor_last_year"] == rc.HALIFAX_HAMBURG
         assert row["crossover_year"] == rc.UK_CBAM_START_YEAR
+        assert row["ordering_changes"]
+        assert row["cheaper_corridor_last_year"] == last_year_corridor[row["product"]]
 
 
 def test_breakeven_flags_the_frozen_uk_price_as_unable_to_cross():
@@ -1497,45 +1588,64 @@ def test_switch_verdict_separates_never_justified_from_locked_in():
     assert switching.switch_verdict(50.0, 100.0) == "locked_in"
 
 
-def test_lock_in_reverses_the_2026_corridor_choice():
-    """The headline lock-in finding, hand-calculated.
+def test_lock_in_gives_opposite_advice_on_the_two_products():
+    """The headline lock-in finding as it stands after the 7 August 2026 switch
+    to "benchmark_shielded", and it is no longer one finding but two opposed
+    ones. Hand-checked, medium prices, 8% real, truncate.
 
-    Ningbo-Felixstowe is cheaper in 2026 on both products, because UK CBAM does
-    not start until 2027. Committing to it on that basis is wrong: from 2027 the
-    ordering flips and stays flipped for the rest of the horizon, so the
-    present value of the tenor favours Halifax-Hamburg.
+    AMMONIA, decision year 2026. Ningbo-Felixstowe is cheaper on the spot
+    because UK CBAM has not started. Committing on that basis is wrong: the
+    ordering flips in 2027 and stays flipped, so the tenor favours
+    Halifax-Hamburg.
+        PV HH 115.76, PV NF 154.48, breakeven 38.72
 
-    Ammonia, medium prices, 8% real, truncate:
-        HH  1.75, 3.45, 7.99, 21.16, 46.65   ->  PV 62.88
-        NF  0.05, 33.80, 38.46, 47.77, 71.07 ->  PV 154.48
-        breakeven = 154.48 - 62.88 = 91.60
+    HYDROGEN, decision year 2027, and it points the OTHER WAY. 2027 is the one
+    year Halifax-Hamburg is cheaper on the spot; from 2028 the benchmark shield
+    hands the advantage back to Ningbo-Felixstowe for the rest of the horizon,
+    so the tenor favours staying with the UK corridor.
+        PV HH 1062.95, PV NF 1019.71, breakeven 43.24
+
+    Under the previous "factor_scaled" default BOTH products reversed in 2026
+    towards Halifax-Hamburg (ammonia breakeven 91.60, hydrogen 491.95). That
+    single-direction result is superseded. The divergence is the more
+    interesting finding, because it means the two products imply different
+    corridor commitments under the same regulatory regime.
     """
     emissions, _, _ = data_io.load_inputs()
     compliance = runner.run_compliance_matrix(emissions)
     lock_in = outputs.corridor_lock_in(compliance, beyond_horizon="truncate")
     assert len(lock_in)
 
-    for product in ("ammonia", "hydrogen"):
-        row = lock_in[
-            (lock_in["product"] == product) & (lock_in["decision_year"] == 2026)
-        ].iloc[0]
-        assert row["myopic_choice"] == rc.NINGBO_FELIXSTOWE
-        assert row["committed_choice"] == rc.HALIFAX_HAMBURG
-        assert row["decision_reverses"]
-        assert row["breakeven_switching_cost_gbp_per_tonne_annual_volume"] > 0
-
     ammonia = lock_in[
         (lock_in["product"] == "ammonia") & (lock_in["decision_year"] == 2026)
     ].iloc[0]
+    assert ammonia["myopic_choice"] == rc.NINGBO_FELIXSTOWE
+    assert ammonia["committed_choice"] == rc.HALIFAX_HAMBURG
+    assert ammonia["decision_reverses"]
     assert ammonia["pv_halifax_hamburg_gbp_per_tonne_annual_volume"] == pytest.approx(
-        62.88, abs=0.05
+        115.76, abs=0.05
     )
     assert ammonia["pv_ningbo_felixstowe_gbp_per_tonne_annual_volume"] == pytest.approx(
         154.48, abs=0.05
     )
     assert ammonia[
         "breakeven_switching_cost_gbp_per_tonne_annual_volume"
-    ] == pytest.approx(91.60, abs=0.05)
+    ] == pytest.approx(38.72, abs=0.05)
+
+    hydrogen = lock_in[
+        (lock_in["product"] == "hydrogen") & (lock_in["decision_year"] == 2027)
+    ].iloc[0]
+    assert hydrogen["myopic_choice"] == rc.HALIFAX_HAMBURG
+    assert hydrogen["committed_choice"] == rc.NINGBO_FELIXSTOWE
+    assert hydrogen["decision_reverses"]
+    assert hydrogen[
+        "breakeven_switching_cost_gbp_per_tonne_annual_volume"
+    ] == pytest.approx(43.24, abs=0.05)
+
+    # The two committed choices genuinely oppose each other. If this ever stops
+    # holding the finding has collapsed back to a single direction and the
+    # discussion chapter needs rewriting.
+    assert ammonia["committed_choice"] != hydrogen["committed_choice"]
 
 
 def test_lock_in_reversal_survives_both_beyond_horizon_treatments():
@@ -1543,17 +1653,29 @@ def test_lock_in_reversal_survives_both_beyond_horizon_treatments():
     finding that only holds under one of them is an artefact of the assumption
     rather than a result. Mirrors the robustness guard on
     `abatement_source_robustness`.
+
+    Both the reversal years and the committed directions survive, which is what
+    lets the opposed-advice finding above be reported as a result. Only the
+    magnitudes move (ammonia breakeven 38.72 truncate against 76.99 hold_final,
+    hydrogen 43.24 against 202.18).
     """
     emissions, _, _ = data_io.load_inputs()
     compliance = runner.run_compliance_matrix(emissions)
 
+    expected = {
+        ("ammonia", 2026): rc.HALIFAX_HAMBURG,
+        ("hydrogen", 2027): rc.NINGBO_FELIXSTOWE,
+    }
     for method in ("truncate", "hold_final"):
         lock_in = outputs.corridor_lock_in(compliance, beyond_horizon=method)
         reversals = lock_in[lock_in["decision_reverses"]]
-        assert set(reversals["decision_year"]) == {2026}, (
-            f"under {method}, the reversal is no longer confined to 2026"
+        got = {
+            (r["product"], r["decision_year"]): r["committed_choice"]
+            for _, r in reversals.iterrows()
+        }
+        assert got == expected, (
+            f"under {method}, the set or direction of lock-in reversals moved"
         )
-        assert (reversals["committed_choice"] == rc.HALIFAX_HAMBURG).all()
 
 
 def test_lock_in_reports_no_switch_once_the_orderings_agree():
@@ -1564,7 +1686,14 @@ def test_lock_in_reports_no_switch_once_the_orderings_agree():
     compliance = runner.run_compliance_matrix(emissions)
     lock_in = outputs.corridor_lock_in(compliance)
 
-    settled = lock_in[lock_in["decision_year"] >= 2027]
+    # Hydrogen 2027 is the one exception since the 7 August 2026 mechanism
+    # switch: that is where its ordering flips back to Ningbo-Felixstowe, so it
+    # is a genuine reversal rather than a settled year. Everything from 2028 on,
+    # plus ammonia from 2027 on, is settled and must read exactly zero.
+    settled = lock_in[
+        (lock_in["decision_year"] >= 2027)
+        & ~((lock_in["product"] == "hydrogen") & (lock_in["decision_year"] == 2027))
+    ]
     assert len(settled)
     assert not settled["decision_reverses"].any()
     assert (
@@ -1599,7 +1728,31 @@ def test_switching_cost_sensitivity_flips_the_verdict_around_the_breakeven():
     assert (cheap["verdict"] == "justified").all()
     assert (dear["verdict"] == "locked_in").all()
 
-    settled = sweep[sweep["decision_year"] >= 2027]
+    # Same band behaviour on the hydrogen 2027 reversal, which the 7 August 2026
+    # mechanism switch created. Its breakeven is 43.24, so the 10 and 25 rows
+    # are justified and the 50 upwards rows are locked in.
+    hydrogen_2027 = sweep[
+        (sweep["product"] == "hydrogen") & (sweep["decision_year"] == 2027)
+    ]
+    assert len(hydrogen_2027)
+    assert set(
+        hydrogen_2027[hydrogen_2027["verdict"] == "justified"][
+            "assumed_switching_cost_gbp_per_tonne_annual_volume"
+        ]
+    ) == {10.0, 25.0}
+    assert (
+        hydrogen_2027[
+            hydrogen_2027["assumed_switching_cost_gbp_per_tonne_annual_volume"] >= 50.0
+        ]["verdict"]
+        == "locked_in"
+    ).all()
+
+    # Every other post-2026 row has nothing to switch to.
+    settled = sweep[
+        (sweep["decision_year"] >= 2027)
+        & ~((sweep["product"] == "hydrogen") & (sweep["decision_year"] == 2027))
+    ]
+    assert len(settled)
     assert (settled["verdict"] == "never_justified").all()
 
 
@@ -1608,18 +1761,41 @@ def test_switching_cost_sensitivity_flips_the_verdict_around_the_breakeven():
 # ---------------------------------------------------------------------------
 
 
-def test_default_cbam_mechanism_is_unchanged():
-    """Adding the benchmark mechanism must not move any existing result.
+def test_default_cbam_mechanism_is_the_benchmark_form():
+    """Pins the default switched on 7 August 2026.
 
-    The default stays factor-scaled while the benchmarks in code are the stale
-    2021-2025 set, so this is the guard that the new option is genuinely opt-in.
+    This test previously pinned "factor_scaled" and was named
+    `test_default_cbam_mechanism_is_unchanged`. The default moved because the
+    2026-2030 benchmarks landed on 6 August 2026 and removed the only reason
+    the factor-scaled form was the incumbent. The switch is Samir's call and is
+    NOT yet confirmed by Frano, so this test is the record of what was chosen,
+    not a claim that the question is closed. If it is reversed, flip
+    EU_CBAM_DEFAULT_MECHANISM back and this test with it.
+
+    See the long comment above the constant for the evidence on each side.
     """
-    assert rc.EU_CBAM_DEFAULT_MECHANISM == "factor_scaled"
-    # 10 tCO2e, 2026 factor 0.025, EUR 80 => 10 * 0.025 * 80 = 20.00
-    assert cbam.eu_cbam_cost(10.0, 2026, 80.0) == pytest.approx(20.0)
+    assert rc.EU_CBAM_DEFAULT_MECHANISM == "benchmark_shielded"
+    # 2.18 tCO2e ammonia, 2026 factor 0.025 so free allocation share 0.975,
+    # benchmark 1.522 => max(0, 2.18 - 1.522 * 0.975) = 0.69605, x 80 = 55.68
+    assert cbam.eu_cbam_cost(
+        2.18, 2026, 80.0, benchmark_tco2e_per_tonne=1.522
+    ) == pytest.approx(55.68, abs=0.01)
+    # The factor-scaled form stays available and unchanged.
     assert cbam.eu_cbam_cost(
         10.0, 2026, 80.0, mechanism="factor_scaled"
     ) == pytest.approx(20.0)
+
+
+def test_default_path_without_a_benchmark_now_raises():
+    """The switch must not be silent at a call site that never opted in.
+
+    Before 7 August 2026 a bare `eu_cbam_cost(e, year, price)` returned the
+    factor-scaled number. It now raises, because the benchmark form refuses to
+    default its benchmark. That is the intended blast radius of the switch: an
+    un-updated caller fails loudly instead of quietly changing meaning.
+    """
+    with pytest.raises(ValueError, match="benchmark_tco2e_per_tonne"):
+        cbam.eu_cbam_cost(2.18, 2026, 80.0)
 
 
 def test_benchmark_mechanism_hand_calculation():
@@ -1646,7 +1822,7 @@ def test_benchmark_mechanism_zeroes_a_producer_below_the_benchmark():
         benchmark_tco2e_per_tonne=1.570,
     )
     assert green == 0.0
-    assert cbam.eu_cbam_cost(0.62, 2026, 80.0) > 0.0
+    assert cbam.eu_cbam_cost(0.62, 2026, 80.0, mechanism="factor_scaled") > 0.0
 
 
 def test_the_two_mechanisms_converge_when_free_allocation_ends():
@@ -1655,7 +1831,7 @@ def test_the_two_mechanisms_converge_when_free_allocation_ends():
     ever fails, one of them has drifted from the phase-in schedule."""
     assert rc.cbam_factor(2034) == pytest.approx(1.0)
     for embedded in (0.62, 2.18, 10.07):
-        scaled = cbam.eu_cbam_cost(embedded, 2034, 80.0)
+        scaled = cbam.eu_cbam_cost(embedded, 2034, 80.0, mechanism="factor_scaled")
         shielded = cbam.eu_cbam_cost(
             embedded, 2034, 80.0, mechanism="benchmark_shielded",
             benchmark_tco2e_per_tonne=1.570,
@@ -1797,9 +1973,19 @@ def test_the_mechanism_choice_inverts_the_corridor_finding():
 def test_competitiveness_burden_hand_calculation():
     """Ammonia, Halifax-Hamburg, 2026, medium, cbam_default.
 
-    Compliance EUR 2.05/t against Riya's production cost of EUR 446.80/t:
-    2.05 / 446.80 = 0.46%. The EU corridor needs no currency conversion, so
-    this arm also pins that the EUR side is passed through untouched.
+    Re-derived for the "benchmark_shielded" default adopted 7 August 2026.
+
+        embedded 1.98, fertiliser default-value mark-up 1%  -> 1.9998
+        chargeable = max(0, 1.9998 - 1.522 x (1 - 0.025))   -> 0.51585
+        CBAM       = 0.51585 x (80.00 - 59.27 Canada origin) -> EUR 10.69/t
+        maritime (EU ETS 0.78 + FuelEU 0.24)                 -> EUR  1.02/t
+        total EUR 11.71/t over EUR 446.80/t                  -> 2.62%
+
+    Under the previous "factor_scaled" default this row read EUR 2.05/t and
+    0.46%. The jump is the mechanism, not an input change: a producer above the
+    benchmark pays on its full excess immediately instead of on 2.5% of its
+    emissions. The EU corridor needs no currency conversion, so this arm also
+    pins that the EUR side is passed through untouched.
     """
     emissions, _, commercial = data_io.load_inputs()
     compliance = runner.run_compliance_matrix(emissions)
@@ -1812,7 +1998,8 @@ def test_competitiveness_burden_hand_calculation():
         & (burden["year"] == 2026)
     ].iloc[0]
     assert row["production_cost_eur_per_tonne"] == pytest.approx(446.8)
-    assert row["burden_share_pct"] == pytest.approx(0.46, abs=0.01)
+    assert row["compliance_cost_eur_per_tonne"] == pytest.approx(11.71, abs=0.01)
+    assert row["burden_share_pct"] == pytest.approx(2.62, abs=0.01)
     assert not row["currency_converted"]
 
 
@@ -1853,47 +2040,80 @@ def test_competitiveness_excludes_placeholder_cost_terms():
 
 
 def test_burden_ranking_can_diverge_from_the_absolute_cost_ranking():
-    """The finding this output exists to expose.
+    """The finding this output exists to expose. It SURVIVED the 7 August 2026
+    mechanism switch but moved year, so the write-up has to move with it.
 
-    By 2030 hydrogen costs more per tonne on Ningbo-Felixstowe in absolute
-    terms, yet Halifax-Hamburg carries the heavier burden relative to what the
-    product costs to make (63.45% against 43.12%), because Chinese hydrogen
-    production cost is nearly double the Canadian figure. Absolute cost and
-    competitive exposure point in opposite directions, and reporting only the
-    first would state the asymmetry backwards.
+    The divergence is now hydrogen in 2027, the single year Halifax-Hamburg is
+    cheaper per tonne in absolute terms while still carrying the heavier burden
+    relative to what the product costs to make (27.37% against 20.52%), because
+    Chinese hydrogen production cost is nearly double the Canadian figure.
+    Absolute cost and competitive exposure point in opposite directions there,
+    and reporting only the first would state the asymmetry backwards.
+
+    Under the previous "factor_scaled" default the divergence sat at 2030
+    (63.45% against 43.12%). Under "benchmark_shielded" 2028 onwards no longer
+    diverges, because Ningbo-Felixstowe becomes the cheaper corridor in absolute
+    terms as well as the less exposed one.
     """
     emissions, _, commercial = data_io.load_inputs()
     compliance = runner.run_compliance_matrix(emissions)
 
     comparison = outputs.corridor_cost_comparison(compliance)
     absolute = comparison[
-        (comparison["product"] == "hydrogen") & (comparison["year"] == 2030)
+        (comparison["product"] == "hydrogen") & (comparison["year"] == 2027)
     ].iloc[0]
     assert absolute["cheaper_corridor"] == rc.HALIFAX_HAMBURG
 
     asymmetry = outputs.competitiveness_asymmetry(compliance, commercial)
     relative = asymmetry[
-        (asymmetry["product"] == "hydrogen") & (asymmetry["year"] == 2030)
+        (asymmetry["product"] == "hydrogen") & (asymmetry["year"] == 2027)
     ].iloc[0]
+    # Cheaper in absolute terms AND more exposed in relative terms: the two
+    # rankings genuinely oppose each other here.
     assert relative["more_exposed_corridor"] == rc.HALIFAX_HAMBURG
     assert relative["asymmetry_verdict"] == "clear"
-    assert relative["halifax_hamburg_burden_pct"] == pytest.approx(63.45, abs=0.05)
-    assert relative["ningbo_felixstowe_burden_pct"] == pytest.approx(43.12, abs=0.05)
+    assert relative["halifax_hamburg_burden_pct"] == pytest.approx(27.37, abs=0.05)
+    assert relative["ningbo_felixstowe_burden_pct"] == pytest.approx(20.52, abs=0.05)
 
 
-def test_a_near_tie_in_burden_is_reported_as_marginal():
-    """Hydrogen 2029 splits the two corridors by 0.04 percentage points on a
-    base of about 29%. Without the marginal band that reads as a direction,
-    which is the exact failure mode already documented for green ammonia."""
+def test_the_marginal_burden_band_still_works_but_no_longer_fires():
+    """A finding the 7 August 2026 mechanism switch DESTROYED, kept as a guard.
+
+    Under "factor_scaled" hydrogen 2029 split the two corridors by 0.04
+    percentage points on a base of about 29%, and the marginal band was what
+    stopped that reading as a direction. Under "benchmark_shielded" that row is
+    a 39.96 point gap, and no row anywhere in the matrix now lands inside the
+    10% relative band. The near-tie result is gone and must not be quoted from
+    the old outputs.
+
+    The band itself still has to work, because the failure mode it guards
+    against (reporting a coin-flip as a direction) is documented in this
+    project for green ammonia. So this test now checks the mechanism directly
+    and pins that nothing currently trips it, with the closest row named. If a
+    future input change produces a near-tie again, `closest` moves and this
+    fails, which is the prompt to re-examine it.
+    """
     emissions, _, commercial = data_io.load_inputs()
     compliance = runner.run_compliance_matrix(emissions)
     asymmetry = outputs.competitiveness_asymmetry(compliance, commercial)
+    assert len(asymmetry)
 
-    row = asymmetry[
+    # The band is still applied to every row, and nothing trips it.
+    assert set(asymmetry["asymmetry_verdict"]) == {"clear"}
+    assert (asymmetry["relative_margin_pct"] > outputs.MARGINAL_VERDICT_BAND_PCT).all()
+
+    # The nearest thing to a tie is ammonia 2026 at 2.61 points, which is a
+    # 198% relative margin and nowhere near marginal.
+    closest = asymmetry.loc[asymmetry["gap_percentage_points"].abs().idxmin()]
+    assert closest["product"] == "ammonia"
+    assert closest["year"] == 2026
+    assert abs(closest["gap_percentage_points"]) == pytest.approx(2.61, abs=0.05)
+
+    # The superseded row, asserted so the old 0.04 figure cannot be requoted.
+    stale = asymmetry[
         (asymmetry["product"] == "hydrogen") & (asymmetry["year"] == 2029)
     ].iloc[0]
-    assert abs(row["gap_percentage_points"]) < 0.1
-    assert row["asymmetry_verdict"] == "marginal"
+    assert abs(stale["gap_percentage_points"]) == pytest.approx(39.96, abs=0.05)
 
 
 # ---------------------------------------------------------------------------
@@ -1949,25 +2169,124 @@ def test_desnz_2026_sits_below_the_official_determination():
 def test_analysis_reads_every_uk_price_variant_not_just_frozen():
     """Regression guard. The base-case filter used to hard-pin "frozen", so a
     compliance frame built on any other path came back empty, which reads as
-    "no data" rather than as a filter bug."""
-    emissions, _, _ = data_io.load_inputs()
+    "no data" rather than as a filter bug.
+
+    Covers every function whose base-case filter reads `uk_price_variant`, not
+    just `corridor_cost_comparison`. Checking only that one is what let
+    `competitiveness_asymmetry` ship with no `uk_price_variant` parameter at
+    all: it dropped every UK row on a non-frozen frame and then raised
+    `KeyError: 'product'` out of its own sort, which is a worse failure than
+    the empty frame this test was written to catch.
+    """
+    emissions, _, commercial = data_io.load_inputs()
     for variant in rc.UK_ETS_PRICE_VARIANTS:
         compliance = runner.run_compliance_matrix(
             emissions, uk_price_variant=variant
         )
-        comparison = outputs.corridor_cost_comparison(
-            compliance, uk_price_variant=variant
+        for name, frame in (
+            (
+                "corridor_cost_comparison",
+                outputs.corridor_cost_comparison(compliance, uk_price_variant=variant),
+            ),
+            (
+                "corridor_crossover_year",
+                outputs.corridor_crossover_year(compliance, uk_price_variant=variant),
+            ),
+            (
+                "corridor_lock_in",
+                outputs.corridor_lock_in(compliance, uk_price_variant=variant),
+            ),
+            (
+                "switching_cost_sensitivity",
+                outputs.switching_cost_sensitivity(
+                    compliance, uk_price_variant=variant
+                ),
+            ),
+            (
+                "competitiveness_burden",
+                outputs.competitiveness_burden(
+                    compliance, commercial, uk_price_variant=variant
+                ),
+            ),
+            (
+                "competitiveness_asymmetry",
+                outputs.competitiveness_asymmetry(
+                    compliance, commercial, uk_price_variant=variant
+                ),
+            ),
+        ):
+            assert len(frame), f"{name} came back empty on the {variant} path"
+
+
+def test_competitiveness_asymmetry_covers_both_corridors_on_every_price_path():
+    """The specific failure above: only the EU corridor survived the filter.
+
+    The EU rows pass `_base_case_mask` on its "n/a" arm whatever the variant,
+    so a mismatched filter drops the UK side alone. That leaves a frame that
+    looks populated on the burden side but has no corridor pair to compare, so
+    the asymmetry is not merely wrong, it cannot be computed at all.
+    """
+    emissions, _, commercial = data_io.load_inputs()
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        compliance = runner.run_compliance_matrix(
+            emissions, uk_price_variant=variant
         )
-        assert len(comparison), f"{variant} produced an empty comparison"
+        burden = outputs.competitiveness_burden(
+            compliance, commercial, uk_price_variant=variant
+        )
+        assert set(burden["corridor"].unique()) == set(rc.CORRIDORS), variant
+
+        asymmetry = outputs.competitiveness_asymmetry(
+            compliance, commercial, uk_price_variant=variant
+        )
+        assert set(asymmetry["product"].unique()) == set(rc.PRODUCTS), variant
 
 
-def test_corridor_ordering_survives_all_three_uk_price_paths():
-    """The headline finding does not depend on which UK price path is assumed.
+def test_analysis_returns_an_empty_frame_rather_than_raising():
+    """A filter that matches nothing must return an empty frame, not blow up.
 
-    Ningbo-Felixstowe is cheaper in 2026 only, because UK CBAM has not started;
-    Halifax-Hamburg is cheaper every year after. That holds under the frozen
-    baseline, under EU-UK linkage, and under the UK government's own published
-    values, which is a stronger claim than any one of them alone.
+    Every reporting function in `analysis.outputs` is called behind a
+    `if len(...)` guard in `write_all` and behind `.empty` checks in the
+    dashboard, so returning an empty frame is the contract. Raising instead
+    takes down the whole output run over one unmatched filter.
+    """
+    emissions, _, commercial = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+    # A pathway that exists on neither corridor: matches no rows anywhere.
+    for name, frame in (
+        (
+            "corridor_cost_comparison",
+            outputs.corridor_cost_comparison(compliance, pathway="does_not_exist"),
+        ),
+        (
+            "competitiveness_burden",
+            outputs.competitiveness_burden(
+                compliance, commercial, pathway="does_not_exist"
+            ),
+        ),
+        (
+            "competitiveness_asymmetry",
+            outputs.competitiveness_asymmetry(
+                compliance, commercial, pathway="does_not_exist"
+            ),
+        ),
+        (
+            "corridor_lock_in",
+            outputs.corridor_lock_in(compliance, pathway="does_not_exist"),
+        ),
+    ):
+        assert isinstance(frame, pd.DataFrame), name
+        assert frame.empty, name
+
+
+def test_every_corridor_ordering_starts_with_the_uk_cbam_gap():
+    """The one part of the corridor finding that no assumption moves.
+
+    Ningbo-Felixstowe is cheaper in 2026 on every product and every UK price
+    path, because UK CBAM does not exist that year. It then loses the lead in
+    2027, the year UK CBAM starts. That much is regulatory timing and holds
+    unconditionally, which is why it is asserted separately from the rest of
+    the horizon below.
     """
     emissions, _, _ = data_io.load_inputs()
     for variant in rc.UK_ETS_PRICE_VARIANTS:
@@ -1977,14 +2296,71 @@ def test_corridor_ordering_survives_all_three_uk_price_paths():
         comparison = outputs.corridor_cost_comparison(
             compliance, uk_price_variant=variant
         )
-        for product in ("ammonia", "hydrogen"):
+        for product in rc.PRODUCTS:
             rows = comparison[comparison["product"] == product].sort_values("year")
             ordering = dict(zip(rows["year"], rows["cheaper_corridor"], strict=False))
             assert ordering[2026] == rc.NINGBO_FELIXSTOWE, f"{variant}/{product}"
-            for year in (2027, 2028, 2029, 2030):
-                assert ordering[year] == rc.HALIFAX_HAMBURG, (
-                    f"{variant}/{product}/{year}"
-                )
+            assert ordering[2027] == rc.HALIFAX_HAMBURG, f"{variant}/{product}"
+
+
+def test_only_ammonias_corridor_ordering_survives_all_three_uk_price_paths():
+    """After 2027 the two products stop behaving the same way.
+
+    This test used to assert that Halifax-Hamburg is cheaper in every year from
+    2027 on both products and all three price paths, and it was quoted in the
+    README as a robustness result. Switching EU_CBAM_DEFAULT_MECHANISM to
+    "benchmark_shielded" on 7 August 2026 broke it, and the break is the
+    finding rather than a regression:
+
+      ammonia   NF, HH, HH, HH, HH   on all three paths
+      hydrogen  NF, HH, NF, NF, NF   on frozen and desnz
+                NF, HH, HH, HH, HH   on linked
+
+    The EU hydrogen benchmark (7.98 tCO2e/t) sits close to Canadian grey
+    hydrogen (10.07), so under the benchmark form EU liability starts small and
+    climbs steeply as free allocation is withdrawn, while the UK rate fraction
+    climbs slowly. Ningbo-Felixstowe therefore takes the lead back from 2028
+    unless the UK price is itself rising, which is what the linkage path does.
+
+    So ammonia's ordering is robust to the price assumption and hydrogen's is
+    not. Any hydrogen corridor claim from 2028 must name the price path it is
+    on. Flipping the mechanism back makes both products robust again, and this
+    test is one of the places that has to be rewritten if that happens.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
+
+    expected = {
+        ("frozen", "ammonia"): [nf, hh, hh, hh, hh],
+        ("linked", "ammonia"): [nf, hh, hh, hh, hh],
+        ("desnz", "ammonia"): [nf, hh, hh, hh, hh],
+        ("frozen", "hydrogen"): [nf, hh, nf, nf, nf],
+        ("linked", "hydrogen"): [nf, hh, hh, hh, hh],
+        ("desnz", "hydrogen"): [nf, hh, nf, nf, nf],
+    }
+
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        compliance = runner.run_compliance_matrix(
+            emissions, uk_price_variant=variant
+        )
+        comparison = outputs.corridor_cost_comparison(
+            compliance, uk_price_variant=variant
+        )
+        for product in rc.PRODUCTS:
+            rows = comparison[comparison["product"] == product].sort_values("year")
+            got = list(rows["cheaper_corridor"])
+            assert got == expected[(variant, product)], f"{variant}/{product}"
+
+    # And the claim the README now makes, stated directly rather than inferred:
+    # ammonia agrees across every path, hydrogen does not.
+    ammonia_orderings = {
+        tuple(expected[(v, "ammonia")]) for v in rc.UK_ETS_PRICE_VARIANTS
+    }
+    hydrogen_orderings = {
+        tuple(expected[(v, "hydrogen")]) for v in rc.UK_ETS_PRICE_VARIANTS
+    }
+    assert len(ammonia_orderings) == 1, "ammonia should be price-path robust"
+    assert len(hydrogen_orderings) > 1, "hydrogen should not be price-path robust"
 
 
 # ---------------------------------------------------------------------------

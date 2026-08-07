@@ -369,15 +369,22 @@ product = st.sidebar.selectbox(
 # Riya flagged the blue hydrogen figures (blue_smr_ccs, blue_ccs) as a data
 # quality issue and asked for them to be dropped from the dashboard. The
 # underlying rows stay in emissions_table.csv; this is a display-only filter.
+#
+# It has to be applied to every surface, not just the selector. Until
+# 7 August 2026 it was subtracted from `pathway_options` alone, so the two
+# charts in the "Which pathway / corridor" tab still ranked and tabulated blue
+# hydrogen: on Halifax-Hamburg it sat at rank 2 of 3 in the cheapest-pathway
+# chart. `emissions_shown` is the frame every display reads, so a pathway
+# excluded here is excluded everywhere.
 EXCLUDED_PATHWAYS = {"blue_smr_ccs", "blue_ccs"}
 
+emissions_shown = emissions[~emissions["pathway"].isin(EXCLUDED_PATHWAYS)]
+
 pathway_options = sorted(
-    set(
-        emissions[
-            (emissions["corridor"] == corridor) & (emissions["product"] == product)
-        ]["pathway"].unique()
-    )
-    - EXCLUDED_PATHWAYS
+    emissions_shown[
+        (emissions_shown["corridor"] == corridor)
+        & (emissions_shown["product"] == product)
+    ]["pathway"].unique()
 )
 if not pathway_options:
     st.sidebar.error("No emissions pathway data for this corridor/product combination.")
@@ -759,6 +766,10 @@ with tab_sensitivity:
     sweep = sensitivity.sweep_corridor(
         corridor, year=year, vessel=vessel_set, route=route,
         price_scenario=price_scenario,
+        # Must match the path selected in the sidebar. The ranking is
+        # unaffected either way, since the price cancels out of a percentage
+        # change, but the underlying cost levels in the table below are not.
+        uk_price_variant=uk_price_variant,
     )
     ranked = sensitivity.rank_drivers(sweep)
     ranked_this = ranked[
@@ -825,7 +836,7 @@ with tab_choice:
     )
 
     ranking = outputs.pathway_cost_ranking(
-        emissions, commercial, year=year, price_scenario=price_scenario,
+        emissions_shown, commercial, year=year, price_scenario=price_scenario,
         uk_price_variant=uk_price_variant,
     )
     ranking_here = ranking[
@@ -870,7 +881,8 @@ with tab_choice:
         )
 
         robustness = outputs.pathway_choice_price_robustness(
-            emissions, commercial, year=year, uk_price_variant=uk_price_variant,
+            emissions_shown, commercial, year=year,
+            uk_price_variant=uk_price_variant,
         )
         r_here = robustness[
             (robustness["corridor"] == corridor) & (robustness["product"] == product)
@@ -963,7 +975,7 @@ with tab_choice:
         "assumption, not evidence switching never pays."
     )
     breakeven = outputs.abatement_breakeven_year(
-        emissions, commercial, price_scenario=price_scenario,
+        emissions_shown, commercial, price_scenario=price_scenario,
         uk_price_variant=uk_price_variant,
     )
     b_here = breakeven[

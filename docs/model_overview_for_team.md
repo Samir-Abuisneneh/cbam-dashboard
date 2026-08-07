@@ -310,42 +310,63 @@ formulas only agree in 2034. Reproducing a published external result (Ramsook et
 — the code currently understates that paper's published CBAM burden by roughly a third
 under the simpler form.
 
-**Updated 7 August 2026, and the status changed twice since this was written.** The data
-blocker is gone: the revised 2026-2030 product benchmarks were read out of the Official
-Journal text of IR 2026/1412 on 6 August (ammonia 1.522, hydrogen 7.98) and are in the
-model. Switching is now blocked on a **decision, not a lookup**, because flipping the
-mechanism does not rescale the results, it inverts which corridor the study concludes is
-cheaper. That is Frano's call, not a code change.
+**Updated 7 August 2026: the model has switched to the benchmark form.** The data blocker
+went first, when the revised 2026-2030 product benchmarks were read out of the Official
+Journal text of IR 2026/1412 on 6 August (ammonia 1.522, hydrogen 7.98). What remained was
+a decision rather than a lookup, and Samir took it on 7 August:
+`EU_CBAM_DEFAULT_MECHANISM` is now `benchmark_shielded`.
 
-The fertiliser mark-up fix then halved its scope. With ammonia's mark-up corrected, both
-mechanisms now agree on ammonia and **only hydrogen still flips**. So if you are writing
-the ammonia side, this open question no longer changes your direction, only the magnitude
-of the lock-in penalty. If you are writing hydrogen, it still changes the answer.
+**Frano has not confirmed this yet.** Treat it as the working basis and state it in your
+methodology, because it is not a neutral refinement. Flipping the mechanism does not
+rescale the results, it inverts which corridor the study concludes is cheaper for hydrogen.
 
-Both formulas are implemented side by side in `validation/reference_case.py` and
-`analysis/outputs.cbam_mechanism_comparison` sizes the choice on the current benchmarks,
-so the effect is visible even though the headline model hasn't switched over.
+The fertiliser mark-up fix had already halved its scope. With ammonia's mark-up corrected,
+both mechanisms agree on ammonia and **only hydrogen flips**. So if you are writing the
+ammonia side, the switch changes only the magnitude of the lock-in penalty, not your
+direction. If you are writing hydrogen, it changes the answer, and section 8 below gives
+the new shape.
+
+Both formulas stay implemented side by side in `validation/reference_case.py`, and
+`analysis/outputs.cbam_mechanism_comparison` still sizes the choice on the current
+benchmarks, so the decision remains auditable and reversible by one constant.
 
 ---
 
 ## 8. Headline results (medium price scenario)
 
+All figures below are on the `benchmark_shielded` mechanism adopted 7 August 2026. If
+you have numbers from an earlier copy of this document, they were on the factor-scaled
+form and are lower on the EU side, in some cases by a large multiple.
+
 **2026, hydrogen:** Halifax-Hamburg's primary scenario (CBAM-default anchor) pays
-**€15.97/t** in total carbon compliance cost. Ningbo-Felixstowe pays **£0.50/t** —
-over 30× less, because UK CBAM hasn't started yet and UK ETS doesn't price the ocean
-leg at all in 2026.
+**€95.24/t** in total carbon compliance cost. Ningbo-Felixstowe pays **£0.50/t**, which
+is around 160× less once both are put in one currency, because UK CBAM hasn't started
+yet and UK ETS doesn't price the ocean leg at all in 2026.
 
 **2030, hydrogen**, with UK CBAM running at its real legislated rate (33.0% of the UK
 ETS price): Ningbo-Felixstowe's primary scenario reaches **£434.41/t**, against
-**€389.90/t** for Halifax-Hamburg. By 2030, CBAM dominates the total cost on both
+**€559.93/t** for Halifax-Hamburg. By 2030, CBAM dominates the total cost on both
 corridors and the maritime terms become close to irrelevant.
 
-**The corridor ordering flips in 2027, not 2030.** Ningbo-Felixstowe is cheaper in 2026
-*only* because UK CBAM doesn't exist yet; it starts in 2027 and the ordering reverses
-immediately. From there the gap **narrows** each year as the EU's CBAM factor ramps
-(hydrogen: £181/t in 2027 down to £102/t by 2030). So the correct characterisation is
-one sharp flip in 2027 followed by convergence — not a gradual UK overtake completing
-in 2030. If you're writing the discussion chapter, this is the shape to describe.
+**The corridor ordering flips twice for hydrogen, and once for ammonia.**
+Ningbo-Felixstowe is cheaper in 2026 *only* because UK CBAM doesn't exist yet.
+
+- **Ammonia:** it starts in 2027, the ordering reverses, and it stays reversed. The gap
+  then narrows from £19.08/t to £13.04/t by 2030. One sharp flip followed by
+  convergence, not a gradual UK overtake.
+- **Hydrogen:** Halifax-Hamburg is cheaper in 2027 alone (£63.23/t ahead), then
+  Ningbo-Felixstowe takes the lead back from 2028 and keeps it. The EU hydrogen
+  benchmark of 7.98 tCO2e/t sits close to Canadian grey hydrogen's 10.07, so EU
+  liability starts small and climbs steeply as free allocation is withdrawn, while the
+  UK rate fraction climbs slowly.
+
+If you're writing the discussion chapter, that product split is the shape to describe,
+and it is worth saying explicitly that it is a consequence of the mechanism decision
+above rather than of anything about the corridors themselves.
+
+One caveat for the hydrogen side: the 2028-onward reversal holds under the frozen and
+DESNZ price paths but not under the EU-UK linkage path, where Halifax-Hamburg stays
+cheaper throughout. Name the price path when you quote it.
 
 > **IMPORTANT — if you have an earlier copy of this document or the README, the
 > Halifax-Hamburg figures changed.** They previously read €13.07 (2026) and €411.00 (2030). Those

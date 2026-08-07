@@ -92,19 +92,39 @@ def _profile_with(corridor, vessel, route, overrides):
     }
 
 
-def _cost(profile, year, price_scenario, price_multiplier=1.0):
-    result = total_cost.maritime_cost_per_voyage(profile, year, price_scenario)
+def _cost(profile, year, price_scenario, price_multiplier=1.0, uk_price_variant="frozen"):
+    """Per-voyage cost in the corridor's own currency.
+
+    The EUR and GBP totals are added because exactly one of them is nonzero
+    for any given corridor: `maritime_cost_per_voyage` fills `total_eur` on
+    the EU regime and `total_gbp` on the UK one. It is a select, not a
+    conversion, and the currency is reported as a column on every swept row so
+    no figure from here can be read without it.
+    """
+    result = total_cost.maritime_cost_per_voyage(
+        profile, year, price_scenario, uk_price_variant=uk_price_variant
+    )
     total = result.total_eur + result.total_gbp
     return total * price_multiplier
 
 
 def sweep_corridor(
     corridor, year=2026, vessel="gas_carrier", route="suez",
-    price_scenario="medium", delta=0.20,
+    price_scenario="medium", delta=0.20, uk_price_variant="frozen",
 ) -> pd.DataFrame:
-    """Vary each parameter by plus and minus delta around the base case."""
+    """Vary each parameter by plus and minus delta around the base case.
+
+    `uk_price_variant` selects the UK carbon price path, matching
+    `sweep_compliance` and the runners. It does not move the ranking, because
+    the price enters multiplicatively and cancels out of `pct_change`, but it
+    does set the `base_cost_per_voyage` and `new_cost_per_voyage` levels. Those
+    were pinned to the frozen path regardless of the caller's choice until
+    7 August 2026, so a sweep run alongside a DESNZ or linked result reported
+    cost levels from a different price path than everything beside it.
+    """
     base_profile = _profile_with(corridor, vessel, route, {})
-    base_total = _cost(base_profile, year, price_scenario)
+    base_total = _cost(base_profile, year, price_scenario, uk_price_variant=uk_price_variant)
+    currency = "EUR" if rc.CORRIDOR_REGIME[corridor] == "EU" else "GBP"
 
     rows = []
     for param in SWEPT_PARAMETERS:
@@ -113,12 +133,16 @@ def sweep_corridor(
             if param == "carbon_price":
                 # Prices are scenario-driven, so scale the resulting cost rather
                 # than mutating the price table.
-                new_total = _cost(base_profile, year, price_scenario, multiplier)
+                new_total = _cost(
+                    base_profile, year, price_scenario, multiplier,
+                    uk_price_variant=uk_price_variant,
+                )
             else:
                 overrides = {param: _base_value_for(param, corridor, vessel) * multiplier}
                 new_total = _cost(
                     _profile_with(corridor, vessel, route, overrides),
                     year, price_scenario,
+                    uk_price_variant=uk_price_variant,
                 )
 
             change = new_total - base_total
@@ -129,6 +153,8 @@ def sweep_corridor(
                     "route_scenario": route,
                     "year": year,
                     "price_scenario": price_scenario,
+                    "uk_price_variant": uk_price_variant,
+                    "currency": currency,
                     "parameter": param,
                     "direction": direction,
                     "delta_pct": sign * delta * 100,

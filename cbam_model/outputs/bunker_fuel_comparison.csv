@@ -1,11 +1,11 @@
 corridor,vessel_set,year,fueleu_cost_conventional_eur,fueleu_cost_green_bunker_eur,fueleu_saving_eur,price_scenario
-halifax_hamburg,ACL G4-class ConRo,2026,19518.9779735682,0.0,19518.9779735682,medium
-halifax_hamburg,VLGC/VLAC,2026,13228.757709251044,0.0,13228.757709251044,medium
-halifax_hamburg,ACL G4-class ConRo,2027,19518.9779735682,0.0,19518.9779735682,medium
-halifax_hamburg,VLGC/VLAC,2027,13228.757709251044,0.0,13228.757709251044,medium
-halifax_hamburg,ACL G4-class ConRo,2028,19518.9779735682,0.0,19518.9779735682,medium
-halifax_hamburg,VLGC/VLAC,2028,13228.757709251044,0.0,13228.757709251044,medium
-halifax_hamburg,ACL G4-class ConRo,2029,19518.9779735682,0.0,19518.9779735682,medium
-halifax_hamburg,VLGC/VLAC,2029,13228.757709251044,0.0,13228.757709251044,medium
-halifax_hamburg,ACL G4-class ConRo,2030,68311.07524229075,0.0,68311.07524229075,medium
-halifax_hamburg,VLGC/VLAC,2030,46297.02766519824,0.0,46297.02766519824,medium
+halifax_hamburg,container,2026,19518.9779735682,0.0,19518.9779735682,medium
+halifax_hamburg,gas_carrier,2026,13228.757709251044,0.0,13228.757709251044,medium
+halifax_hamburg,container,2027,19518.9779735682,0.0,19518.9779735682,medium
+halifax_hamburg,gas_carrier,2027,13228.757709251044,0.0,13228.757709251044,medium
+halifax_hamburg,container,2028,19518.9779735682,0.0,19518.9779735682,medium
+halifax_hamburg,gas_carrier,2028,13228.757709251044,0.0,13228.757709251044,medium
+halifax_hamburg,container,2029,19518.9779735682,0.0,19518.9779735682,medium
+halifax_hamburg,gas_carrier,2029,13228.757709251044,0.0,13228.757709251044,medium
+halifax_hamburg,container,2030,68311.07524229075,0.0,68311.07524229075,medium
+halifax_hamburg,gas_carrier,2030,46297.02766519824,0.0,46297.02766519824,medium

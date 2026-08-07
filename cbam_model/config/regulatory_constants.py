@@ -153,13 +153,25 @@ EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT = True
 # importer's own emissions. The two agree only in 2034, when free allocation
 # reaches zero.
 #
-# THE DEFAULT IS AN OPEN DECISION, NOT A SETTLED ONE. Read this before
-# changing it.
+# DEFAULT SWITCHED TO "benchmark_shielded" ON 7 AUGUST 2026. Read this before
+# changing it back.
 #
-# The 2026-2030 benchmark blocker was cleared on 6 August 2026, so the
-# stale-data reason for defaulting to "factor_scaled" is gone. The default was
-# nevertheless left on "factor_scaled", because switching it inverts the study's
-# headline corridor finding for hydrogen rather than merely rescaling it.
+# History. The 2026-2030 benchmark blocker was cleared on 6 August 2026, which
+# removed the stale-data reason for defaulting to "factor_scaled". The default
+# was nevertheless left on "factor_scaled" for one more day, because switching
+# it inverts the study's headline corridor finding for hydrogen rather than
+# merely rescaling it, and that was judged a supervisor-level call.
+#
+# The switch was made on Samir's instruction on 7 August 2026, on the grounds
+# that "factor_scaled" was by then defended by nothing except being the
+# incumbent: the legal reading, the published cross-check and this project's own
+# validation module all point at the benchmark form (see the evidence block
+# below). IT HAS NOT YET BEEN CONFIRMED BY FRANO. It is recorded here as a
+# deliberate methodological decision rather than a config edit precisely so that
+# it can be raised, defended, or reversed on the record. The methodology chapter
+# (due 12 August 2026) must state which form was used and why; if Frano rules
+# the other way, flip this constant back and re-run, and the figures below give
+# the size of what changes.
 #
 # FIGURES BELOW RE-DERIVED 7 August 2026, after the fertiliser mark-up fix.
 # That fix cut ammonia's default-value mark-up from 30% to the legislated 1%,
@@ -172,9 +184,10 @@ EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT = True
 #   Cheaper corridor by year (2026-2030), cbam_default pathway, medium price:
 #
 #     ammonia    factor_scaled       NF, HH, HH, HH, HH
-#                benchmark_shielded  NF, HH, HH, HH, HH   <- identical
+#                benchmark_shielded  NF, HH, HH, HH, HH   <- identical (default)
 #     hydrogen   factor_scaled       NF, HH, HH, HH, HH
-#                benchmark_shielded  NF, HH, NF, NF, NF   <- inverts from 2028
+#                benchmark_shielded  NF, HH, NF, NF, NF   <- default, inverts
+#                                                            from 2028
 #
 #   First lock-in reversal, truncate treatment, with regret and breakeven
 #   switching cost in GBP per tonne of annual contracted volume:
@@ -208,11 +221,20 @@ EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT = True
 # which is the factor-scaled reading, and it is what every result in this
 # project has been generated and reviewed under to date.
 #
-# Escalate this to the supervisor rather than resolving it in code. Until then
-# `analysis.outputs.cbam_mechanism_comparison` reports both forms side by side
-# on the correct 2026-2030 benchmarks, so the size of the choice is visible.
+# Both forms stay implemented and `analysis.outputs.cbam_mechanism_comparison`
+# still reports them side by side on the 2026-2030 benchmarks, so the size of
+# the choice stays visible and the decision stays auditable. Report both in the
+# dissertation rather than presenting the chosen form as the only one.
+#
+# NOTE FOR CALLERS: the benchmark form requires an explicit
+# `benchmark_tco2e_per_tonne`, and refuses to default it (a zero benchmark is
+# indistinguishable from the two mechanisms agreeing). Every caller inside this
+# model supplies it. A direct call to `cbam.eu_cbam_cost` that omits both the
+# mechanism and the benchmark now raises instead of silently returning the
+# factor-scaled number, which is intended: it surfaces the switch at the call
+# site rather than hiding it.
 EU_CBAM_MECHANISMS = ("factor_scaled", "benchmark_shielded")
-EU_CBAM_DEFAULT_MECHANISM = "factor_scaled"
+EU_CBAM_DEFAULT_MECHANISM = "benchmark_shielded"
 
 
 def eu_product_benchmark(product: str) -> float:

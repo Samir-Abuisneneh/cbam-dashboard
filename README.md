@@ -37,10 +37,12 @@ since the industry partner withdrew on 6 August 2026 it is an internal one,
 used to generate figures for the dissertation and the defence presentation. It calls
 `cbam_model` live, so it can never drift from the tested regulatory logic. It
 does not accept arbitrary routes or ports — only the two corridors already
-built and covered by the test suite. Placeholder inputs (ammonia emissions,
-commercial costs) are flagged in the UI, and the UK CBAM phase-in factor is
-exposed as an explicitly-labelled what-if slider rather than a silent
-assumption, since it is still unresolved in UK law.
+built and covered by the test suite. Any remaining placeholder input is flagged
+in the UI; as of Riya's 4 August 2026 delivery that is conversion and shipping
+cost alone, since ammonia emissions and production cost are both real and
+sourced. The UK CBAM rate is shown at its real legislated value, derived from
+the Finance Act 2026 baseline and the year's Article 16(14) factor, with an
+opt-in slider to override it as an explicitly-labelled what-if.
 
 ### Why the library is .py and the entry point is .ipynb
 
@@ -150,12 +152,24 @@ artefact.
 
 The corridor asymmetry is a window, not a permanent feature, and it closes
 earlier than the 2026-versus-2030 contrast above suggests. `analysis.outputs
-.corridor_crossover_year` puts the flip in **2027**, the year UK CBAM starts,
-for both products: Ningbo-Felixstowe is cheaper in 2026 only because UK CBAM
-does not exist yet. From 2027 the ordering reverses and the gap then *narrows*
-year on year as the EU's CBAM factor ramps (hydrogen: GBP 181 in 2027 down to
-GBP 102 by 2030). So the story is one flip in 2027 followed by convergence,
-not a slow overtake completing in 2030. That belongs in the discussion chapter.
+.corridor_crossover_year` puts the first flip in **2027**, the year UK CBAM
+starts, for both products: Ningbo-Felixstowe is cheaper in 2026 only because UK
+CBAM does not exist yet.
+
+What happens after 2027 depends on the product, under the `benchmark_shielded`
+mechanism adopted on 7 August 2026.
+
+**Ammonia** stays flipped. Halifax-Hamburg is cheaper every year from 2027 and
+the gap narrows from GBP 19.08 to GBP 13.04 by 2030. One flip followed by
+convergence, not a slow overtake.
+
+**Hydrogen** flips back. Halifax-Hamburg is cheaper in 2027 only (GBP 63.23),
+then Ningbo-Felixstowe takes the lead again from 2028 and holds it through 2030
+(GBP 13.56, 69.44 and 43.31 ahead). The driver is the benchmark shield: the EU
+hydrogen benchmark of 7.98 tCO2e/t sits close to Canadian grey hydrogen's 10.07,
+so early EU liability is small but climbs steeply as free allocation is
+withdrawn, while the UK rate fraction climbs far more slowly. Two flips, not
+one, and the second is the one worth writing up.
 
 ### The corridor finding survives every UK price path
 
@@ -184,12 +198,23 @@ of one quantity: 49.41 is a backward-looking average of actual UKA futures
 settlements published for civil-penalty purposes, 38 is a forward
 policy-appraisal scenario in real terms.
 
-**The result: the corridor ordering is identical under all three.**
-Ningbo-Felixstowe is cheaper in 2026 only, Halifax-Hamburg every year after,
-on both products. A test enforces it. That is a materially stronger claim than
-the finding held under any single price assumption, and it retires the
-"UK price is frozen" caveat that previously had to accompany every corridor
-statement.
+**The result, under the `benchmark_shielded` mechanism adopted on 7 August
+2026: ammonia is robust to the price path, hydrogen is not.**
+
+Ammonia gives the same ordering under all three paths, Ningbo-Felixstowe in
+2026 only and Halifax-Hamburg every year after. For ammonia the "UK price is
+frozen" caveat is genuinely retired.
+
+Hydrogen does not. The frozen and DESNZ paths both flip back to
+Ningbo-Felixstowe from 2028, while the linkage path keeps Halifax-Hamburg
+cheaper for the rest of the horizon, because a UK price converging upward on
+the EU price raises UK CBAM enough to hold the ordering. So on hydrogen the
+corridor conclusion from 2028 rests on the UK price assumption and has to be
+reported with the path named. Note the linkage path is explicitly not law.
+
+This split appeared when the mechanism moved. Under `factor_scaled` all three
+paths agreed on both products, and the README previously claimed that as a
+settled robustness result.
 
 ### A mark-up bug, found by checking the Commission's own workbook
 
@@ -300,13 +325,21 @@ asset-specificity half meeting in one number.
 No switching cost is claimed. The finding is the **threshold**, and the
 discussion argues about which side of it real corridor-specific sunk costs fall.
 
-**This result is conditional on the CBAM mechanism choice.** The figures above
-are under the current `factor_scaled` default. Under `benchmark_shielded` the
-lock-in reversal still exists but moves to the 2027 decision year, with the
-committed choice becoming Ningbo-Felixstowe and regret falling to 11% (ammonia)
-and 4% (hydrogen). The *existence* of a myopia trap survives both mechanisms;
-its year, direction and magnitude do not. See unresolved item 1 below, and
-settle that decision before writing this section up.
+**This result is conditional on the CBAM mechanism choice**, and the mechanism
+moved to `benchmark_shielded` on 7 August 2026, so the figures above have been
+re-derived on it. The reversal now splits by product:
+
+| product | decision year | myopic | committed | regret | breakeven (GBP/t annual volume) |
+|---|---|---|---|---|---|
+| Ammonia | 2026 | Ningbo-Felixstowe | Halifax-Hamburg | 33.5% | 38.72 |
+| Hydrogen | 2027 | Halifax-Hamburg | Ningbo-Felixstowe | 4.2% | 43.24 |
+
+The *existence* of a myopia trap survives both mechanisms; its year, direction
+and magnitude do not. Hydrogen's 4.2% regret is thin enough that it should be
+reported as marginal rather than as a decision, on the same principle the
+abatement and switching verdicts already apply. See unresolved item 1 below:
+the mechanism is Samir's decision and is not yet confirmed by the supervisor,
+so this section should be written up with that stated.
 
 ### A caveat to label in the write-up
 
@@ -350,11 +383,13 @@ hydrogen boil-off losses are not modelled.
    (heat 7,4 to 7,2, fuel 10,7 to 10,4, aromatics 0,0117 to 0,0116), though
    ammonia and hydrogen happen to be unchanged.
 
-   **The default mechanism is now an open decision, not a blocked one, and it
-   needs the supervisor.** The plan was to flip `EU_CBAM_DEFAULT_MECHANISM` to
-   `benchmark_shielded` once the benchmarks landed. Doing so was tested and for
-   **hydrogen** it does not rescale the results, it **inverts the headline
-   corridor finding**.
+   **The default mechanism was switched to `benchmark_shielded` on 7 August
+   2026, on Samir's decision, and is not yet confirmed by the supervisor.**
+   The plan had been to flip `EU_CBAM_DEFAULT_MECHANISM` once the benchmarks
+   landed, and that is what happened. For **hydrogen** it does not rescale the
+   results, it **inverts the headline corridor finding**, so it is recorded
+   here as a methodological decision rather than a configuration change. Both
+   forms stay implemented and one constant reverses it.
 
    Figures re-derived 7 August 2026, after the fertiliser mark-up fix. That fix
    is what narrowed this: cutting ammonia's mark-up from 30% to the legislated
@@ -363,33 +398,34 @@ hydrogen boil-off losses are not modelled.
 
    | | Cheaper corridor, 2026 → 2030 | First lock-in reversal | Regret | Breakeven switching cost |
    |---|---|---|---|---|
-   | **Ammonia**, `factor_scaled` (current default) | NF, then HH 2027 onward | 2026 | 145.7% | GBP 91.60 |
-   | **Ammonia**, `benchmark_shielded` | NF, then HH 2027 onward — *identical* | 2026 | 33.5% | GBP 38.72 |
-   | **Hydrogen**, `factor_scaled` (current default) | NF, then HH 2027 onward | 2026 | 108.7% | GBP 491.95 |
-   | **Hydrogen**, `benchmark_shielded` | NF, HH 2027, then **NF 2028 onward** | 2027 | 4.2% | GBP 43.24 |
+   | **Ammonia**, `factor_scaled` | NF, then HH 2027 onward | 2026 | 145.7% | GBP 91.60 |
+   | **Ammonia**, `benchmark_shielded` (current default) | NF, then HH 2027 onward — *identical* | 2026 | 33.5% | GBP 38.72 |
+   | **Hydrogen**, `factor_scaled` | NF, then HH 2027 onward | 2026 | 108.7% | GBP 491.95 |
+   | **Hydrogen**, `benchmark_shielded` (current default) | NF, HH 2027, then **NF 2028 onward** | 2027 | 4.2% | GBP 43.24 |
 
-   So for ammonia the choice no longer changes *which* corridor to commit to,
-   only how costly the wrong choice is. For hydrogen it still changes the
-   direction, which is why the decision still has to be taken.
+   So for ammonia the choice never changed *which* corridor to commit to, only
+   how costly the wrong choice is. For hydrogen it changes the direction, which
+   is why the switch has to be defended in the methodology rather than noted in
+   a changelog.
 
    The asymmetry is structural: the EU corridor's liability rises steeply in the
    early years under the benchmark form, while the UK corridor is untouched,
    because the UK scheme nets free allocation off inside its own rate fraction.
    So this is not a neutral modelling refinement, it changes which regime the
-   study concludes is more exposed for hydrogen. The default was left on
-   `factor_scaled` pending that decision, and
+   study concludes is more exposed for hydrogen.
    `test_the_mechanism_choice_inverts_the_corridor_finding` pins every ordering
-   in the table above and fails loudly if anyone changes it without rewriting
-   the findings.
+   in the table above and fails loudly if either form's results move without
+   the findings being rewritten.
 
    The gap is also not uniform in sign across pathways. Under the benchmark
    form **every green pathway on the EU corridor owes zero CBAM in every
    modelled year**, because they sit below the benchmark and free allocation
    shields it. Pathways above the benchmark owe much more: `cbam_default`
    hydrogen goes from EUR 6.17 to EUR 85.44 per tonne in 2026 (13.9x) and from
-   EUR 370.09 to EUR 540.13 in 2030 (1.5x). So the current default materially
-   **understates how far CBAM closes the green premium**, and the primary
-   `cbam_default` scenario sits on the understated side. The finding that the
+   EUR 370.09 to EUR 540.13 in 2030 (1.5x). So the superseded `factor_scaled`
+   form materially **understated how far CBAM closes the green premium**, and
+   the primary `cbam_default` scenario sat on the understated side. Adopting
+   the benchmark form is what corrects that. The finding that the
    production cost gap dwarfs the CBAM differential holds either way.
 2. **Two production-cost gaps are still built from separate studies, but the
    results do not depend on it.** Canada hydrogen spans three papers (grey

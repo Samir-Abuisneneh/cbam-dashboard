@@ -4,6 +4,14 @@ Written against the current code base after the supervisor meeting
 (`supervisor_meeting_2026-08-06.md`). Model integration deadline is 16 August,
 so this is a ten-day plan.
 
+> **Dated document.** The counts and status below describe the repository on
+> 6 August 2026 and are deliberately not kept current, so the plan can be read
+> against the state it was written for. Two things have moved since and matter
+> for anything in this plan: the EU CBAM mechanism was switched to
+> `benchmark_shielded` on 7 August 2026 (Samir's decision, not yet confirmed by
+> Frano), which inverts the hydrogen corridor ordering; and the test suite has
+> grown past 200. Use `README.md` and the test suite for current state.
+
 ## Where the code actually stands
 
 - 168 tests pass. `cbam_model` is ~6,040 lines across config, model, analysis,

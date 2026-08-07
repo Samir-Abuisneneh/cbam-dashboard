@@ -1,313 +1,313 @@
-corridor,vessel_set,route_scenario,speed_scenario,year,price_scenario,uk_ets_variant,distance_nm,voyage_days,voyage_co2_t,port_co2_t,voyage_co2e_t,port_co2e_t,uk_price_variant,bunker_fuel,eu_ets_cost_eur,fueleu_cost_eur,uk_ets_cost_gbp,total_eur,total_gbp
-halifax_hamburg,VLGC/VLAC,suez,lower,2026,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,43939.0,15138.977973568217,0.0,59077.97797356822,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2026,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,43939.0,0.0,0.0,43939.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2026,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,50216.0,15138.977973568217,0.0,65354.97797356822,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2026,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,50216.0,0.0,0.0,50216.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2026,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,56493.00000000001,15138.977973568217,0.0,71631.97797356822,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2026,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,56493.00000000001,0.0,0.0,56493.00000000001,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2027,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,45508.25,15138.977973568217,0.0,60647.22797356822,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2027,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,45508.25,0.0,0.0,45508.25,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2027,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,57434.55,15138.977973568217,0.0,72573.52797356821,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2027,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,57434.55,0.0,0.0,57434.55,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2027,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,65437.725000000006,15138.977973568217,0.0,80576.70297356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2027,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,65437.725000000006,0.0,0.0,65437.725000000006,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2028,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,47077.5,15138.977973568217,0.0,62216.47797356822,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2028,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,47077.5,0.0,0.0,47077.5,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2028,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,64653.100000000006,15138.977973568217,0.0,79792.07797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2028,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,64653.100000000006,0.0,0.0,64653.100000000006,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2028,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,74382.45000000001,15138.977973568217,0.0,89521.42797356824,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2028,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,74382.45000000001,0.0,0.0,74382.45000000001,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2029,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,48646.75,15138.977973568217,0.0,63785.72797356822,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2029,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,48646.75,0.0,0.0,48646.75,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2029,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,71871.65000000001,15138.977973568217,0.0,87010.62797356822,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2029,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,71871.65000000001,0.0,0.0,71871.65000000001,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2029,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,83327.175,15138.977973568217,0.0,98466.15297356821,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2029,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,83327.175,0.0,0.0,83327.175,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2030,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,50216.0,52982.27524229074,0.0,103198.27524229075,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2030,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,50216.0,0.0,0.0,50216.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2030,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,79090.20000000001,52982.27524229074,0.0,132072.47524229076,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2030,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,79090.20000000001,0.0,0.0,79090.20000000001,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2030,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,92271.90000000001,52982.27524229074,0.0,145254.17524229074,0.0
-halifax_hamburg,VLGC/VLAC,suez,lower,2030,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,92271.90000000001,0.0,0.0,92271.90000000001,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2026,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,38395.0,13228.757709251044,0.0,51623.75770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2026,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,38395.0,0.0,0.0,38395.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2026,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,43880.0,13228.757709251044,0.0,57108.75770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2026,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,43880.0,0.0,0.0,43880.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2026,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,49365.0,13228.757709251044,0.0,62593.75770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2026,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,49365.0,0.0,0.0,49365.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2027,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,39766.25,13228.757709251044,0.0,52995.00770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2027,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,39766.25,0.0,0.0,39766.25,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2027,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,50187.75,13228.757709251044,0.0,63416.50770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2027,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,50187.75,0.0,0.0,50187.75,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2027,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,57181.125,13228.757709251044,0.0,70409.88270925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2027,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,57181.125,0.0,0.0,57181.125,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2028,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,41137.5,13228.757709251044,0.0,54366.25770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2028,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,41137.5,0.0,0.0,41137.5,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2028,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,56495.5,13228.757709251044,0.0,69724.25770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2028,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,56495.5,0.0,0.0,56495.5,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2028,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,64997.25,13228.757709251044,0.0,78226.00770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2028,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,64997.25,0.0,0.0,64997.25,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2029,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,42508.75,13228.757709251044,0.0,55737.50770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2029,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,42508.75,0.0,0.0,42508.75,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2029,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,62803.25,13228.757709251044,0.0,76032.00770925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2029,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,62803.25,0.0,0.0,62803.25,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2029,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,72813.375,13228.757709251044,0.0,86042.13270925105,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2029,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,72813.375,0.0,0.0,72813.375,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2030,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,43880.0,46297.02766519824,0.0,90177.02766519824,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2030,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,43880.0,0.0,0.0,43880.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2030,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,69111.0,46297.02766519824,0.0,115408.02766519824,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2030,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,69111.0,0.0,0.0,69111.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2030,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,80629.5,46297.02766519824,0.0,126926.52766519824,0.0
-halifax_hamburg,VLGC/VLAC,suez,base,2030,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,80629.5,0.0,0.0,80629.5,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2026,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,33768.0,11634.977973568231,0.0,45402.97797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2026,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,33768.0,0.0,0.0,33768.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2026,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,38592.0,11634.977973568231,0.0,50226.97797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2026,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,38592.0,0.0,0.0,38592.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2026,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,43416.0,11634.977973568231,0.0,55050.97797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2026,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,43416.0,0.0,0.0,43416.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2027,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,34974.0,11634.977973568231,0.0,46608.97797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2027,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,34974.0,0.0,0.0,34974.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2027,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,44139.6,11634.977973568231,0.0,55774.57797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2027,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,44139.6,0.0,0.0,44139.6,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2027,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,50290.2,11634.977973568231,0.0,61925.17797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2027,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,50290.2,0.0,0.0,50290.2,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2028,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,36180.0,11634.977973568231,0.0,47814.97797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2028,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,36180.0,0.0,0.0,36180.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2028,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,49687.2,11634.977973568231,0.0,61322.17797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2028,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,49687.2,0.0,0.0,49687.2,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2028,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,57164.399999999994,11634.977973568231,0.0,68799.37797356822,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2028,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,57164.399999999994,0.0,0.0,57164.399999999994,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2029,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,37386.0,11634.977973568231,0.0,49020.97797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2029,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,37386.0,0.0,0.0,37386.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2029,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,55234.799999999996,11634.977973568231,0.0,66869.77797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2029,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,55234.799999999996,0.0,0.0,55234.799999999996,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2029,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,64038.6,11634.977973568231,0.0,75673.57797356823,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2029,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,64038.6,0.0,0.0,64038.6,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2030,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,38592.0,40719.23524229075,0.0,79311.23524229074,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2030,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,38592.0,0.0,0.0,38592.0,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2030,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,60782.399999999994,40719.23524229075,0.0,101501.63524229074,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2030,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,60782.399999999994,0.0,0.0,60782.399999999994,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2030,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,70912.8,40719.23524229075,0.0,111632.03524229076,0.0
-halifax_hamburg,VLGC/VLAC,suez,upper,2030,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,70912.8,0.0,0.0,70912.8,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2026,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,56651.0,19518.9779735682,0.0,76169.9779735682,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2026,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,56651.0,0.0,0.0,56651.0,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2026,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,64744.0,19518.9779735682,0.0,84262.9779735682,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2026,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,64744.0,0.0,0.0,64744.0,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2026,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,72837.0,19518.9779735682,0.0,92355.9779735682,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2026,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,72837.0,0.0,0.0,72837.0,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2027,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,58674.25,19518.9779735682,0.0,78193.2279735682,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2027,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,58674.25,0.0,0.0,58674.25,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2027,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,74050.95,19518.9779735682,0.0,93569.92797356819,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2027,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,74050.95,0.0,0.0,74050.95,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2027,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,84369.525,19518.9779735682,0.0,103888.50297356819,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2027,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,84369.525,0.0,0.0,84369.525,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2028,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,60697.5,19518.9779735682,0.0,80216.4779735682,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2028,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,60697.5,0.0,0.0,60697.5,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2028,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,83357.9,19518.9779735682,0.0,102876.87797356819,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2028,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,83357.9,0.0,0.0,83357.9,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2028,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,95902.04999999999,19518.9779735682,0.0,115421.02797356818,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2028,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,95902.04999999999,0.0,0.0,95902.04999999999,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2029,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,62720.75,19518.9779735682,0.0,82239.7279735682,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2029,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,62720.75,0.0,0.0,62720.75,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2029,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,92664.84999999999,19518.9779735682,0.0,112183.82797356819,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2029,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,92664.84999999999,0.0,0.0,92664.84999999999,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2029,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,107434.575,19518.9779735682,0.0,126953.55297356819,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2029,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,107434.575,0.0,0.0,107434.575,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2030,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,64744.0,68311.07524229075,0.0,133055.07524229074,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2030,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,64744.0,0.0,0.0,64744.0,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2030,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,101971.79999999999,68311.07524229075,0.0,170282.87524229073,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2030,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,101971.79999999999,0.0,0.0,101971.79999999999,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2030,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,118967.09999999999,68311.07524229075,0.0,187278.17524229074,0.0
-halifax_hamburg,ACL G4-class ConRo,suez,service,2030,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,118967.09999999999,0.0,0.0,118967.09999999999,0.0
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2026,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2026,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2026,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2027,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2027,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2027,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2028,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2028,low,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,90398.80000000002,0.0,90398.80000000002
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2028,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2028,medium,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,111665.1177,0.0,111665.1177
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2028,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2028,high,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,135598.2,0.0,135598.2
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2029,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2029,low,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,90398.80000000002,0.0,90398.80000000002
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2029,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2029,medium,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,111665.1177,0.0,111665.1177
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2029,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2029,high,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,135598.2,0.0,135598.2
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,low,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,90398.80000000002,0.0,90398.80000000002
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,medium,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,111665.1177,0.0,111665.1177
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,lower,2030,high,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,135598.2,0.0,135598.2
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2026,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2026,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2026,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2027,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2027,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2027,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2028,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2028,low,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,127928.80000000002,0.0,127928.80000000002
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2028,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2028,medium,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,158024.0502,0.0,158024.0502
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2028,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2028,high,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,191893.2,0.0,191893.2
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2029,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2029,low,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,127928.80000000002,0.0,127928.80000000002
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2029,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2029,medium,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,158024.0502,0.0,158024.0502
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2029,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2029,high,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,191893.2,0.0,191893.2
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,low,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,127928.80000000002,0.0,127928.80000000002
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,medium,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,158024.0502,0.0,158024.0502
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,lower,2030,high,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,191893.2,0.0,191893.2
-ningbo_felixstowe,VLGC/VLAC,suez,base,2026,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,base,2026,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,base,2026,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,base,2027,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,base,2027,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,base,2027,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,base,2028,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,base,2028,low,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,79824.8,0.0,79824.8
-ningbo_felixstowe,VLGC/VLAC,suez,base,2028,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,base,2028,medium,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,98603.5842,0.0,98603.5842
-ningbo_felixstowe,VLGC/VLAC,suez,base,2028,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,base,2028,high,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,119737.20000000001,0.0,119737.20000000001
-ningbo_felixstowe,VLGC/VLAC,suez,base,2029,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,base,2029,low,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,79824.8,0.0,79824.8
-ningbo_felixstowe,VLGC/VLAC,suez,base,2029,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,base,2029,medium,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,98603.5842,0.0,98603.5842
-ningbo_felixstowe,VLGC/VLAC,suez,base,2029,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,base,2029,high,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,119737.20000000001,0.0,119737.20000000001
-ningbo_felixstowe,VLGC/VLAC,suez,base,2030,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,base,2030,low,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,79824.8,0.0,79824.8
-ningbo_felixstowe,VLGC/VLAC,suez,base,2030,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,base,2030,medium,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,98603.5842,0.0,98603.5842
-ningbo_felixstowe,VLGC/VLAC,suez,base,2030,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,base,2030,high,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,119737.20000000001,0.0,119737.20000000001
-ningbo_felixstowe,VLGC/VLAC,cape,base,2026,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,base,2026,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,base,2026,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,base,2027,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,base,2027,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,base,2027,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,base,2028,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,base,2028,low,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,112602.8,0.0,112602.8
-ningbo_felixstowe,VLGC/VLAC,cape,base,2028,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,base,2028,medium,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,139092.6087,0.0,139092.6087
-ningbo_felixstowe,VLGC/VLAC,cape,base,2028,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,base,2028,high,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,168904.2,0.0,168904.2
-ningbo_felixstowe,VLGC/VLAC,cape,base,2029,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,base,2029,low,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,112602.8,0.0,112602.8
-ningbo_felixstowe,VLGC/VLAC,cape,base,2029,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,base,2029,medium,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,139092.6087,0.0,139092.6087
-ningbo_felixstowe,VLGC/VLAC,cape,base,2029,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,base,2029,high,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,168904.2,0.0,168904.2
-ningbo_felixstowe,VLGC/VLAC,cape,base,2030,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,base,2030,low,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,112602.8,0.0,112602.8
-ningbo_felixstowe,VLGC/VLAC,cape,base,2030,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,base,2030,medium,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,139092.6087,0.0,139092.6087
-ningbo_felixstowe,VLGC/VLAC,cape,base,2030,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,base,2030,high,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,168904.2,0.0,168904.2
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2026,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2026,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2026,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2027,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2027,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2027,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2028,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2028,low,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,69776.8,0.0,69776.8
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2028,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2028,medium,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,86191.7922,0.0,86191.7922
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2028,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2028,high,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,104665.20000000001,0.0,104665.20000000001
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2029,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2029,low,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,69776.8,0.0,69776.8
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2029,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2029,medium,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,86191.7922,0.0,86191.7922
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2029,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2029,high,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,104665.20000000001,0.0,104665.20000000001
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,low,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,69776.8,0.0,69776.8
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,medium,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,86191.7922,0.0,86191.7922
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,suez,upper,2030,high,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,104665.20000000001,0.0,104665.20000000001
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2026,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2026,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2026,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2027,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2027,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2027,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2028,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2028,low,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,98328.80000000002,0.0,98328.80000000002
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2028,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2028,medium,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,121460.6502,0.0,121460.6502
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2028,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2028,high,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,147493.2,0.0,147493.2
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2029,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2029,low,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,98328.80000000002,0.0,98328.80000000002
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2029,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2029,medium,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,121460.6502,0.0,121460.6502
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2029,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2029,high,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,147493.2,0.0,147493.2
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,low,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,98328.80000000002,0.0,98328.80000000002
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,medium,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,121460.6502,0.0,121460.6502
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
-ningbo_felixstowe,VLGC/VLAC,cape,upper,2030,high,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,147493.2,0.0,147493.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2026,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2026,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2026,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2027,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2027,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2027,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2028,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2028,low,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,264919.2,0.0,264919.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2028,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2028,medium,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,327241.44180000003,0.0,327241.44180000003
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2028,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2028,high,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,397378.80000000005,0.0,397378.80000000005
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2029,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2029,low,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,264919.2,0.0,264919.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2029,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2029,medium,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,327241.44180000003,0.0,327241.44180000003
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2029,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2029,high,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,397378.80000000005,0.0,397378.80000000005
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,low,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,264919.2,0.0,264919.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,medium,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,327241.44180000003,0.0,327241.44180000003
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,suez,service,2030,high,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,397378.80000000005,0.0,397378.80000000005
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2026,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2026,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2026,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2027,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2027,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2027,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2028,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2028,low,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,371925.20000000007,0.0,371925.20000000007
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2028,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2028,medium,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,459420.6033,0.0,459420.6033
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2028,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2028,high,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,557887.8,0.0,557887.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2029,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2029,low,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,371925.20000000007,0.0,371925.20000000007
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2029,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2029,medium,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,459420.6033,0.0,459420.6033
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2029,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2029,high,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,557887.8,0.0,557887.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,low,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,371925.20000000007,0.0,371925.20000000007
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,medium,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,459420.6033,0.0,459420.6033
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
-ningbo_felixstowe,HMM Algeciras-class / Megamax-24,cape,service,2030,high,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,557887.8,0.0,557887.8
+corridor,vessel_set,vessel_class,route_scenario,speed_scenario,year,price_scenario,uk_ets_variant,distance_nm,voyage_days,voyage_co2_t,port_co2_t,voyage_co2e_t,port_co2e_t,uk_price_variant,bunker_fuel,eu_ets_cost_eur,fueleu_cost_eur,uk_ets_cost_gbp,total_eur,total_gbp
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2026,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,43939.0,15138.977973568217,0.0,59077.97797356822,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2026,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,43939.0,0.0,0.0,43939.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2026,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,50216.0,15138.977973568217,0.0,65354.97797356822,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2026,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,50216.0,0.0,0.0,50216.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2026,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,56493.00000000001,15138.977973568217,0.0,71631.97797356822,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2026,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,56493.00000000001,0.0,0.0,56493.00000000001,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2027,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,45508.25,15138.977973568217,0.0,60647.22797356822,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2027,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,45508.25,0.0,0.0,45508.25,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2027,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,57434.55,15138.977973568217,0.0,72573.52797356821,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2027,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,57434.55,0.0,0.0,57434.55,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2027,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,65437.725000000006,15138.977973568217,0.0,80576.70297356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2027,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,65437.725000000006,0.0,0.0,65437.725000000006,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2028,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,47077.5,15138.977973568217,0.0,62216.47797356822,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2028,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,47077.5,0.0,0.0,47077.5,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2028,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,64653.100000000006,15138.977973568217,0.0,79792.07797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2028,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,64653.100000000006,0.0,0.0,64653.100000000006,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2028,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,74382.45000000001,15138.977973568217,0.0,89521.42797356824,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2028,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,74382.45000000001,0.0,0.0,74382.45000000001,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2029,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,48646.75,15138.977973568217,0.0,63785.72797356822,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2029,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,48646.75,0.0,0.0,48646.75,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2029,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,71871.65000000001,15138.977973568217,0.0,87010.62797356822,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2029,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,71871.65000000001,0.0,0.0,71871.65000000001,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2029,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,83327.175,15138.977973568217,0.0,98466.15297356821,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2029,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,83327.175,0.0,0.0,83327.175,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2030,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,50216.0,52982.27524229074,0.0,103198.27524229075,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2030,low,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,50216.0,0.0,0.0,50216.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2030,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,79090.20000000001,52982.27524229074,0.0,132072.47524229076,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2030,medium,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,79090.20000000001,0.0,0.0,79090.20000000001,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2030,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,conventional,92271.90000000001,52982.27524229074,0.0,145254.17524229074,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,lower,2030,high,n/a,2962,9.5,1236.1,58.51,1255.4,59.42,n/a,green_rfnbo,92271.90000000001,0.0,0.0,92271.90000000001,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2026,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,38395.0,13228.757709251044,0.0,51623.75770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2026,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,38395.0,0.0,0.0,38395.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2026,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,43880.0,13228.757709251044,0.0,57108.75770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2026,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,43880.0,0.0,0.0,43880.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2026,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,49365.0,13228.757709251044,0.0,62593.75770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2026,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,49365.0,0.0,0.0,49365.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2027,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,39766.25,13228.757709251044,0.0,52995.00770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2027,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,39766.25,0.0,0.0,39766.25,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2027,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,50187.75,13228.757709251044,0.0,63416.50770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2027,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,50187.75,0.0,0.0,50187.75,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2027,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,57181.125,13228.757709251044,0.0,70409.88270925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2027,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,57181.125,0.0,0.0,57181.125,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2028,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,41137.5,13228.757709251044,0.0,54366.25770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2028,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,41137.5,0.0,0.0,41137.5,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2028,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,56495.5,13228.757709251044,0.0,69724.25770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2028,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,56495.5,0.0,0.0,56495.5,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2028,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,64997.25,13228.757709251044,0.0,78226.00770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2028,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,64997.25,0.0,0.0,64997.25,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2029,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,42508.75,13228.757709251044,0.0,55737.50770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2029,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,42508.75,0.0,0.0,42508.75,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2029,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,62803.25,13228.757709251044,0.0,76032.00770925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2029,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,62803.25,0.0,0.0,62803.25,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2029,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,72813.375,13228.757709251044,0.0,86042.13270925105,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2029,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,72813.375,0.0,0.0,72813.375,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2030,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,43880.0,46297.02766519824,0.0,90177.02766519824,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2030,low,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,43880.0,0.0,0.0,43880.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2030,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,69111.0,46297.02766519824,0.0,115408.02766519824,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2030,medium,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,69111.0,0.0,0.0,69111.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2030,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,conventional,80629.5,46297.02766519824,0.0,126926.52766519824,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,base,2030,high,n/a,2962,8.3,1080.2,58.51,1097.0,59.42,n/a,green_rfnbo,80629.5,0.0,0.0,80629.5,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2026,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,33768.0,11634.977973568231,0.0,45402.97797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2026,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,33768.0,0.0,0.0,33768.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2026,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,38592.0,11634.977973568231,0.0,50226.97797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2026,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,38592.0,0.0,0.0,38592.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2026,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,43416.0,11634.977973568231,0.0,55050.97797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2026,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,43416.0,0.0,0.0,43416.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2027,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,34974.0,11634.977973568231,0.0,46608.97797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2027,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,34974.0,0.0,0.0,34974.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2027,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,44139.6,11634.977973568231,0.0,55774.57797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2027,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,44139.6,0.0,0.0,44139.6,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2027,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,50290.2,11634.977973568231,0.0,61925.17797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2027,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,50290.2,0.0,0.0,50290.2,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2028,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,36180.0,11634.977973568231,0.0,47814.97797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2028,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,36180.0,0.0,0.0,36180.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2028,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,49687.2,11634.977973568231,0.0,61322.17797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2028,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,49687.2,0.0,0.0,49687.2,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2028,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,57164.399999999994,11634.977973568231,0.0,68799.37797356822,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2028,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,57164.399999999994,0.0,0.0,57164.399999999994,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2029,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,37386.0,11634.977973568231,0.0,49020.97797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2029,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,37386.0,0.0,0.0,37386.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2029,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,55234.799999999996,11634.977973568231,0.0,66869.77797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2029,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,55234.799999999996,0.0,0.0,55234.799999999996,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2029,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,64038.6,11634.977973568231,0.0,75673.57797356823,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2029,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,64038.6,0.0,0.0,64038.6,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2030,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,38592.0,40719.23524229075,0.0,79311.23524229074,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2030,low,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,38592.0,0.0,0.0,38592.0,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2030,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,60782.399999999994,40719.23524229075,0.0,101501.63524229074,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2030,medium,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,60782.399999999994,0.0,0.0,60782.399999999994,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2030,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,conventional,70912.8,40719.23524229075,0.0,111632.03524229076,0.0
+halifax_hamburg,gas_carrier,VLGC/VLAC,suez,upper,2030,high,n/a,2962,7.3,950.0,58.51,964.8,59.42,n/a,green_rfnbo,70912.8,0.0,0.0,70912.8,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2026,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,56651.0,19518.9779735682,0.0,76169.9779735682,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2026,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,56651.0,0.0,0.0,56651.0,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2026,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,64744.0,19518.9779735682,0.0,84262.9779735682,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2026,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,64744.0,0.0,0.0,64744.0,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2026,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,72837.0,19518.9779735682,0.0,92355.9779735682,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2026,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,72837.0,0.0,0.0,72837.0,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2027,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,58674.25,19518.9779735682,0.0,78193.2279735682,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2027,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,58674.25,0.0,0.0,58674.25,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2027,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,74050.95,19518.9779735682,0.0,93569.92797356819,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2027,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,74050.95,0.0,0.0,74050.95,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2027,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,84369.525,19518.9779735682,0.0,103888.50297356819,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2027,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,84369.525,0.0,0.0,84369.525,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2028,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,60697.5,19518.9779735682,0.0,80216.4779735682,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2028,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,60697.5,0.0,0.0,60697.5,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2028,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,83357.9,19518.9779735682,0.0,102876.87797356819,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2028,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,83357.9,0.0,0.0,83357.9,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2028,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,95902.04999999999,19518.9779735682,0.0,115421.02797356818,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2028,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,95902.04999999999,0.0,0.0,95902.04999999999,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2029,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,62720.75,19518.9779735682,0.0,82239.7279735682,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2029,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,62720.75,0.0,0.0,62720.75,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2029,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,92664.84999999999,19518.9779735682,0.0,112183.82797356819,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2029,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,92664.84999999999,0.0,0.0,92664.84999999999,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2029,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,107434.575,19518.9779735682,0.0,126953.55297356819,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2029,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,107434.575,0.0,0.0,107434.575,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2030,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,64744.0,68311.07524229075,0.0,133055.07524229074,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2030,low,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,64744.0,0.0,0.0,64744.0,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2030,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,101971.79999999999,68311.07524229075,0.0,170282.87524229073,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2030,medium,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,101971.79999999999,0.0,0.0,101971.79999999999,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2030,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,conventional,118967.09999999999,68311.07524229075,0.0,187278.17524229074,0.0
+halifax_hamburg,container,ACL G4-class ConRo,suez,service,2030,high,n/a,2962,6.9,1593.8,103.89,1618.6,105.51,n/a,green_rfnbo,118967.09999999999,0.0,0.0,118967.09999999999,0.0
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2026,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2026,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2026,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2027,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2027,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2027,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2028,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2028,low,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,90398.80000000002,0.0,90398.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2028,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2028,medium,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,111665.1177,0.0,111665.1177
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2028,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2028,high,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,135598.2,0.0,135598.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2029,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2029,low,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,90398.80000000002,0.0,90398.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2029,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2029,medium,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,111665.1177,0.0,111665.1177
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2029,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2029,high,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,135598.2,0.0,135598.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2030,low,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2030,low,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,90398.80000000002,0.0,90398.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2030,medium,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2030,medium,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,111665.1177,0.0,111665.1177
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2030,high,current_scope,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,lower,2030,high,proposed_expansion,10403,33.3,4333.6,58.51,4401.1,59.42,frozen,n/a,0.0,0.0,135598.2,0.0,135598.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2026,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2026,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2026,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2027,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2027,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2027,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2028,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2028,low,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,127928.80000000002,0.0,127928.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2028,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2028,medium,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,158024.0502,0.0,158024.0502
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2028,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2028,high,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,191893.2,0.0,191893.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2029,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2029,low,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,127928.80000000002,0.0,127928.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2029,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2029,medium,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,158024.0502,0.0,158024.0502
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2029,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2029,high,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,191893.2,0.0,191893.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2030,low,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2030,low,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,127928.80000000002,0.0,127928.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2030,medium,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2030,medium,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,158024.0502,0.0,158024.0502
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2030,high,current_scope,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,lower,2030,high,proposed_expansion,14815,47.5,6181.3,58.51,6277.6,59.42,frozen,n/a,0.0,0.0,191893.2,0.0,191893.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2026,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2026,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2026,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2027,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2027,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2027,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2028,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2028,low,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,79824.8,0.0,79824.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2028,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2028,medium,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,98603.5842,0.0,98603.5842
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2028,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2028,high,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,119737.20000000001,0.0,119737.20000000001
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2029,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2029,low,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,79824.8,0.0,79824.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2029,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2029,medium,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,98603.5842,0.0,98603.5842
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2029,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2029,high,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,119737.20000000001,0.0,119737.20000000001
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2030,low,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2030,low,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,79824.8,0.0,79824.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2030,medium,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2030,medium,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,98603.5842,0.0,98603.5842
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2030,high,current_scope,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,base,2030,high,proposed_expansion,10403,29.3,3813.0,58.51,3872.4,59.42,frozen,n/a,0.0,0.0,119737.20000000001,0.0,119737.20000000001
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2026,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2026,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2026,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2027,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2027,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2027,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2028,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2028,low,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,112602.8,0.0,112602.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2028,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2028,medium,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,139092.6087,0.0,139092.6087
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2028,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2028,high,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,168904.2,0.0,168904.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2029,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2029,low,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,112602.8,0.0,112602.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2029,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2029,medium,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,139092.6087,0.0,139092.6087
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2029,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2029,high,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,168904.2,0.0,168904.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2030,low,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2030,low,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,112602.8,0.0,112602.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2030,medium,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2030,medium,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,139092.6087,0.0,139092.6087
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2030,high,current_scope,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,base,2030,high,proposed_expansion,14815,41.7,5426.7,58.51,5511.3,59.42,frozen,n/a,0.0,0.0,168904.2,0.0,168904.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2026,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2026,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2026,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2027,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2027,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2027,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2028,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2028,low,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,69776.8,0.0,69776.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2028,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2028,medium,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,86191.7922,0.0,86191.7922
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2028,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2028,high,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,104665.20000000001,0.0,104665.20000000001
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2029,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2029,low,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,69776.8,0.0,69776.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2029,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2029,medium,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,86191.7922,0.0,86191.7922
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2029,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2029,high,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,104665.20000000001,0.0,104665.20000000001
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2030,low,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2030,low,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,69776.8,0.0,69776.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2030,medium,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2030,medium,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,86191.7922,0.0,86191.7922
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2030,high,current_scope,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,suez,upper,2030,high,proposed_expansion,10403,25.5,3318.3,58.51,3370.0,59.42,frozen,n/a,0.0,0.0,104665.20000000001,0.0,104665.20000000001
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2026,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2026,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2026,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2027,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2027,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2027,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2028,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2028,low,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,98328.80000000002,0.0,98328.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2028,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2028,medium,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,121460.6502,0.0,121460.6502
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2028,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2028,high,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,147493.2,0.0,147493.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2029,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2029,low,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,98328.80000000002,0.0,98328.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2029,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2029,medium,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,121460.6502,0.0,121460.6502
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2029,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2029,high,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,147493.2,0.0,147493.2
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2030,low,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2376.8,0.0,2376.8
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2030,low,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,98328.80000000002,0.0,98328.80000000002
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2030,medium,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,2935.9422,0.0,2935.9422
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2030,medium,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,121460.6502,0.0,121460.6502
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2030,high,current_scope,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,3565.2000000000003,0.0,3565.2000000000003
+ningbo_felixstowe,gas_carrier,VLGC/VLAC,cape,upper,2030,high,proposed_expansion,14815,36.3,4724.0,58.51,4797.6,59.42,frozen,n/a,0.0,0.0,147493.2,0.0,147493.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2026,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2026,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2026,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2027,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2027,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2027,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2028,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2028,low,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,264919.2,0.0,264919.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2028,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2028,medium,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,327241.44180000003,0.0,327241.44180000003
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2028,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2028,high,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,397378.80000000005,0.0,397378.80000000005
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2029,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2029,low,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,264919.2,0.0,264919.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2029,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2029,medium,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,327241.44180000003,0.0,327241.44180000003
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2029,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2029,high,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,397378.80000000005,0.0,397378.80000000005
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2030,low,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2030,low,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,264919.2,0.0,264919.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2030,medium,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2030,medium,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,327241.44180000003,0.0,327241.44180000003
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2030,high,current_scope,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,suez,service,2030,high,proposed_expansion,10403,19.4,12464.4,289.17,12658.6,293.68,frozen,n/a,0.0,0.0,397378.80000000005,0.0,397378.80000000005
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2026,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2026,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2026,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2027,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2027,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2027,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2028,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2028,low,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,371925.20000000007,0.0,371925.20000000007
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2028,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2028,medium,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,459420.6033,0.0,459420.6033
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2028,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2028,high,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,557887.8,0.0,557887.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2029,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2029,low,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,371925.20000000007,0.0,371925.20000000007
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2029,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2029,medium,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,459420.6033,0.0,459420.6033
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2029,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2029,high,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,557887.8,0.0,557887.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2030,low,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,11747.2,0.0,11747.2
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2030,low,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,371925.20000000007,0.0,371925.20000000007
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2030,medium,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,14510.728799999999,0.0,14510.728799999999
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2030,medium,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,459420.6033,0.0,459420.6033
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2030,high,current_scope,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,17620.8,0.0,17620.8
+ningbo_felixstowe,container,HMM Algeciras-class / Megamax-24,cape,service,2030,high,proposed_expansion,14815,27.6,17732.6,289.17,18008.9,293.68,frozen,n/a,0.0,0.0,557887.8,0.0,557887.8

@@ -1,10 +1,10 @@
 product,pathway,price_scenario,decision_year,tenor_years,years_evaluated,beyond_horizon,myopic_choice,committed_choice,assumed_switching_cost_gbp_per_tonne_annual_volume,breakeven_switching_cost_gbp_per_tonne_annual_volume,verdict
-ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,10.0,75.36,justified
-ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,25.0,75.36,justified
-ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,50.0,75.36,justified
-ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,100.0,75.36,locked_in
-ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,250.0,75.36,locked_in
-ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,500.0,75.36,locked_in
+ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,10.0,91.6,justified
+ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,25.0,91.6,justified
+ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,50.0,91.6,justified
+ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,100.0,91.6,marginal
+ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,250.0,91.6,locked_in
+ammonia,cbam_default,medium,2026,10,5,truncate,ningbo_felixstowe,halifax_hamburg,500.0,91.6,locked_in
 ammonia,cbam_default,medium,2027,10,4,truncate,halifax_hamburg,halifax_hamburg,10.0,0.0,never_justified
 ammonia,cbam_default,medium,2027,10,4,truncate,halifax_hamburg,halifax_hamburg,25.0,0.0,never_justified
 ammonia,cbam_default,medium,2027,10,4,truncate,halifax_hamburg,halifax_hamburg,50.0,0.0,never_justified

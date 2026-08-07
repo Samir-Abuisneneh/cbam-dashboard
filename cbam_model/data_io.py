@@ -492,7 +492,7 @@ def write_placeholder_data() -> None:
     _placeholder_commercial().to_csv(PLACEHOLDER_DIR / "commercial_inputs.csv", index=False)
 
 
-def load_inputs(directory: Path = None, validate: bool = True):
+def load_inputs(directory: Path | None = None, validate: bool = True):
     """Load the three input tables.
 
     Defaults to data/ if the real tables are present, otherwise falls back to
@@ -520,7 +520,7 @@ def load_inputs(directory: Path = None, validate: bool = True):
     return emissions, logistics, commercial
 
 
-def using_placeholder_data(directory: Path = None) -> bool:
+def using_placeholder_data(directory: Path | None = None) -> bool:
     emissions, _, _ = load_inputs(directory, validate=False)
     return emissions["source"].str.startswith("PLACEHOLDER").any()
 
@@ -680,7 +680,7 @@ POLICY_EVENT_STATUSES = (
 POLICY_EVENT_AFFECTS_MODEL = ("yes", "no", "sensitivity_only")
 
 
-def load_policy_events(path: Path = None) -> pd.DataFrame:
+def load_policy_events(path: Path | None = None) -> pd.DataFrame:
     """Alex's policy timeline, structured for the model.
 
     Frano asked in the 6 August 2026 meeting for two parallel tracks rather

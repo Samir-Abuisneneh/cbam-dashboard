@@ -50,31 +50,76 @@ carry no number**, and those are the gaps worth closing:
 None of these change a result. They are completeness items so the appendix
 table stands on its own.
 
-## The one substantive finding from the conversion
+## The UK CBAM direct-only rule: real, but far smaller than first thought
 
 **UK CBAM charges direct emissions only until 2029 at the earliest, and the
-model does not represent that.** See row UK-16.
+model does not represent that.** See row UK-16. The model applies the full
+embedded figure on the Ningbo-Felixstowe corridor from 2027, which overstates
+UK CBAM liability in 2027 and 2028, precisely the two years the lock-in
+reversal turns on.
 
-The model applies the full embedded emissions figure on the Ningbo-Felixstowe
-corridor from 2027, which **overstates** UK CBAM liability in 2027 and 2028.
-Those are precisely the two years the lock-in reversal turns on, so this is not
-a cosmetic gap.
+An earlier version of this note said the effect was "pathway-dependent and
+probably large", reasoning that Chinese green electrolysis is mostly grid
+electricity. **That was wrong for the study's primary scenario**, and the
+correction came from reading the Commission's own numbers.
 
-The effect is pathway-dependent and probably large. Chinese green electrolysis
-at 2.34 tCO2e/t is mostly grid electricity, so most of it should fall out of
-scope for 2027-2028; coal gasification is mostly direct process emissions and
-would barely move. Correcting it would widen the modelled gap between green and
-coal routes on the UK side, which is the comparison the abatement results rest
-on.
+The adopted default values workbook publishes direct and indirect separately
+(Annex I and Annex II of IR 2025/2621). For the two goods here:
 
-Fixing it properly needs a direct/indirect split in the emissions table, which
-is a request to Riya. Stating it as a limitation is the fallback. A test pins
-that the gap stays written down until one or the other happens.
+| Country | Good | Direct | Indirect | Total |
+|---|---|---|---|---|
+| Canada | Anhydrous ammonia (CN 28141000) | 1.91 | 0.07 | 1.98 |
+| China | Anhydrous ammonia | 4.17 | 0.19 | 4.36 |
+| Canada | Hydrogen (CN 2804 10 00) | 10.82 | **N/A** | 10.82 |
+| China | Hydrogen | 26.64 | **N/A** | 26.64 |
 
-Sources consulted are law-firm briefings and the Deloitte UK tax policy map,
-which agree. The primary HMRC or HM Treasury text has **not** been read, and
-given this project's history with secondhand regulatory claims, it should be
-before any code changes on the strength of it.
+**Hydrogen has no indirect default value at all.** So on the primary
+`cbam_default` pathway the UK direct-only rule changes hydrogen by exactly
+nothing, and ammonia by 3.5% (Canada) or 4.4% (China) in two years only.
+
+The "probably large" reasoning does still apply to the *literature* pathways,
+where green electrolysis carries its grid electricity explicitly. But those are
+sensitivity brackets, not the headline scenario. So this is now a documented
+limitation rather than a correction worth making, and it is no longer a request
+to Riya.
+
+Sources: the Commission's adopted workbook for the values, and law-firm
+briefings plus the Deloitte UK tax policy map for the direct-only rule itself.
+The primary HMRC or HM Treasury text has **not** been read, so the rule should
+be confirmed there before anything is built on it.
+
+## The other thing the workbook turned up: a mark-up bug
+
+The same workbook publishes each default value both before and after the
+IR 2025/2621 mark-up, which makes the mark-up schedule directly checkable.
+Dividing one by the other:
+
+| Good | 2026 | 2027 | 2028+ |
+|---|---|---|---|
+| Ammonia, nitric acid, urea | 1% | 1% | 1% |
+| Hydrogen, iron, steel | 10% | 20% | 30% |
+
+The model applied 10/20/30 to **everything**. Fertiliser goods carry a flat 1%,
+and ammonia is a fertiliser good for CBAM purposes (CN 2814) while hydrogen is
+not (CN 2804). Ammonia's default emissions were therefore overstated by 8.9% in
+2026, rising to 28.7% from 2028, on the study's primary scenario and on the EU
+corridor.
+
+Fixed 7 August 2026. `default_value_markup` now takes the product and refuses
+to run without it, because defaulting it would silently reinstate a bug that
+produces a plausible number rather than an obviously wrong one.
+
+Two consequences worth knowing:
+
+1. **The lock-in finding gets stronger.** Ammonia's EU corridor cost falls, so
+   committing to the UK corridor in 2026 looks worse, not better. Lock-in
+   regret rises from 95% to 146%, and the breakeven switching cost from
+   GBP 75.36 to GBP 91.60.
+2. **The open CBAM mechanism decision narrows to hydrogen.** Before the fix,
+   switching mechanism inverted the corridor ordering for both products. With
+   ammonia's mark-up corrected, both mechanisms now agree on ammonia and only
+   hydrogen still flips. Frano's decision still has to be taken, but it now
+   affects one product rather than two.
 
 ## Events added that were not in Alex's version
 

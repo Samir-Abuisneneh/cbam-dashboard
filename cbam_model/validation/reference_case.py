@@ -47,10 +47,20 @@ Consequences, which are the reason this matters well beyond this module:
      currently shows.
 
 This module therefore reports BOTH formulas and does not silently switch the
-model over. Switching would change every CBAM number in the study and requires
-the CN-code benchmarks for hydrogen and ammonia to be read out of IR 2025/2621
-first, which has not been done. See `benchmark_mechanism_gap()` below and the
-open item in README.md.
+model over. The data blocker that was the original reason for waiting is gone:
+the 2026-2030 product benchmarks were read out of IR 2026/1412 on 6 August 2026
+and are in `regulatory_constants.EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE`. The
+decision itself is still open, because switching inverts the study's headline
+corridor finding rather than merely rescaling it, so it is a supervisor call
+rather than a code change. `EU_CBAM_DEFAULT_MECHANISM` remains "factor_scaled";
+read the long comment above it before touching it, and see
+`analysis.outputs.cbam_mechanism_comparison`, which sizes the choice on the
+current benchmarks.
+
+The benchmark used in THIS module stays at the 2021-2025 ammonia figure (1.57),
+because Ramsook et al. worked under that regime and the point here is to
+reproduce their published result, not to restate it on benchmarks they never
+used. See `benchmark_mechanism_gap()` below.
 """
 
 from ..config import regulatory_constants as rc
@@ -133,8 +143,9 @@ def run_reference_check(
                 using_default_values=False,
                 # Pinned explicitly. This arm exists to reproduce the
                 # factor-scaled form and the divergence it caused, so it must
-                # not follow the model default, which moved to the benchmark
-                # mechanism on 6 August 2026.
+                # keep computing that form even if EU_CBAM_DEFAULT_MECHANISM is
+                # later switched to "benchmark_shielded" - otherwise both arms
+                # of the comparison would silently become the same formula.
                 mechanism="factor_scaled",
             )
         )
@@ -187,8 +198,10 @@ def benchmark_mechanism_gap(
     """How far apart the two formulas sit, year by year, for any pathway.
 
     Use this to size the risk on this study's own corridors before deciding
-    whether to switch the model over. Pass a hydrogen or ammonia benchmark from
-    IR 2025/2621 once it has been read out.
+    whether to switch the model over. For a current 2026-2030 figure pass
+    `regulatory_constants.eu_product_benchmark(product)`; pass
+    `EU_ETS_PRODUCT_BENCHMARK_2021_2025[product]` only when reproducing a
+    result published under the superseded regime.
 
     Returns a list of dicts, one per year.
     """
@@ -197,9 +210,10 @@ def benchmark_mechanism_gap(
         theirs = _benchmark_mechanism_cost(
             embedded_tco2e, year, carbon_price, benchmark
         )
-        # Pinned to the old form for the same reason as in run_reference_check:
-        # this function exists to contrast the two mechanisms, so following the
-        # model default would make both arms identical.
+        # Pinned to the factor-scaled form for the same reason as in
+        # run_reference_check: this function exists to contrast the two
+        # mechanisms, so following the model default would risk making both
+        # arms identical.
         ours = eu_cbam_cost(
             embedded_tco2e, year, carbon_price, 0.0, False, mechanism="factor_scaled"
         )

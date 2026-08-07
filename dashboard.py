@@ -5,25 +5,26 @@ Streamlit dashboard, tooling rather than part of the model itself. Calls
 it can never drift from the tested regulatory logic in `cbam_model/model/`.
 
 Scope is deliberately the fixed scenario matrix already built and covered by
-the 81-test suite: the two named corridors, their existing pathway/year/price/
-vessel/route/speed dimensions. It does not accept arbitrary routes or ports -
-that would need the routing package wired in as a genuine model feature first
-(see memory: cbam-model-enhancement-ideas), not something a UI can add on its
-own.
+the test suite in `tests/test_model.py`: the two named corridors, their
+existing pathway/year/price/vessel/route/speed dimensions. It does not accept
+arbitrary routes or ports - that would need the routing package wired in as a
+genuine model feature first (see memory: cbam-model-enhancement-ideas), not
+something a UI can add on its own.
 
 Run with:
     .venv/bin/streamlit run dashboard.py
 """
 
-import plotly.graph_objects as go  # noqa: E402
-import streamlit as st  # noqa: E402
+import plotly.graph_objects as go
+import streamlit as st
 
-from cbam_model import data_io  # noqa: E402
-from cbam_model.config import regulatory_constants as rc  # noqa: E402
-from cbam_model.config import scenarios  # noqa: E402
-from cbam_model.config import vessel_logistics as vl  # noqa: E402
-from cbam_model.config.unresolved import UnresolvedConstantError  # noqa: E402
-from cbam_model.model import total_cost  # noqa: E402
+from cbam_model import data_io, runner
+from cbam_model.analysis import outputs, sensitivity
+from cbam_model.config import regulatory_constants as rc
+from cbam_model.config import scenarios
+from cbam_model.config import vessel_logistics as vl
+from cbam_model.config.unresolved import UnresolvedConstantError
+from cbam_model.model import total_cost
 
 st.set_page_config(
     page_title="CBAM Corridor Cost Explorer", layout="wide", page_icon="⚓"
@@ -280,16 +281,16 @@ def _chart_layout(fig: go.Figure, height: int) -> go.Figure:
     """Shared chrome so every chart in the app reads as one system."""
     fig.update_layout(
         height=height,
-        margin=dict(l=8, r=70, t=8, b=8),
+        margin={"l": 8, "r": 70, "t": 8, "b": 8},
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color=TOKENS["ink_secondary"], size=13),
+        font={"color": TOKENS["ink_secondary"], "size": 13},
         showlegend=False,
-        hoverlabel=dict(
-            bgcolor=TOKENS["surface"],
-            bordercolor=TOKENS["border"],
-            font=dict(color=TOKENS["ink"]),
-        ),
+        hoverlabel={
+            "bgcolor": TOKENS["surface"],
+            "bordercolor": TOKENS["border"],
+            "font": {"color": TOKENS["ink"]},
+        },
     )
     fig.update_xaxes(
         gridcolor=TOKENS["gridline"], zerolinecolor=TOKENS["gridline"], color=TOKENS["ink_muted"]
@@ -317,8 +318,32 @@ st.caption(
     "converted or combined."
 )
 
-emissions, _, commercial = data_io.load_inputs()
-placeholder_inputs = data_io.using_placeholder_data()
+@st.cache_data(show_spinner=False)
+def _load_inputs():
+    """Input tables, read once per session rather than on every widget change.
+
+    Streamlit re-executes this whole script on each interaction. Without the
+    cache the three CSVs are re-read and re-validated every time, and
+    `using_placeholder_data()` reads them a second time on top of that.
+    """
+    emissions, _, commercial = data_io.load_inputs()
+    return emissions, commercial, data_io.using_placeholder_data()
+
+
+@st.cache_data(show_spinner=False)
+def _compliance_matrix(uk_price_variant: str):
+    """Full compliance matrix for the corridor comparison, cached per price path.
+
+    This is the most expensive call in the app (both corridors x every year x
+    every price scenario x every emissions row) and its result does not depend
+    on any sidebar control except the UK price path, so recomputing it when the
+    user changes vessel or speed is pure waste.
+    """
+    emissions, _, _ = _load_inputs()
+    return runner.run_compliance_matrix(emissions, uk_price_variant=uk_price_variant)
+
+
+emissions, commercial, placeholder_inputs = _load_inputs()
 if placeholder_inputs:
     st.warning(
         "Some inputs are still placeholders, not final figures. The "
@@ -438,16 +463,24 @@ if is_uk and year >= rc.UK_ETS_INTL_EXPANSION_EARLIEST_YEAR:
     )
     st.sidebar.caption(scenarios.VARIANT_LABELS[uk_ets_variant])
 
+# One label per entry in rc.UK_ETS_PRICE_VARIANTS. Keyed by variant rather
+# than branched on, so adding a fourth path fails visibly here (KeyError on
+# the selector) instead of silently inheriting another path's caption. That is
+# what happened when "desnz" was added on 6 August 2026: it inherited the
+# linkage label and caption, so DESNZ numbers were presented on screen as the
+# EU-UK linkage scenario.
+UK_PRICE_VARIANT_LABELS = {
+    "frozen": "Frozen at the 2026 determination (baseline)",
+    "linked": "EU-UK ETS linkage: converges to EU price (NOT law)",
+    "desnz": "DESNZ traded carbon values (official, real 2025 prices)",
+}
+
 uk_price_variant = "frozen"
 if is_uk:
     uk_price_variant = st.sidebar.selectbox(
         "UK carbon price path",
         rc.UK_ETS_PRICE_VARIANTS,
-        format_func=lambda v: (
-            "Frozen at the 2026 determination (baseline)"
-            if v == "frozen"
-            else "EU-UK ETS linkage: converges to EU price (NOT law)"
-        ),
+        format_func=UK_PRICE_VARIANT_LABELS.__getitem__,
     )
     if uk_price_variant == "linked":
         st.sidebar.caption(
@@ -462,6 +495,19 @@ if is_uk:
             f"Note the linkage also contemplates mutual EU/UK CBAM exemptions, "
             f"which do not apply here: this corridor is China to UK, and China "
             f"is not party to the linkage."
+        )
+    elif uk_price_variant == "desnz":
+        st.sidebar.caption(
+            f"{rc.UK_ETS_PRICE_DESNZ_SOURCE}. The only forward UK path here "
+            f"with an official source, but read its caveats: these are real "
+            f"{rc.UK_ETS_PRICE_DESNZ_PRICE_BASE_YEAR} prices while every other "
+            f"price in the model is nominal, DESNZ states they are scenario "
+            f"projections rather than forecasts, and they model a standalone "
+            f"UK ETS that does not account for EU linking, so this and the "
+            f"linked path are alternative views of the same uncertainty and "
+            f"must never be combined. "
+            f"{year} price: GBP {rc.uk_ets_price(year, price_scenario, 'desnz'):.2f} "
+            f"against GBP {rc.uk_ets_price(year, price_scenario, 'frozen'):.2f} frozen."
         )
     else:
         st.sidebar.caption(
@@ -638,11 +684,11 @@ with tab_compliance:
                     x=values,
                     y=labels,
                     orientation="h",
-                    marker=dict(color=colors, cornerradius=4),
+                    marker={"color": colors, "cornerradius": 4},
                     text=[f"{v:,.2f}" for v in values],
                     textposition="outside",
                     cliponaxis=False,
-                    textfont=dict(color=TOKENS["ink"]),
+                    textfont={"color": TOKENS["ink"]},
                     hovertemplate="%{y}: %{x:,.2f} " + currency + "/t<extra></extra>",
                 )
             )
@@ -682,11 +728,11 @@ with tab_maritime:
                     x=values,
                     y=labels,
                     orientation="h",
-                    marker=dict(color=colors, cornerradius=4),
+                    marker={"color": colors, "cornerradius": 4},
                     text=[f"EUR {v:,.0f}" for v in values],
                     textposition="outside",
                     cliponaxis=False,
-                    textfont=dict(color=TOKENS["ink"]),
+                    textfont={"color": TOKENS["ink"]},
                     hovertemplate="%{y}: EUR %{x:,.2f}<extra></extra>",
                 )
             )
@@ -714,8 +760,6 @@ with tab_sensitivity:
         "that is the layer built entirely from sourced data. Does not capture "
         "parameter interactions."
     )
-    from cbam_model.analysis import sensitivity
-
     sweep = sensitivity.sweep_corridor(
         corridor, year=year, vessel=vessel_set, route=route,
         price_scenario=price_scenario,
@@ -738,10 +782,10 @@ with tab_sensitivity:
                 x=ranked_this["mean_abs_pct_change"],
                 y=ranked_this["parameter_label"],
                 orientation="h",
-                marker=dict(color=TOKENS["sequential"], cornerradius=4),
+                marker={"color": TOKENS["sequential"], "cornerradius": 4},
                 text=[f"{v:.1f}%" for v in ranked_this["mean_abs_pct_change"]],
                 textposition="outside",
-                textfont=dict(color=TOKENS["ink"]),
+                textfont={"color": TOKENS["ink"]},
                 hovertemplate="%{y}: %{x:.2f}%<extra></extra>",
             )
         )
@@ -775,9 +819,6 @@ with tab_choice:
         "corridors the literature actually supports. Answers \"which one, and "
         "when\", not \"what does it cost\" (that's the Compliance cost tab)."
     )
-    from cbam_model.analysis import outputs
-    from cbam_model import runner
-
     st.subheader("Which pathway is cheapest?")
     st.caption(
         "Production cost + CBAM only, not a delivered cost: conversion, "
@@ -808,11 +849,11 @@ with tab_choice:
                 x=ranking_here["pathway_visible_cost_eur_per_tonne"],
                 y=[_pathway_display(p) for p in ranking_here["pathway"]],
                 orientation="h",
-                marker=dict(color=colors, cornerradius=4),
+                marker={"color": colors, "cornerradius": 4},
                 text=[f"EUR {v:,.0f}" for v in ranking_here["pathway_visible_cost_eur_per_tonne"]],
                 textposition="outside",
                 cliponaxis=False,
-                textfont=dict(color=TOKENS["ink"]),
+                textfont={"color": TOKENS["ink"]},
                 hovertemplate="%{y}: EUR %{x:,.2f}/t<extra></extra>",
             )
         )
@@ -862,11 +903,17 @@ with tab_choice:
         "Both corridors on one axis (GBP-equivalent, 23 July 2026 ECB rate), "
         "for the CBAM regulatory-default pathway — the only pathway label that "
         "exists on both corridors, since Halifax-Hamburg and Ningbo-Felixstowe "
-        "otherwise run different production routes."
+        "otherwise run different production routes. UK price path: "
+        f"{UK_PRICE_VARIANT_LABELS[uk_price_variant]}."
     )
-    compliance_matrix = runner.run_compliance_matrix(emissions)
+    compliance_matrix = _compliance_matrix(uk_price_variant)
     comparison = outputs.corridor_cost_comparison(
-        compliance_matrix, pathway="cbam_default", price_scenario=price_scenario
+        compliance_matrix,
+        pathway="cbam_default",
+        price_scenario=price_scenario,
+        # Must match the variant the matrix was built with, or the base-case
+        # filter drops every row and the chart reads as "no data".
+        uk_price_variant=uk_price_variant,
     )
     comp_here = comparison[comparison["product"] == product].sort_values("year")
 
@@ -877,16 +924,16 @@ with tab_choice:
         fig.add_trace(go.Scatter(
             x=comp_here["year"], y=comp_here["halifax_hamburg_gbp_equivalent"],
             name="Halifax-Hamburg", mode="lines+markers",
-            line=dict(color=TOKENS["cbam"], width=3),
+            line={"color": TOKENS["cbam"], "width": 3},
             hovertemplate="Halifax-Hamburg %{x}: GBP %{y:,.2f}<extra></extra>",
         ))
         fig.add_trace(go.Scatter(
             x=comp_here["year"], y=comp_here["ningbo_felixstowe_gbp_equivalent"],
             name="Ningbo-Felixstowe", mode="lines+markers",
-            line=dict(color=TOKENS["ets"], width=3),
+            line={"color": TOKENS["ets"], "width": 3},
             hovertemplate="Ningbo-Felixstowe %{x}: GBP %{y:,.2f}<extra></extra>",
         ))
-        fig.update_layout(showlegend=True, legend=dict(orientation="h", y=1.15))
+        fig.update_layout(showlegend=True, legend={"orientation": "h", "y": 1.15})
         fig.update_xaxes(title="Year", dtick=1)
         fig.update_yaxes(title="Total compliance cost (GBP-equivalent/t)")
         st.plotly_chart(
@@ -895,7 +942,10 @@ with tab_choice:
         )
 
         crossover = outputs.corridor_crossover_year(
-            compliance_matrix, pathway="cbam_default", price_scenario=price_scenario
+            compliance_matrix,
+            pathway="cbam_default",
+            price_scenario=price_scenario,
+            uk_price_variant=uk_price_variant,
         )
         c_here = crossover[crossover["product"] == product]
         if not c_here.empty and c_here.iloc[0]["ordering_changes"]:

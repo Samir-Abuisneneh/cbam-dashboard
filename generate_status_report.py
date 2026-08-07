@@ -1,13 +1,43 @@
-"""Generates CBAM_Model_Status_Report.pdf. Build tooling, not part of the model."""
+"""Generates CBAM_Model_Status_Report.pdf. Build tooling, not part of the model.
 
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import cm
+FROZEN SNAPSHOT, 27 JULY 2026. Do not read this as the current state of the
+model and do not quote figures out of it. The prose below is deliberately left
+as it was written for that supervisor meeting, because a dated briefing that
+gets quietly edited afterwards is worse than a stale one. Re-running this script
+reproduces the 27 July document, not today's position.
+
+Several of its statements have since been superseded, and these are the ones
+most likely to be quoted by mistake:
+
+  - Canada's origin carbon price is given as CAD 110/tCO2e (EUR 68.63). That was
+    an extrapolation from a December 2020 plan that had already been replaced.
+    The sourced path is CAD 95 in 2026 rising to CAD 115 by 2030
+    (`rc.ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR`, corrected 5 Aug 2026).
+  - Ammonia emissions are listed as pending and two Canadian hydrogen figures as
+    provisional. All were delivered and taken as final on 4 August 2026.
+  - The Ramsook et al. cross-check is described as not reconciling with the
+    denominator hypothesis unconfirmed. The paper was read on 4 August 2026: the
+    burden is measured against EU-bound revenue only, and it reconciles at 20.7%
+    against the published 22% under the benchmark form of the obligation.
+  - The test and reproduction-figure counts are from that date and have grown.
+
+For the current position use `run_model.ipynb`, `README.md` and the test suite.
+"""
+
 from reportlab.lib import colors
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, ListFlowable, ListItem,
-)
 from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm
+from reportlab.platypus import (
+    ListFlowable,
+    ListItem,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 styles = getSampleStyleSheet()
 

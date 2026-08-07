@@ -1,9 +1,9 @@
 product,year,halifax_hamburg_gbp_equivalent,ningbo_felixstowe_gbp_equivalent,cost_gap_gbp,cheaper_corridor,pathway,price_scenario
-ammonia,2026,1.83,0.05,-1.78,ningbo_felixstowe,cbam_default,medium
-ammonia,2027,3.91,33.8,29.89,halifax_hamburg,cbam_default,medium
-ammonia,2028,9.98,38.46,28.48,halifax_hamburg,cbam_default,medium
-ammonia,2029,26.9,47.77,20.87,halifax_hamburg,cbam_default,medium
-ammonia,2030,59.54,71.07,11.53,halifax_hamburg,cbam_default,medium
+ammonia,2026,1.75,0.05,-1.7,ningbo_felixstowe,cbam_default,medium
+ammonia,2027,3.45,33.8,30.35,halifax_hamburg,cbam_default,medium
+ammonia,2028,7.99,38.46,30.47,halifax_hamburg,cbam_default,medium
+ammonia,2029,21.16,47.77,26.61,halifax_hamburg,cbam_default,medium
+ammonia,2030,46.65,71.07,24.42,halifax_hamburg,cbam_default,medium
 hydrogen,2026,13.62,0.5,-13.12,ningbo_felixstowe,cbam_default,medium
 hydrogen,2027,25.41,206.7,181.29,halifax_hamburg,cbam_default,medium
 hydrogen,2028,58.94,235.16,176.22,halifax_hamburg,cbam_default,medium

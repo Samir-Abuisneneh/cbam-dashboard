@@ -32,7 +32,16 @@ class MaritimeCost:
     """Carbon cost of one voyage. EUR for the EU corridor, GBP for the UK one."""
 
     corridor: str
+    # Two distinct things, and they were conflated until 7 August 2026:
+    # `vessel_set` is the scenario dimension ("gas_carrier" / "container", see
+    # `vessel_logistics.VESSEL_SETS`), `vessel_class` is the display name of
+    # the actual ship ("VLGC/VLAC"). This dataclass used to fill `vessel_set`
+    # from the profile's `vessel_class`, so the same column name meant the
+    # class in maritime and compliance frames and the set in sensitivity
+    # frames. Anything joining or filtering across the two silently matched
+    # nothing.
     vessel_set: str
+    vessel_class: str
     route_scenario: str
     speed_scenario: str
     year: int
@@ -106,7 +115,8 @@ def maritime_cost_per_voyage(
 
     cost = MaritimeCost(
         corridor=corridor,
-        vessel_set=profile["vessel_class"],
+        vessel_set=profile["vessel_set"],
+        vessel_class=profile["vessel_class"],
         route_scenario=profile["route_scenario"],
         speed_scenario=profile.get("speed_scenario", "base"),
         year=year,
@@ -281,6 +291,7 @@ def compliance_cost_per_tonne(
         "route_scenario": maritime.route_scenario,
         "speed_scenario": maritime.speed_scenario,
         "vessel_set": maritime.vessel_set,
+        "vessel_class": maritime.vessel_class,
         "uk_ets_variant": maritime.uk_ets_variant,
         # Both scenario dimensions have to travel with the row. Without them a
         # saved compliance table cannot be told apart from one run under a

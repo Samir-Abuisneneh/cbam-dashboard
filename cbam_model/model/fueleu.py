@@ -5,6 +5,7 @@ cost at all. That is a real cost difference between the corridors and is
 reported as such, not treated as missing data.
 """
 
+
 from ..config import regulatory_constants as rc
 
 
@@ -24,7 +25,7 @@ def fueleu_cost(
     actual_intensity_gco2e_mj: float,
     energy_consumed_mj: float,
     year: int,
-    target_intensity_gco2e_mj: float = None,
+    target_intensity_gco2e_mj: float | None = None,
     consecutive_deficit_periods: int = 1,
 ) -> float:
     """FuelEU Maritime penalty in EUR.

@@ -13,12 +13,17 @@ University of Bristol, 2026.
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install pandas numpy matplotlib plotly pytest searoute nbformat jupyter streamlit
+.venv/bin/pip install -r requirements.txt -r requirements-dev.txt
 
 .venv/bin/jupyter lab run_model.ipynb   # the main run
-.venv/bin/python -m pytest tests/ -q    # 81 tests
+.venv/bin/python -m pytest -q           # the test suite
+.venv/bin/ruff check .                  # lint, configured in pyproject.toml
 .venv/bin/streamlit run dashboard.py    # interactive scenario explorer
 ```
+
+`requirements.txt` is the Streamlit Cloud deployment set and is deliberately
+minimal; `requirements-dev.txt` adds matplotlib, pytest, ruff and the notebook
+and PDF build tooling on top of it.
 
 `run_model.ipynb` is the entry point and produces everything end to end.
 Outputs land in `cbam_model/outputs/`: the long-format scenario table, a
@@ -51,8 +56,8 @@ part of the model.
 Distances, vessel specifications, fuel burn, voyage CO2 and the resulting EU ETS,
 UK ETS and FuelEU costs all come from Gayu's notebooks (Student 2, received
 25 July 2026). `validation/gayu_reproduction.py` holds her published figures as
-literal expected values and checks that this model reproduces all 31 of them, so
-divergence shows up as a test failure rather than quiet drift.
+literal expected values and checks that this model reproduces every one of them,
+so divergence shows up as a test failure rather than quiet drift.
 
 Her figures supersede the build spec wherever the two disagree. The largest
 correction is the Atlantic distance: the spec said roughly 6,300 nm for
@@ -186,6 +191,31 @@ the finding held under any single price assumption, and it retires the
 "UK price is frozen" caveat that previously had to accompany every corridor
 statement.
 
+### A mark-up bug, found by checking the Commission's own workbook
+
+Fixed 7 August 2026. The IR 2025/2621 mark-up on default emissions values is
+**not uniform**: fertiliser goods carry a flat 1% in every year, while
+hydrogen, iron and steel ramp 10/20/30. The model applied 10/20/30 to
+everything.
+
+Ammonia is a fertiliser good for CBAM (CN 2814); hydrogen is not (CN 2804). So
+ammonia's default emissions were overstated by 8.9% in 2026 rising to 28.7%
+from 2028, on the primary scenario and the EU corridor.
+
+Verified directly against the Commission's adopted default values workbook,
+which publishes each value before and after mark-up, so the schedule divides
+out exactly: Canada ammonia 1.98 to 1.9998 in all years, Canada hydrogen 10.82
+to 11.902 / 12.984 / 14.066.
+
+`default_value_markup` now requires the product and raises without it, because
+a defaulted argument would silently restore a bug whose output looks plausible.
+
+Two consequences. **The lock-in finding strengthens**: ammonia's EU cost falls,
+so the 2026 commitment to the UK corridor looks worse, with regret rising from
+95% to 146% and the breakeven from GBP 75.36 to GBP 91.60. **The open CBAM
+mechanism decision narrows**: both mechanisms now agree on ammonia's corridor
+ordering, and only hydrogen still inverts.
+
 ### Policy timeline is now machine readable
 
 `cbam_model/data/policy_events.csv`, 50 events across Canada, the UK, the EU
@@ -254,7 +284,7 @@ the tenor says Halifax-Hamburg. At 8% real over the modelled years:
 
 | Product | Spot-cheapest 2026 | PV-cheapest | Lock-in regret | Breakeven switching cost |
 |---|---|---|---|---|
-| Ammonia | Ningbo-Felixstowe | Halifax-Hamburg | 95% | GBP 75.36 |
+| Ammonia | Ningbo-Felixstowe | Halifax-Hamburg | 146% | GBP 91.60 |
 | Hydrogen | Ningbo-Felixstowe | Halifax-Hamburg | 109% | GBP 491.95 |
 
 Switching costs are **GBP per tonne of annual contracted volume**, not per tonne
@@ -430,7 +460,7 @@ cbam_model/
     total_cost.py             the two layers and the compliance join
   validation/
     unit_checks.py            data contract enforcement
-    gayu_reproduction.py      pins all 31 of Gayu's published figures
+    gayu_reproduction.py      pins every one of Gayu's published figures
     reference_case.py         cross-check against Ramsook et al. (2025)
   analysis/
     sensitivity.py            one-at-a-time sweep and driver ranking

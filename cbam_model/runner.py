@@ -13,12 +13,12 @@ import warnings
 
 import pandas as pd
 
+from . import data_io
 from .config import regulatory_constants as rc
 from .config import scenarios
 from .config import vessel_logistics as vl
 from .config.unresolved import UnresolvedConstantError
 from .model import total_cost
-from . import data_io
 
 
 def run_maritime_matrix(
@@ -81,10 +81,10 @@ def run_cbam_matrix(
     emissions=None,
     years=tuple(scenarios.YEARS),
     uk_cbam_rate_override=None,
-    using_default_values: bool = None,
+    using_default_values: bool | None = None,
     skip_unresolved: bool = True,
     uk_price_variant: str = "frozen",
-    cbam_mechanism: str = None,
+    cbam_mechanism: str | None = None,
 ) -> pd.DataFrame:
     """CBAM liability per tonne of product.
 
@@ -152,7 +152,7 @@ def run_compliance_matrix(
     uk_cbam_rate_override=None,
     skip_unresolved: bool = True,
     uk_price_variant: str = "frozen",
-    cbam_mechanism: str = None,
+    cbam_mechanism: str | None = None,
 ) -> pd.DataFrame:
     """Total carbon compliance cost per tonne of product, both layers joined.
 
@@ -240,24 +240,3 @@ def run_delivered_cost(compliance=None, commercial=None):
         "    terms in a delivered cost, and production cost is the largest single\n"
         "    component. See data/README.md.\n"
     )
-
-
-def summarise_maritime(maritime: pd.DataFrame) -> pd.DataFrame:
-    """Headline maritime carbon cost per voyage, base case only.
-
-    Base case is conventional VLSFO bunkers; the green-bunker rows are a
-    separate comparison and would double up the EU corridor here.
-    """
-    base = maritime[
-        (maritime["speed_scenario"].isin(["base", "service"]))
-        & (maritime["route_scenario"] == "suez")
-        & (maritime["uk_ets_variant"].isin(["n/a", "current_scope"]))
-        & (maritime["bunker_fuel"].isin(["conventional", "n/a"]))
-    ]
-    return base[
-        [
-            "corridor", "vessel_set", "year", "price_scenario", "distance_nm",
-            "voyage_days", "voyage_co2_t", "eu_ets_cost_eur", "fueleu_cost_eur",
-            "uk_ets_cost_gbp", "total_eur", "total_gbp",
-        ]
-    ].sort_values(["year", "corridor", "vessel_set", "price_scenario"])

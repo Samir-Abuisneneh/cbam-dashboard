@@ -29,8 +29,8 @@ halifax_hamburg,ammonia,green_electrolysis,2027,medium,0.62,1.522,2026-2030,True
 halifax_hamburg,ammonia,green_electrolysis,2028,medium,0.62,1.522,2026-2030,True,True,2.52,0.0,-2.52,0.0
 halifax_hamburg,ammonia,green_electrolysis,2029,medium,0.62,1.522,2026-2030,True,True,7.27,0.0,-7.27,0.0
 halifax_hamburg,ammonia,green_electrolysis,2030,medium,0.62,1.522,2026-2030,True,True,16.31,0.0,-16.31,0.0
-halifax_hamburg,ammonia,cbam_default,2026,medium,1.98,1.522,2026-2030,True,False,1.13,14.39,13.26,12.747
-halifax_hamburg,ammonia,cbam_default,2027,medium,1.98,1.522,2026-2030,True,False,3.46,27.08,23.62,7.829
-halifax_hamburg,ammonia,cbam_default,2028,medium,1.98,1.522,2026-2030,True,False,10.45,48.9,38.45,4.678
-halifax_hamburg,ammonia,cbam_default,2029,medium,1.98,1.522,2026-2030,True,False,30.18,72.66,42.49,2.408
-halifax_hamburg,ammonia,cbam_default,2030,medium,1.98,1.522,2026-2030,True,False,67.73,97.12,29.39,1.434
+halifax_hamburg,ammonia,cbam_default,2026,medium,1.98,1.522,2026-2030,True,False,1.04,10.69,9.66,10.318
+halifax_hamburg,ammonia,cbam_default,2027,medium,1.98,1.522,2026-2030,True,False,2.91,16.12,13.21,5.54
+halifax_hamburg,ammonia,cbam_default,2028,medium,1.98,1.522,2026-2030,True,False,8.12,25.58,17.46,3.15
+halifax_hamburg,ammonia,cbam_default,2029,medium,1.98,1.522,2026-2030,True,False,23.45,42.74,19.3,1.823
+halifax_hamburg,ammonia,cbam_default,2030,medium,1.98,1.522,2026-2030,True,False,52.62,65.97,13.35,1.254

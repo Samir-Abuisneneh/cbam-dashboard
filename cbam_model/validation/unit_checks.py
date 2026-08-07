@@ -193,8 +193,8 @@ def validate_commercial_table(df: pd.DataFrame) -> pd.DataFrame:
 
 def validate_join(emissions: pd.DataFrame, logistics: pd.DataFrame, commercial: pd.DataFrame):
     """Check the three tables actually join before the runner tries to use them."""
-    e_keys = set(zip(emissions["corridor"], emissions["product"], emissions["pathway"]))
-    c_keys = set(zip(commercial["corridor"], commercial["product"], commercial["pathway"]))
+    e_keys = set(zip(emissions["corridor"], emissions["product"], emissions["pathway"], strict=False))
+    c_keys = set(zip(commercial["corridor"], commercial["product"], commercial["pathway"], strict=False))
 
     orphan_emissions = e_keys - c_keys
     if orphan_emissions:

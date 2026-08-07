@@ -5,9 +5,9 @@ the EU functions, GBP for the UK function. Conversion happens once, in
 `total_cost.py`.
 """
 
+
 from ..config import regulatory_constants as rc
 from ..config.unresolved import is_unresolved
-
 
 CBAM_DEFAULT_PATHWAY_NAME = "cbam_default"
 
@@ -25,13 +25,19 @@ def is_cbam_default_pathway(pathway: str) -> bool:
     return pathway == CBAM_DEFAULT_PATHWAY_NAME
 
 
-def apply_default_value_markup(embedded_emissions_tco2e: float, year: int) -> float:
+def apply_default_value_markup(
+    embedded_emissions_tco2e: float, year: int, product: str
+) -> float:
     """Apply the IR 2025/2621 mark-up to default embedded emissions values.
 
     Only applies where the declarant is using regulatory default values rather
     than verified actual emissions data. Do not apply to verified actuals.
+
+    `product` selects the mark-up schedule: fertiliser goods carry a flat 1%,
+    everything else ramps 10/20/30. See
+    `regulatory_constants.default_value_markup`.
     """
-    return embedded_emissions_tco2e * (1 + rc.default_value_markup(year))
+    return embedded_emissions_tco2e * (1 + rc.default_value_markup(year, product))
 
 
 def eu_cbam_cost(
@@ -40,8 +46,9 @@ def eu_cbam_cost(
     cert_price_eur: float,
     origin_carbon_price_eur_per_tco2e: float = 0.0,
     using_default_values: bool = False,
-    mechanism: str = None,
-    benchmark_tco2e_per_tonne: float = None,
+    mechanism: str | None = None,
+    benchmark_tco2e_per_tonne: float | None = None,
+    product: str | None = None,
 ) -> float:
     """EU CBAM certificate cost in EUR for one shipment.
 
@@ -52,6 +59,10 @@ def eu_cbam_cost(
         origin_carbon_price_eur_per_tco2e: Carbon price effectively paid in the
             country of origin, EUR/tCO2e. Zero if none.
         using_default_values: If True, the IR 2025/2621 mark-up is applied.
+            `product` is then required, because the mark-up schedule differs
+            between fertiliser goods and everything else.
+        product: "ammonia", "hydrogen", etc. Required when
+            `using_default_values` is True.
         mechanism: How free allocation is netted off. See
             `regulatory_constants.EU_CBAM_MECHANISMS`. Defaults to
             `EU_CBAM_DEFAULT_MECHANISM`.
@@ -90,7 +101,14 @@ def eu_cbam_cost(
 
     emissions = embedded_emissions_tco2e
     if using_default_values:
-        emissions = apply_default_value_markup(emissions, year)
+        if product is None:
+            raise ValueError(
+                "using_default_values=True requires product, because the "
+                "IR 2025/2621 mark-up is 1% flat for fertiliser goods and "
+                "10/20/30 for everything else. Defaulting it would silently "
+                "overstate ammonia by up to 28.7%."
+            )
+        emissions = apply_default_value_markup(emissions, year, product)
 
     factor = rc.cbam_factor(year)
 
@@ -180,8 +198,9 @@ def cbam_cost_for_corridor(
     origin_carbon_price_eur_per_tco2e: float = 0.0,
     using_default_values: bool = False,
     uk_rate_fraction=None,
-    cbam_mechanism: str = None,
-    benchmark_tco2e_per_tonne: float = None,
+    cbam_mechanism: str | None = None,
+    benchmark_tco2e_per_tonne: float | None = None,
+    product: str | None = None,
 ) -> float:
     """Dispatch to the right CBAM regime. Returns cost in the regime's currency.
 
@@ -199,6 +218,7 @@ def cbam_cost_for_corridor(
             using_default_values,
             cbam_mechanism,
             benchmark_tco2e_per_tonne,
+            product,
         )
     return uk_cbam_cost(
         embedded_emissions_tco2e,

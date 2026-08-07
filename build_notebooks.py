@@ -3,8 +3,9 @@
 Build tooling, not part of the model.
 """
 
-import nbformat as nbf
 from pathlib import Path
+
+import nbformat as nbf
 
 ROOT = Path(__file__).parent
 
@@ -102,17 +103,23 @@ bracket it as a sensitivity range and are not forecasts.
 Headline tables keep the two currencies apart, as Gayu's notebooks do. A GBP/EUR rate is now sourced
 (ECB, 23 July 2026) and is applied only where a single-currency comparison is explicitly labelled.
 
-The UK price has two variants. `frozen` holds the sourced 2026 official determination flat across
-every year, which is the baseline and is conservative rather than correct: only one year was ever
-sourced. `linked` runs the EU-UK ETS linkage scenario, under which the UK price converges on the EU
-price by 2029. Linkage is NOT law, so it may only ever appear as a labelled scenario.
+The UK price has three variants and they are not interchangeable. `frozen` holds the sourced 2026
+official determination flat across every year; it is the baseline and is conservative rather than
+correct, since only one year was ever sourced. `linked` runs the EU-UK ETS linkage scenario, under
+which the UK price converges on the EU price by 2029. `desnz` runs the UK government's own published
+traded carbon values, the only forward UK path here with an official source behind it.
+
+Two things must travel with the last two. Linkage is NOT law, so it may only ever appear as a
+labelled scenario. And the DESNZ series is in **real 2025 prices** while every other price in the
+model is nominal, DESNZ states plainly that these are scenario projections rather than forecasts,
+and they model a standalone UK ETS that explicitly does not account for EU linking. `desnz` and
+`linked` are therefore alternative views of the same uncertainty and must never be combined.
 """),
     code("""
 pd.DataFrame([
     {'year': y, 'scenario': s,
      'eu_ets_eur_per_tco2e': rc.eu_ets_price(y, s),
-     'uk_ets_gbp_frozen': rc.uk_ets_price(y, s, 'frozen'),
-     'uk_ets_gbp_linked': rc.uk_ets_price(y, s, 'linked')}
+     **{f'uk_ets_gbp_{v}': rc.uk_ets_price(y, s, v) for v in rc.UK_ETS_PRICE_VARIANTS}}
     for y in rc.CBAM_FACTOR if y <= 2030 for s in rc.PRICE_SCENARIOS
 ])
 """),
@@ -163,11 +170,15 @@ uk[['route_scenario', 'distance_nm', 'voyage_co2_t', 'port_co2_t', 'uk_ets_cost_
     md("""
 ## 5. CBAM liability per tonne of product
 
-Separate layer, separate unit. Still running on placeholder embedded emissions pending Riya's table.
+Separate layer, separate unit. Embedded emissions are Riya's real sourced figures for both products
+and both corridors, not placeholders, as of her 4 August 2026 delivery.
 
-One regulatory item remains unresolved: whether UK CBAM applies its own phase-in factor from 2027,
-analogous to the EU schedule that starts at 2.5% in 2026, or charges the full amount from day one. The gap
-between those two readings is wide, so the affected cases are skipped rather than guessed.
+The UK CBAM phase-in was the last open regulatory item here and it is now resolved from primary
+legislation. There is no flat "UK CBAM rate": it is `UK ETS price x (1 - baseline free allocation %
+x Article 16(14) factor)`, from the draft CBAM (Calculation of CBAM Rate and Determination of Carbon
+Price Relief) Regulations 2026 and Finance Act 2026 s.149(4). That works out at 15.7% of the UK ETS
+price in 2027 rising to 33.0% by 2030. Nothing is skipped any more; the skip warning below only fires
+if a not-yet-sourced constant is added later.
 """),
     code("""
 with warnings.catch_warnings(record=True) as caught:
@@ -232,9 +243,14 @@ not started and UK ETS does not price the ocean leg. That is the regulatory asym
 
 ### And what 2030 shows
 
-Run with UK CBAM assumed at 100%, which is a labelled what-if since the phase-in factor is unresolved, the
-picture inverts. CBAM grows to dominate everything and the maritime terms become close to irrelevant.
-Chinese coal-gasification hydrogen becomes the most exposed product in the study.
+The cell below runs UK CBAM at 100% of the UK ETS price. That is deliberately **not** the model's
+baseline: the real rate fraction is now sourced and reaches only 33.0% by 2030 (see section 5). It is
+an upper-bound what-if, and it is kept because it brackets the corridor comparison from the direction
+that is least favourable to the UK corridor. Read `run_compliance_matrix()` without the override for
+the legislated figures.
+
+Either way the picture inverts. CBAM grows to dominate everything and the maritime terms become close
+to irrelevant, and Chinese coal-gasification hydrogen becomes the most exposed product in the study.
 
 The asymmetry is therefore a window, not a permanent feature. Worth saying plainly in the discussion.
 """),
@@ -292,8 +308,19 @@ revenue. And reproducing their figure needs the benchmark form of the CBAM oblig
 
 The form this model currently uses, `embedded x CBAM_factor`, gives 14.5% on the same inputs. Both sit side
 by side in `validation/reference_case.py` with a test that fails if the main one is switched without anyone
-noticing. Switching is an open decision, waiting on the revised 2026-2030 EU ETS benchmarks adopted on
-29 June 2026.
+noticing.
+
+Switching is still an open decision, but no longer for want of data: the revised 2026-2030 benchmarks
+were read out of the Official Journal text of IR 2026/1412 on 6 August 2026 (ammonia 1.522, hydrogen
+7.98) and are in the model. It stays open because switching **inverts the headline corridor finding**
+rather than rescaling it, and the two regimes are not treated symmetrically by the choice, so it is a
+supervisor call. `outputs.cbam_mechanism_comparison` below sizes it on the current benchmarks.
+"""),
+    code("""
+outputs.cbam_mechanism_comparison(emissions).query("price_scenario == 'medium'")[
+    ['product', 'pathway', 'year', 'embedded_emissions_tco2e_per_tonne',
+     'benchmark_tco2e_per_tonne', 'cleaner_than_benchmark',
+     'factor_scaled_eur_per_tonne', 'benchmark_shielded_eur_per_tonne', 'ratio']]
 """),
     code("""
 print(reference_case.format_reference_check(reference_case.run_reference_check()))
@@ -343,23 +370,37 @@ for name in written:
     md("""
 ## Where this stands
 
-**Solid.** The maritime layer is complete and carries no invented inputs. All 25 of Gayu's published
-figures reproduce exactly. The UK ETS price anchor is resolved from an official determination. The
-regulatory logic is pinned by 72 tests, including the three facts this project has previously got wrong.
+_Counts below are printed rather than typed, so this section cannot go stale the way an earlier
+version of it did._
 
-**Resolved since the first build.** UK ETS price anchors, from the official 2026 determination. Cargo
-tonnage, from Gayu's capacity notebook. Compliance cost per tonne now runs end to end.
+**Solid.** The maritime layer is complete and carries no invented inputs, and every one of Gayu's
+published figures reproduces exactly. Embedded emissions and production costs are Riya's real sourced
+figures for both products and both corridors. The UK ETS price anchor is an official determination and
+the UK CBAM rate is traced through primary legislation. The regulatory logic is pinned by the test
+suite, including the specific facts this project has previously got wrong.
 
-**Blocked on other people.**
+**Resolved since the first build.** UK ETS price anchors. Cargo tonnage, from Gayu's capacity
+notebook, which is what lets compliance cost per tonne run end to end. Riya's emissions and production
+costs. The UK CBAM rate mechanism. The GBP/EUR, CAD/EUR and USD/EUR reference rates. Canada's revised
+industrial carbon price path. The 2026-2030 EU ETS product benchmarks. The Ramsook cross-check, which
+reconciles once the benchmark form of the obligation is used.
 
-1. **Embedded emissions**, from Riya. The CBAM layer runs on placeholders, and by 2030 CBAM dominates every
-   other term, so this is now the largest source of uncertainty in the study. The origin carbon price
-   column matters most: Canada prices industrial carbon and China prices it lower, and a large enough
-   Canadian price would cut Halifax-Hamburg's CBAM liability sharply.
-2. **Production, conversion and freight cost per tonne.** No owner assigned. The only thing standing
-   between compliance cost and full delivered cost.
-3. **The UK CBAM phase-in factor.** Blocks the 2027-onward UK cases and drives the entire 2030 comparison.
-4. **The Ramsook cross-check**, which does not reconcile and needs the paper read.
+**Still open.**
+
+1. **Production, conversion and freight cost per tonne.** Production cost is now real; conversion and
+   freight still have no owner, and they are the only thing standing between compliance cost and full
+   delivered cost.
+2. **The EU CBAM free-allocation mechanism**, `factor_scaled` against `benchmark_shielded`. A
+   supervisor decision, not a sourcing task: the choice inverts the headline corridor finding. Section
+   8 sizes it.
+"""),
+    code("""
+print(f"Gayu figures reproduced: "
+      f"{len(gayu_reproduction.check_gas_carrier()) + len(gayu_reproduction.check_container_ship()) + len(gayu_reproduction.check_cargo_capacity())}")
+print(f"EU CBAM mechanism in use: {rc.EU_CBAM_DEFAULT_MECHANISM}")
+print(f"Product benchmarks: {rc.EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE} "
+      f"({rc.EU_ETS_PRODUCT_BENCHMARK_PERIOD}, current={rc.EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT})")
+print(f"Placeholder inputs remaining: {data_io.using_placeholder_data()}")
 """),
 ]
 

@@ -352,22 +352,35 @@ hydrogen boil-off losses are not modelled.
 
    **The default mechanism is now an open decision, not a blocked one, and it
    needs the supervisor.** The plan was to flip `EU_CBAM_DEFAULT_MECHANISM` to
-   `benchmark_shielded` once the benchmarks landed. Doing so was tested and it
-   does not rescale the results, it **inverts the headline corridor finding**:
+   `benchmark_shielded` once the benchmarks landed. Doing so was tested and for
+   **hydrogen** it does not rescale the results, it **inverts the headline
+   corridor finding**.
 
-   | | Cheaper corridor | Lock-in reversal | Regret |
-   |---|---|---|---|
-   | `factor_scaled` (current default) | Halifax-Hamburg, 2027 onward | 2026 decision year | 95% ammonia, 109% hydrogen |
-   | `benchmark_shielded` | Ningbo-Felixstowe in every year but 2027 | 2027 decision year | 11% ammonia, 4% hydrogen |
+   Figures re-derived 7 August 2026, after the fertiliser mark-up fix. That fix
+   is what narrowed this: cutting ammonia's mark-up from 30% to the legislated
+   1% lowered EU ammonia liability enough that the benchmark shield no longer
+   flips the ammonia ordering. **The decision is now a hydrogen-only question.**
 
-   The asymmetry is structural: the EU corridor's liability rises roughly
-   tenfold in the early years under the benchmark form, while the UK corridor
-   is untouched, because the UK scheme nets free allocation off inside its own
-   rate fraction. So this is not a neutral modelling refinement, it changes
-   which regime the study concludes is more exposed. The default was left on
+   | | Cheaper corridor, 2026 → 2030 | First lock-in reversal | Regret | Breakeven switching cost |
+   |---|---|---|---|---|
+   | **Ammonia**, `factor_scaled` (current default) | NF, then HH 2027 onward | 2026 | 145.7% | GBP 91.60 |
+   | **Ammonia**, `benchmark_shielded` | NF, then HH 2027 onward — *identical* | 2026 | 33.5% | GBP 38.72 |
+   | **Hydrogen**, `factor_scaled` (current default) | NF, then HH 2027 onward | 2026 | 108.7% | GBP 491.95 |
+   | **Hydrogen**, `benchmark_shielded` | NF, HH 2027, then **NF 2028 onward** | 2027 | 4.2% | GBP 43.24 |
+
+   So for ammonia the choice no longer changes *which* corridor to commit to,
+   only how costly the wrong choice is. For hydrogen it still changes the
+   direction, which is why the decision still has to be taken.
+
+   The asymmetry is structural: the EU corridor's liability rises steeply in the
+   early years under the benchmark form, while the UK corridor is untouched,
+   because the UK scheme nets free allocation off inside its own rate fraction.
+   So this is not a neutral modelling refinement, it changes which regime the
+   study concludes is more exposed for hydrogen. The default was left on
    `factor_scaled` pending that decision, and
-   `test_the_mechanism_choice_inverts_the_corridor_finding` fails loudly if
-   anyone changes it without rewriting the findings.
+   `test_the_mechanism_choice_inverts_the_corridor_finding` pins every ordering
+   in the table above and fails loudly if anyone changes it without rewriting
+   the findings.
 
    The gap is also not uniform in sign across pathways. Under the benchmark
    form **every green pathway on the EU corridor owes zero CBAM in every

@@ -177,7 +177,8 @@ def _base_value_for(param, corridor, vessel):
 # carbon price has to be injected directly. Scaling the output instead would be
 # wrong on the EU corridor: `eu_cbam_cost` computes
 # `cert_price - origin_carbon_price`, which is not linear in the price once the
-# origin price is nonzero, and Canada's is EUR 68.63.
+# origin price is nonzero, and Canada's is (see
+# `rc.origin_carbon_price_canada_eur`, EUR 59.27 in 2026).
 
 COMPLIANCE_SWEPT_PARAMETERS = (
     "embedded_emissions_tco2e_per_tonne",
@@ -222,10 +223,18 @@ def _compliance_total_per_tonne(
             price,
             origin_price,
             cbam.is_cbam_default_pathway(pathway),
-            # Follows the model default, so the sweep ranks drivers of the same
-            # number the results chapter reports. `embedded` here is per tonne
-            # of product, which is the basis the benchmark is defined on.
+            # `mechanism` is deliberately left unset so the sweep follows
+            # EU_CBAM_DEFAULT_MECHANISM and therefore ranks drivers of the same
+            # number the results chapter reports. The benchmark is supplied
+            # anyway so the sweep keeps working if that default is ever switched
+            # to "benchmark_shielded"; under the current default it is unused.
+            # `embedded` here is per tonne of product, which is the basis the
+            # benchmark is defined on, so the unit contract in `eu_cbam_cost`
+            # holds either way.
             benchmark_tco2e_per_tonne=rc.eu_product_benchmark(product),
+            # Required whenever the default-value mark-up applies, because the
+            # schedule is 1% flat for fertiliser goods and 10/20/30 otherwise.
+            product=product,
         )
         maritime_pt = (ets + fe) / cargo_t
     else:

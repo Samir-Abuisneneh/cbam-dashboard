@@ -1,0 +1,44 @@
+# Tooling configuration only. The model is a package of plain modules under
+# `cbam_model/` imported by `run_model.ipynb`, `dashboard.py` and the test
+# suite; it is not built or installed as a distribution, so there is no
+# [project] table here deliberately.
+#
+# A .ruff_cache/ already existed in the repo before this file did, which means
+# ruff was being run with whatever defaults happened to be on the machine.
+# Pinning the settings here is what makes `ruff check .` mean the same thing
+# for anyone else who runs it.
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = [".venv", "cbam_model/outputs", "run_model.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RET", "PIE", "PERF", "RUF"]
+ignore = [
+    # Long lines are almost all sourcing comments and regulation citations,
+    # which are less readable rewrapped than left as they are.
+    "E501",
+    # The en dashes and arrows are deliberate: corridor names read
+    # "Halifax-Hamburg" in code identifiers and "Halifax–Hamburg" in display
+    # copy, and the dashboard uses arrows in port labels.
+    "RUF001",
+    "RUF002",
+    "RUF003",
+    # try/except inside the scenario loops is the point: one unresolved
+    # constant must skip its own case, not abort the whole matrix.
+    "PERF203",
+    # The two remaining sites are appends in the innermost of several nested
+    # scenario loops. The whole matrix is a few hundred rows and builds in
+    # milliseconds, so flattening them into comprehensions costs readability
+    # and buys nothing measurable.
+    "PERF401",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests read better with the expected value written first in a comparison,
+# matching how the hand calculations are written out in the comments above them.
+"tests/test_model.py" = ["SIM300"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

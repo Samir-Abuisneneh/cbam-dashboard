@@ -1,23 +1,26 @@
-"""Cost assembly, in two layers that cannot yet be joined.
+"""Cost assembly, in two layers plus the join between them.
 
 Gayu's maritime data is per voyage. CBAM liability is per tonne of product,
 because embedded emissions are expressed per tonne. Converting between the two
-requires the cargo tonnage of a voyage, which her notebooks never state because
-they never need it.
-
-Rather than invent that number, the model reports the two layers separately:
+requires the cargo tonnage of a voyage, which her notebooks did not originally
+state because they never needed it.
 
     maritime_cost_per_voyage    EU ETS, UK ETS and FuelEU. Entirely Gayu's data.
     cbam_cost_per_tonne         EU and UK CBAM. Riya's emissions plus the border rules.
+    compliance_cost_per_tonne   The two joined, using her cargo capacity notebook.
 
-`delivered_cost` joins them and requires cargo tonnage to be supplied
-explicitly. Calling it without one raises rather than guessing.
+The join was unblocked by `cargo_capacity_and_density_v2.ipynb` (25 July 2026),
+so `compliance_cost_per_tonne` runs end to end. `delivered_cost` sits one step
+beyond it and is still blocked, on production, conversion and freight cost,
+which have no owner in the data contracts. It raises rather than guessing.
 
-Currencies are never mixed. EU-regime costs are EUR, UK-regime costs are GBP,
-and no exchange rate is applied anywhere, matching how Gayu presents her tables.
+Currencies are never mixed here. EU-regime costs are EUR, UK-regime costs are
+GBP, and no exchange rate is applied in this module, matching how Gayu presents
+her tables. `analysis/outputs.py` converts where a single-currency comparison is
+explicitly labelled, using the `_gbp_equivalent` naming convention.
 """
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
 from ..config import regulatory_constants as rc
 from ..config.unresolved import is_unresolved
@@ -167,10 +170,10 @@ def cbam_cost_per_tonne(
     price_scenario: str,
     embedded_emissions_tco2e_per_tonne: float,
     origin_carbon_price_eur_per_tco2e: float = 0.0,
-    using_default_values: bool = None,
+    using_default_values: bool | None = None,
     uk_cbam_rate_override=None,
     uk_price_variant: str = "frozen",
-    cbam_mechanism: str = None,
+    cbam_mechanism: str | None = None,
 ) -> CbamCost:
     """CBAM liability per tonne of product landed.
 
@@ -216,6 +219,7 @@ def cbam_cost_per_tonne(
             rc.eu_product_benchmark(product)
             if mechanism == "benchmark_shielded"
             else None,
+            product,
         )
     else:
         cost.uk_cbam_cost_gbp_per_tonne = cbam.uk_cbam_cost(

@@ -35,6 +35,31 @@ def _plt():
 
 
 BASE_CASE_BUNKERS = ["conventional", "n/a"]  # "n/a" is the UK corridor, which FuelEU does not price
+BASE_CASE_SPEEDS = ["base", "service"]  # "service" is the container ships, which have one speed each
+BASE_CASE_UK_ETS_VARIANTS = ["n/a", "current_scope"]
+
+
+def _maritime_base_case_mask(maritime: pd.DataFrame, include_bunker: bool = True):
+    """Boolean mask selecting the study's primary maritime scenario rows.
+
+    Suez routing, the single non-swept speed, and UK ETS as currently
+    legislated. Extracted for the same reason as `_base_case_mask` on the
+    compliance side: this predicate was repeated in four places, and any one of
+    them drifting would silently average a legislated result together with a
+    policy-uncertain what-if, or average conventional and green bunker rows
+    together and understate the EU corridor.
+
+    `include_bunker=False` is for callers that pivot on bunker fuel and must
+    therefore keep both bunker rows, `bunker_fuel_comparison` being the only one.
+    """
+    mask = (
+        maritime["speed_scenario"].isin(BASE_CASE_SPEEDS)
+        & (maritime["route_scenario"] == "suez")
+        & maritime["uk_ets_variant"].isin(BASE_CASE_UK_ETS_VARIANTS)
+    )
+    if include_bunker:
+        mask &= maritime["bunker_fuel"].isin(BASE_CASE_BUNKERS)
+    return mask
 
 
 def maritime_summary(maritime: pd.DataFrame, price_scenario: str = "medium") -> pd.DataFrame:
@@ -46,10 +71,7 @@ def maritime_summary(maritime: pd.DataFrame, price_scenario: str = "medium") -> 
     """
     return maritime[
         (maritime["price_scenario"] == price_scenario)
-        & (maritime["speed_scenario"].isin(["base", "service"]))
-        & (maritime["route_scenario"] == "suez")
-        & (maritime["uk_ets_variant"].isin(["n/a", "current_scope"]))
-        & (maritime["bunker_fuel"].isin(BASE_CASE_BUNKERS))
+        & _maritime_base_case_mask(maritime)
     ][
         [
             "corridor", "vessel_set", "year", "distance_nm", "voyage_days",
@@ -131,9 +153,8 @@ def bunker_fuel_comparison(
     """
     df = maritime[
         (maritime["price_scenario"] == price_scenario)
-        & (maritime["speed_scenario"].isin(["base", "service"]))
-        & (maritime["route_scenario"] == "suez")
-        & (maritime["uk_ets_variant"].isin(["n/a", "current_scope"]))
+        # Both bunker rows are kept deliberately: this function pivots on them.
+        & _maritime_base_case_mask(maritime, include_bunker=False)
         & (maritime["corridor"] == rc.HALIFAX_HAMBURG)
     ]
     if df.empty:
@@ -322,20 +343,7 @@ def abatement_source_robustness(
     )
     merged["iea_green_route"] = green_route
     return merged[
-        keys
-        + [
-            "abatement_cost_eur_per_tco2_literature",
-            "abatement_cost_eur_per_tco2_iea",
-            "abatement_cost_delta_eur_per_tco2",
-            "carbon_price_eur_per_tco2_literature",
-            "margin_vs_carbon_price_pct_literature",
-            "margin_vs_carbon_price_pct_iea",
-            "verdict_literature",
-            "verdict_iea",
-            "verdict_stable",
-            "sign_stable",
-            "iea_green_route",
-        ]
+        [*keys, "abatement_cost_eur_per_tco2_literature", "abatement_cost_eur_per_tco2_iea", "abatement_cost_delta_eur_per_tco2", "carbon_price_eur_per_tco2_literature", "margin_vs_carbon_price_pct_literature", "margin_vs_carbon_price_pct_iea", "verdict_literature", "verdict_iea", "verdict_stable", "sign_stable", "iea_green_route"]
     ].sort_values(["corridor", "product", "abatement_cost_eur_per_tco2_literature"])
 
 
@@ -528,14 +536,6 @@ def pathway_choice_price_robustness(
     return pd.DataFrame(rows)
 
 
-# Base-case filters for the corridor comparison. The compliance matrix splits
-# the UK corridor on the proposed-expansion variant from 2028, and the EU
-# corridor on bunker fuel, so without these the comparison would silently
-# average a legislated result together with a policy-uncertain what-if.
-BASE_CASE_UK_ETS_VARIANTS = ["n/a", "current_scope"]
-BASE_CASE_UK_PRICE_VARIANTS = ["n/a", "frozen"]
-
-
 def corridor_cost_comparison(
     compliance: pd.DataFrame,
     pathway: str = "cbam_default",
@@ -615,6 +615,7 @@ def corridor_crossover_year(
     compliance: pd.DataFrame,
     pathway: str = "cbam_default",
     price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """The year the cheaper corridor changes, per product.
 
@@ -627,8 +628,15 @@ def corridor_crossover_year(
     first modelled year's, or None if the ordering never changes across the
     horizon. Read it alongside the exchange-rate caveat in
     `corridor_cost_comparison`.
+
+    `uk_price_variant` must match the variant the `compliance` frame was built
+    with, for the reason spelled out in `_base_case_mask`: the base-case filter
+    reads that column, so a frame built on "desnz" filtered as "frozen" comes
+    back empty and reads as "no data" rather than as a mismatch.
     """
-    comparison = corridor_cost_comparison(compliance, pathway, price_scenario)
+    comparison = corridor_cost_comparison(
+        compliance, pathway, price_scenario, uk_price_variant
+    )
     if comparison.empty:
         return pd.DataFrame()
 
@@ -674,9 +682,10 @@ def corridor_lock_in(
     compliance: pd.DataFrame,
     pathway: str = "cbam_default",
     price_scenario: str = "medium",
-    tenor_years: int = None,
-    discount_rate: float = None,
+    tenor_years: int | None = None,
+    discount_rate: float | None = None,
     beyond_horizon: str = "truncate",
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """Whether the spot-cheapest corridor is also the right one to commit to.
 
@@ -707,6 +716,9 @@ def corridor_lock_in(
     projects an advantage the trend is eroding. `years_evaluated` reports how
     many years each row actually used, and it should be quoted alongside any
     figure taken from here.
+
+    `uk_price_variant` must match the variant the `compliance` frame was built
+    with. See `corridor_crossover_year` and `_base_case_mask`.
     """
     from ..model import switching
 
@@ -717,7 +729,9 @@ def corridor_lock_in(
         switching.DEFAULT_DISCOUNT_RATE if discount_rate is None else discount_rate
     )
 
-    comparison = corridor_cost_comparison(compliance, pathway, price_scenario)
+    comparison = corridor_cost_comparison(
+        compliance, pathway, price_scenario, uk_price_variant
+    )
     if comparison.empty:
         return pd.DataFrame()
 
@@ -975,11 +989,13 @@ def cbam_mechanism_comparison(
 
     TWO THINGS THAT MUST TRAVEL WITH ANY FIGURE FROM HERE.
 
-    First, `benchmark_is_current` is False until the 2026-2030 benchmarks
-    adopted on 29 June 2026 are read out of the Official Journal. The
-    benchmarks in code are the 2021-2025 set and the revision cut free
-    allocation by more than 16% on average, so the benchmark column understates
-    the true liability by an amount this model cannot yet quantify.
+    First, `benchmark_is_current` reports whether the benchmarks in code are the
+    set in force for the modelled period. It has been True since 6 August 2026,
+    when the 2026-2030 benchmarks were read out of the Official Journal text of
+    IR 2026/1412 (ammonia 1.522, hydrogen 7.98), superseding the 2021-2025 set
+    still used by `validation/reference_case.py`. Check the column rather than
+    assuming: if it is ever False the benchmark column is on a superseded set
+    and understates liability by an amount this model cannot quantify.
 
     Second, the direction of the error is not uniform. For a producer dirtier
     than the benchmark the current model understates CBAM cost; for one cleaner
@@ -1054,9 +1070,10 @@ def switching_cost_sensitivity(
     switching_costs=ILLUSTRATIVE_SWITCHING_COSTS,
     pathway: str = "cbam_default",
     price_scenario: str = "medium",
-    tenor_years: int = None,
-    discount_rate: float = None,
+    tenor_years: int | None = None,
+    discount_rate: float | None = None,
     beyond_horizon: str = "truncate",
+    uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
     """Verdict on switching corridor across a grid of assumed sunk costs.
 
@@ -1072,7 +1089,8 @@ def switching_cost_sensitivity(
     from ..model import switching
 
     base = corridor_lock_in(
-        compliance, pathway, price_scenario, tenor_years, discount_rate, beyond_horizon
+        compliance, pathway, price_scenario, tenor_years, discount_rate,
+        beyond_horizon, uk_price_variant,
     )
     if base.empty:
         return pd.DataFrame()
@@ -1220,13 +1238,11 @@ def plot_effective_carbon_cost(maritime: pd.DataFrame, price_scenario: str = "me
     df = carbon_cost_per_tonne_co2(maritime)
     df = df[
         (df["price_scenario"] == price_scenario)
-        & (df["speed_scenario"].isin(["base", "service"]))
-        & (df["route_scenario"] == "suez")
-        & (df["uk_ets_variant"].isin(["n/a", "current_scope"]))
+        # The bunker arm of this mask is what stops the pivot below averaging
+        # the conventional and green-bunker rows together, which would silently
+        # understate the EU corridor.
+        & _maritime_base_case_mask(df)
         & (df["vessel_set"] == "VLGC/VLAC")
-        # Without this the pivot below would average the conventional and
-        # green-bunker rows together and silently understate the EU corridor.
-        & (df["bunker_fuel"].isin(BASE_CASE_BUNKERS))
     ]
     if df.empty:
         return None
@@ -1248,11 +1264,7 @@ def plot_effective_carbon_cost(maritime: pd.DataFrame, price_scenario: str = "me
 def plot_maritime_cost_by_corridor(maritime: pd.DataFrame, year: int = 2026):
     """Per-voyage cost, one panel per currency so nothing is implicitly converted."""
     df = maritime[
-        (maritime["year"] == year)
-        & (maritime["speed_scenario"].isin(["base", "service"]))
-        & (maritime["route_scenario"] == "suez")
-        & (maritime["uk_ets_variant"].isin(["n/a", "current_scope"]))
-        & (maritime["bunker_fuel"].isin(BASE_CASE_BUNKERS))
+        (maritime["year"] == year) & _maritime_base_case_mask(maritime)
     ]
     if df.empty:
         return None

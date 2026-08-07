@@ -25,26 +25,6 @@ UK_ETS_VARIANTS = ["current_scope", "proposed_expansion"]
 BUNKER_FUELS = ["conventional", "green_rfnbo"]
 
 
-def enumerate_cases():
-    """Yield (corridor, product, year, price_scenario, uk_ets_variant) tuples.
-
-    The UK ETS variant is only meaningful for the UK corridor from 2028 onward.
-    Every other case is fixed to "current_scope" so the matrix does not double
-    up on identical runs.
-    """
-    for corridor in CORRIDORS:
-        for product in PRODUCTS:
-            for year in YEARS:
-                for price_scenario in PRICE_SCENARIOS:
-                    is_uk = rc.CORRIDOR_REGIME[corridor] == "UK"
-                    splits_on_variant = (
-                        is_uk and year >= rc.UK_ETS_INTL_EXPANSION_EARLIEST_YEAR
-                    )
-                    variants = UK_ETS_VARIANTS if splits_on_variant else ["current_scope"]
-                    for variant in variants:
-                        yield corridor, product, year, price_scenario, variant
-
-
 # Scenario labels for the write-up. The proposed-expansion runs are policy
 # uncertain and must be captioned as such wherever they appear in the results
 # chapter.

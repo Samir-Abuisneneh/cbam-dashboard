@@ -1,0 +1,27 @@
+# Everything needed to run the model, the tests and the build tooling locally.
+#
+# requirements.txt is deliberately NOT this list. It is the Streamlit Cloud
+# deployment set, pinned and kept as small as possible, because the deployed
+# dashboard only needs streamlit, pandas and plotly. Adding matplotlib or
+# reportlab there would install them on every deploy for no reason, and the
+# lazy `_plt()` import in analysis/outputs.py exists specifically so the
+# dashboard keeps working without matplotlib present.
+#
+# Install with:
+#     .venv/bin/pip install -r requirements.txt -r requirements-dev.txt
+
+-r requirements.txt
+
+# Chart output for cbam_model/outputs/*.png, imported lazily by
+# analysis/outputs.py so the deployed dashboard does not need it.
+matplotlib
+
+# Test suite (tests/test_model.py) and the lint config in pyproject.toml.
+pytest
+ruff
+
+# Build tooling only. build_notebooks.py regenerates run_model.ipynb;
+# generate_status_report.py regenerates the frozen 27 July status PDF.
+nbformat
+jupyterlab
+reportlab

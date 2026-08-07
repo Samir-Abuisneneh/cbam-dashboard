@@ -210,23 +210,23 @@ def check_container_ship() -> list:
 
 
 def format_report() -> str:
-    lines = ["Reproduction of Gayu's maritime notebooks", ""]
-    for title, checks in (
+    # Each suite is run once and its results reused for both the listing and
+    # the failure count. Running them twice risked the summary line disagreeing
+    # with the rows above it if a check ever became non-deterministic.
+    sections = [
         ("Gas carrier (VLGC/VLAC), primary case", check_gas_carrier()),
         ("Container ship (MCG named vessels)", check_container_ship()),
         ("Cargo capacity and density", check_cargo_capacity()),
-    ):
+    ]
+
+    lines = ["Reproduction of Gayu's maritime notebooks", ""]
+    for title, checks in sections:
         lines.append(f"  {title}")
         for name, got, want, ok in checks:
             mark = "ok  " if ok else "FAIL"
             lines.append(f"    [{mark}] {name:<38} modelled {got:>12,.2f}  Gayu {want:>12,.2f}")
         lines.append("")
-    n_fail = sum(
-        1
-        for _, _, _, ok in (
-            check_gas_carrier() + check_container_ship() + check_cargo_capacity()
-        )
-        if not ok
-    )
+
+    n_fail = sum(1 for _, checks in sections for *_, ok in checks if not ok)
     lines.append(f"  {n_fail} mismatch(es)." if n_fail else "  All figures reproduce.")
     return "\n".join(lines)

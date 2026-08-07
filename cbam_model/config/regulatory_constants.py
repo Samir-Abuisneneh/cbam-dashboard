@@ -51,6 +51,28 @@ CBAM_FACTOR = {
 # (CN 2804 10 00) and ammonia.
 DEFAULT_VALUE_MARKUP = {2026: 0.10, 2027: 0.20, 2028: 0.30}  # 0.30 applies 2028 onward
 
+# The mark-up is NOT uniform across goods, which an earlier version of this
+# module assumed. Fertilisers carry a flat 1% in every year while steel,
+# cement, aluminium and hydrogen ramp 10/20/30.
+#
+# Verified 7 August 2026 directly against the Commission's adopted default
+# values workbook ("DVs as adopted_v20260204.xlsx", linked from the CBAM
+# definitive regime page on taxation-customs.europa.eu), which publishes both
+# the base value and the marked-up value per year. Dividing one by the other:
+#
+#   Canada anhydrous ammonia   1.98  -> 1.9998 in all years        = 1%
+#   China anhydrous ammonia    4.36  -> 4.4036 in all years        = 1%
+#   Canada nitric acid         1.54  -> 1.5554 in all years        = 1%
+#   Canada hydrogen           10.82  -> 11.902 / 12.984 / 14.066   = 10/20/30%
+#   China hydrogen            26.64  -> 29.304 / 31.968 / 34.632   = 10/20/30%
+#   Canada iron (CN 7203)      0.76  -> 0.836 / 0.912 / 0.988      = 10/20/30%
+#
+# Ammonia is a fertiliser good for CBAM purposes (CN 2814), hydrogen is not
+# (CN 2804). Applying the ramp to ammonia overstates its default emissions by
+# 8.9% in 2026 rising to 28.7% from 2028, on the study's primary scenario.
+DEFAULT_VALUE_MARKUP_FERTILISER = 0.01
+CBAM_FERTILISER_PRODUCTS = ("ammonia",)
+
 # Certificate price mechanism.
 # Source: Implementing Regulation (EU) 2025/2548. NOTE: this is a different
 # regulation from 2025/2621 above. 2621 sets default values, 2548 sets price.
@@ -334,7 +356,7 @@ FUELEU_REDUCTION_BY_PERIOD = {
 # 89.3368, a 0.004% difference that would nonetheless make results diverge from
 # hers. The published figure is used for those years so the two models agree
 # exactly; later years are computed from the Article 4(2) reduction steps.
-FUELEU_TARGET_PUBLISHED = {year: 89.34 for year in range(2025, 2030)}
+FUELEU_TARGET_PUBLISHED = dict.fromkeys(range(2025, 2030), 89.34)
 
 FUELEU_PENALTY_EUR_PER_TONNE_VLSFO = 2400
 VLSFO_MJ_PER_TONNE = 41_000
@@ -772,10 +794,22 @@ def cbam_factor(year: int) -> float:
     return CBAM_FACTOR.get(year, 1.00)
 
 
-def default_value_markup(year: int) -> float:
-    """Mark-up on EU CBAM default embedded emissions values. 30% from 2028 onward."""
+def default_value_markup(year: int, product: str) -> float:
+    """Mark-up on EU CBAM default embedded emissions values.
+
+    Fertiliser goods carry a flat 1% in every year; everything else ramps
+    10/20/30 and holds at 30% from 2028. See DEFAULT_VALUE_MARKUP_FERTILISER
+    for the verification against the Commission's adopted workbook.
+
+    `product` is required rather than optional. Defaulting it would silently
+    reinstate the uniform-ramp bug for whichever caller forgot to pass it, and
+    that bug is invisible in the output: it produces a plausible number that is
+    simply too big.
+    """
     if year < 2026:
         return 0.0
+    if product in CBAM_FERTILISER_PRODUCTS:
+        return DEFAULT_VALUE_MARKUP_FERTILISER
     return DEFAULT_VALUE_MARKUP.get(year, 0.30)
 
 

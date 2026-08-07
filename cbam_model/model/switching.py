@@ -99,7 +99,7 @@ def discount_factors(n_years: int, discount_rate: float = DEFAULT_DISCOUNT_RATE)
 def present_value(annual_values, discount_rate: float = DEFAULT_DISCOUNT_RATE) -> float:
     """Present value of a stream of annual values, first value undiscounted."""
     values = list(annual_values)
-    return sum(v * f for v, f in zip(values, discount_factors(len(values), discount_rate)))
+    return sum(v * f for v, f in zip(values, discount_factors(len(values), discount_rate), strict=False))
 
 
 def extend_to_tenor(

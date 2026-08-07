@@ -5,19 +5,17 @@ previous run, so a regression in the model cannot quietly update its own
 expectations.
 """
 
+import pandas as pd
 import pytest
 
+from cbam_model import data_io, runner
+from cbam_model.analysis import outputs
 from cbam_model.config import regulatory_constants as rc
 from cbam_model.config import scenarios
 from cbam_model.config import vessel_logistics as vl
 from cbam_model.config.unresolved import UnresolvedConstantError, is_unresolved
 from cbam_model.model import cbam, ets_maritime, fueleu, total_cost
-from cbam_model.validation import unit_checks, gayu_reproduction
-from cbam_model.analysis import outputs
-from cbam_model import data_io, runner
-
-import pandas as pd
-
+from cbam_model.validation import gayu_reproduction, unit_checks
 
 # ---------------------------------------------------------------------------
 # Regulatory constants
@@ -63,10 +61,43 @@ def test_cbam_factor_saturates_at_one_after_2034():
 
 
 def test_default_value_markup_holds_at_thirty_percent():
-    assert rc.default_value_markup(2026) == 0.10
-    assert rc.default_value_markup(2027) == 0.20
-    assert rc.default_value_markup(2028) == 0.30
-    assert rc.default_value_markup(2034) == 0.30
+    """Hydrogen and other non-fertiliser goods ramp 10/20/30 and hold."""
+    assert rc.default_value_markup(2026, "hydrogen") == 0.10
+    assert rc.default_value_markup(2027, "hydrogen") == 0.20
+    assert rc.default_value_markup(2028, "hydrogen") == 0.30
+    assert rc.default_value_markup(2034, "hydrogen") == 0.30
+
+
+def test_fertiliser_default_value_markup_is_one_percent_in_every_year():
+    """Ammonia is a fertiliser good for CBAM and carries a flat 1%, not the
+    10/20/30 ramp. Verified against the Commission's adopted default values
+    workbook, which publishes base and marked-up values side by side:
+    Canada anhydrous ammonia 1.98 becomes 1.9998 in every year, and China's
+    4.36 becomes 4.4036.
+
+    An earlier version applied the ramp to every good, which overstated
+    ammonia's default emissions by 8.9% in 2026 rising to 28.7% from 2028, on
+    the study's primary scenario."""
+    for year in (2026, 2027, 2028, 2034):
+        assert rc.default_value_markup(year, "ammonia") == pytest.approx(0.01)
+
+    assert 1.98 * (1 + rc.default_value_markup(2028, "ammonia")) == pytest.approx(
+        1.9998, abs=1e-4
+    )
+    assert 4.36 * (1 + rc.default_value_markup(2028, "ammonia")) == pytest.approx(
+        4.4036, abs=1e-4
+    )
+    # And the hydrogen figures from the same workbook, as the contrast.
+    assert 10.82 * (1 + rc.default_value_markup(2028, "hydrogen")) == pytest.approx(
+        14.066, abs=1e-3
+    )
+
+
+def test_default_value_markup_requires_the_product():
+    """Defaulting it would silently reinstate the uniform-ramp bug, which is
+    invisible in the output: it produces a plausible number that is too big."""
+    with pytest.raises(ValueError, match="requires product"):
+        cbam.eu_cbam_cost(10.0, 2026, 80.0, using_default_values=True)
 
 
 def test_fueleu_target_matches_published_2025_figure():
@@ -94,7 +125,9 @@ def test_eu_cbam_cost_hand_calculation():
 
 def test_eu_cbam_cost_with_default_value_markup():
     """The 2026 markup is 10%, so 10 tCO2e becomes 11 chargeable tonnes."""
-    cost = cbam.eu_cbam_cost(10.0, 2026, 80.0, using_default_values=True)
+    cost = cbam.eu_cbam_cost(
+        10.0, 2026, 80.0, using_default_values=True, product="hydrogen"
+    )
     assert cost == pytest.approx(11.0 * 0.025 * 80.0)  # 22.00
 
 
@@ -1162,8 +1195,8 @@ def test_iea_costs_cover_every_modelled_production_pathway():
     emissions, _, _ = data_io.load_inputs()
     iea = data_io.iea_production_costs(2030)
     modelled = emissions[emissions["pathway"] != "cbam_default"]
-    expected = set(zip(modelled["corridor"], modelled["product"], modelled["pathway"]))
-    got = set(zip(iea["corridor"], iea["product"], iea["pathway"]))
+    expected = set(zip(modelled["corridor"], modelled["product"], modelled["pathway"], strict=False))
+    got = set(zip(iea["corridor"], iea["product"], iea["pathway"], strict=False))
     assert expected == got, f"missing from IEA table: {expected - got}"
 
 
@@ -1473,9 +1506,9 @@ def test_lock_in_reverses_the_2026_corridor_choice():
     present value of the tenor favours Halifax-Hamburg.
 
     Ammonia, medium prices, 8% real, truncate:
-        HH  1.83, 3.91, 9.98, 26.90, 59.54  ->  PV 79.12
-        NF  0.05, 33.80, 38.46, 47.77, 71.07 -> PV 154.48
-        breakeven = 154.48 - 79.12 = 75.36
+        HH  1.75, 3.45, 7.99, 21.16, 46.65   ->  PV 62.88
+        NF  0.05, 33.80, 38.46, 47.77, 71.07 ->  PV 154.48
+        breakeven = 154.48 - 62.88 = 91.60
     """
     emissions, _, _ = data_io.load_inputs()
     compliance = runner.run_compliance_matrix(emissions)
@@ -1495,14 +1528,14 @@ def test_lock_in_reverses_the_2026_corridor_choice():
         (lock_in["product"] == "ammonia") & (lock_in["decision_year"] == 2026)
     ].iloc[0]
     assert ammonia["pv_halifax_hamburg_gbp_per_tonne_annual_volume"] == pytest.approx(
-        79.12, abs=0.05
+        62.88, abs=0.05
     )
     assert ammonia["pv_ningbo_felixstowe_gbp_per_tonne_annual_volume"] == pytest.approx(
         154.48, abs=0.05
     )
     assert ammonia[
         "breakeven_switching_cost_gbp_per_tonne_annual_volume"
-    ] == pytest.approx(75.36, abs=0.05)
+    ] == pytest.approx(91.60, abs=0.05)
 
 
 def test_lock_in_reversal_survives_both_beyond_horizon_treatments():
@@ -1726,18 +1759,33 @@ def test_the_mechanism_choice_inverts_the_corridor_finding():
             emissions, cbam_mechanism=mechanism
         )
         comparison = outputs.corridor_cost_comparison(compliance)
-        ammonia = comparison[comparison["product"] == "ammonia"]
-        orderings[mechanism] = list(ammonia.sort_values("year")["cheaper_corridor"])
+        for product in ("ammonia", "hydrogen"):
+            rows = comparison[comparison["product"] == product]
+            orderings[(mechanism, product)] = list(
+                rows.sort_values("year")["cheaper_corridor"]
+            )
 
     hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
-    # Factor-scaled: UK cheaper in 2026 only, then EU for the rest.
-    assert orderings["factor_scaled"] == [nf, hh, hh, hh, hh]
-    # Benchmark-shielded: EU cheaper in 2027 only, UK for the rest.
-    assert orderings["benchmark_shielded"] == [nf, hh, nf, nf, nf]
 
-    assert orderings["factor_scaled"] != orderings["benchmark_shielded"], (
-        "the two mechanisms now agree; the open decision recorded in "
-        "regulatory_constants.EU_CBAM_DEFAULT_MECHANISM may be resolvable"
+    # Ammonia agrees under both mechanisms. It did NOT before the fertiliser
+    # mark-up fix of 7 August 2026: dropping ammonia's mark-up from 30% to the
+    # legislated 1% lowered EU liability enough that the benchmark shield no
+    # longer flips the ordering. So the open mechanism decision no longer
+    # touches ammonia at all.
+    assert orderings[("factor_scaled", "ammonia")] == [nf, hh, hh, hh, hh]
+    assert orderings[("benchmark_shielded", "ammonia")] == [nf, hh, hh, hh, hh]
+
+    # Hydrogen still inverts, so the decision still has to be taken.
+    assert orderings[("factor_scaled", "hydrogen")] == [nf, hh, hh, hh, hh]
+    assert orderings[("benchmark_shielded", "hydrogen")] == [nf, hh, nf, nf, nf]
+
+    assert (
+        orderings[("factor_scaled", "hydrogen")]
+        != orderings[("benchmark_shielded", "hydrogen")]
+    ), (
+        "the two mechanisms now agree on hydrogen too; the open decision "
+        "recorded in regulatory_constants.EU_CBAM_DEFAULT_MECHANISM may be "
+        "fully resolvable"
     )
 
 
@@ -1749,8 +1797,8 @@ def test_the_mechanism_choice_inverts_the_corridor_finding():
 def test_competitiveness_burden_hand_calculation():
     """Ammonia, Halifax-Hamburg, 2026, medium, cbam_default.
 
-    Compliance EUR 2.15/t against Riya's production cost of EUR 446.80/t:
-    2.15 / 446.80 = 0.48%. The EU corridor needs no currency conversion, so
+    Compliance EUR 2.05/t against Riya's production cost of EUR 446.80/t:
+    2.05 / 446.80 = 0.46%. The EU corridor needs no currency conversion, so
     this arm also pins that the EUR side is passed through untouched.
     """
     emissions, _, commercial = data_io.load_inputs()
@@ -1764,7 +1812,7 @@ def test_competitiveness_burden_hand_calculation():
         & (burden["year"] == 2026)
     ].iloc[0]
     assert row["production_cost_eur_per_tonne"] == pytest.approx(446.8)
-    assert row["burden_share_pct"] == pytest.approx(0.48, abs=0.01)
+    assert row["burden_share_pct"] == pytest.approx(0.46, abs=0.01)
     assert not row["currency_converted"]
 
 
@@ -1931,7 +1979,7 @@ def test_corridor_ordering_survives_all_three_uk_price_paths():
         )
         for product in ("ammonia", "hydrogen"):
             rows = comparison[comparison["product"] == product].sort_values("year")
-            ordering = dict(zip(rows["year"], rows["cheaper_corridor"]))
+            ordering = dict(zip(rows["year"], rows["cheaper_corridor"], strict=False))
             assert ordering[2026] == rc.NINGBO_FELIXSTOWE, f"{variant}/{product}"
             for year in (2027, 2028, 2029, 2030):
                 assert ordering[year] == rc.HALIFAX_HAMBURG, (

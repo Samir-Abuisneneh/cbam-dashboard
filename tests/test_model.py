@@ -1846,3 +1846,196 @@ def test_a_near_tie_in_burden_is_reported_as_marginal():
     ].iloc[0]
     assert abs(row["gap_percentage_points"]) < 0.1
     assert row["asymmetry_verdict"] == "marginal"
+
+
+# ---------------------------------------------------------------------------
+# DESNZ UK price path
+# ---------------------------------------------------------------------------
+
+
+def test_desnz_price_series_matches_the_published_table():
+    """DESNZ, Traded carbon values used for modelling purposes, 2025,
+    published 3 February 2026. GBP/tCO2e in real 2025 prices."""
+    expected = {
+        2026: (22.0, 38.0, 47.0),
+        2027: (23.0, 41.0, 52.0),
+        2028: (23.0, 40.0, 54.0),
+        2029: (22.0, 43.0, 58.0),
+        2030: (25.0, 50.0, 66.0),
+    }
+    for year, (low, medium, high) in expected.items():
+        assert rc.uk_ets_price(year, "low", "desnz") == pytest.approx(low)
+        assert rc.uk_ets_price(year, "medium", "desnz") == pytest.approx(medium)
+        assert rc.uk_ets_price(year, "high", "desnz") == pytest.approx(high)
+
+
+def test_desnz_metadata_flags_travel_with_the_series():
+    """The series is in real 2025 prices while every other price in the module
+    is nominal, it is not a forecast, and it excludes EU linking. Any of those
+    silently dropped would let a figure be quoted on the wrong basis."""
+    assert rc.UK_ETS_PRICE_DESNZ_PRICE_BASE_YEAR == 2025
+    assert rc.UK_ETS_PRICE_DESNZ_IS_FORECAST is False
+    assert rc.UK_ETS_PRICE_DESNZ_INCLUDES_EU_LINKING is False
+    assert "desnz" in rc.UK_ETS_PRICE_VARIANTS
+
+
+def test_desnz_clamps_rather_than_extrapolating_outside_the_published_range():
+    """Only 2026-2030 has been read out of the publication. A year beyond that
+    must reuse the endpoint, not invent a trend."""
+    assert rc.uk_ets_price(2031, "medium", "desnz") == pytest.approx(
+        rc.uk_ets_price(2030, "medium", "desnz")
+    )
+    assert rc.uk_ets_price(2025, "medium", "desnz") == pytest.approx(
+        rc.uk_ets_price(2026, "medium", "desnz")
+    )
+
+
+def test_desnz_2026_sits_below_the_official_determination():
+    """GBP 38 against GBP 49.41. Not rival estimates of one quantity: 49.41 is
+    a backward-looking average of actual UKA futures settlements, 38 is a
+    forward policy-appraisal scenario in real terms. The gap is the point, and
+    it brackets how far the UK price assumption can move the comparison."""
+    assert rc.uk_ets_price(2026, "medium", "desnz") < rc.UK_ETS_PRICE_2026_OFFICIAL
+
+
+def test_analysis_reads_every_uk_price_variant_not_just_frozen():
+    """Regression guard. The base-case filter used to hard-pin "frozen", so a
+    compliance frame built on any other path came back empty, which reads as
+    "no data" rather than as a filter bug."""
+    emissions, _, _ = data_io.load_inputs()
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        compliance = runner.run_compliance_matrix(
+            emissions, uk_price_variant=variant
+        )
+        comparison = outputs.corridor_cost_comparison(
+            compliance, uk_price_variant=variant
+        )
+        assert len(comparison), f"{variant} produced an empty comparison"
+
+
+def test_corridor_ordering_survives_all_three_uk_price_paths():
+    """The headline finding does not depend on which UK price path is assumed.
+
+    Ningbo-Felixstowe is cheaper in 2026 only, because UK CBAM has not started;
+    Halifax-Hamburg is cheaper every year after. That holds under the frozen
+    baseline, under EU-UK linkage, and under the UK government's own published
+    values, which is a stronger claim than any one of them alone.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        compliance = runner.run_compliance_matrix(
+            emissions, uk_price_variant=variant
+        )
+        comparison = outputs.corridor_cost_comparison(
+            compliance, uk_price_variant=variant
+        )
+        for product in ("ammonia", "hydrogen"):
+            rows = comparison[comparison["product"] == product].sort_values("year")
+            ordering = dict(zip(rows["year"], rows["cheaper_corridor"]))
+            assert ordering[2026] == rc.NINGBO_FELIXSTOWE, f"{variant}/{product}"
+            for year in (2027, 2028, 2029, 2030):
+                assert ordering[year] == rc.HALIFAX_HAMBURG, (
+                    f"{variant}/{product}/{year}"
+                )
+
+
+# ---------------------------------------------------------------------------
+# Policy events table
+# ---------------------------------------------------------------------------
+
+
+def test_policy_events_table_loads_and_validates_its_vocabularies():
+    """Unknown instrument types or statuses must fail loudly. The whole point
+    of classifying by instrument is that "act of parliament" and "consultation
+    that closed with no decision" carry very different weight, and a typo that
+    silently created a new category would erase that distinction."""
+    events = data_io.load_policy_events()
+    assert len(events) >= 40
+    assert set(events["jurisdiction"]) == {"canada", "uk", "eu", "china"}
+    assert set(events["instrument_type"]) <= set(
+        data_io.POLICY_EVENT_INSTRUMENT_TYPES
+    )
+    assert set(events["status"]) <= set(data_io.POLICY_EVENT_STATUSES)
+    assert set(events["affects_model"]) <= set(data_io.POLICY_EVENT_AFFECTS_MODEL)
+
+
+def test_every_policy_event_names_a_parameter_that_actually_exists():
+    """The timeline is only useful if its `model_parameter` column points at
+    something real. A stale name here means the event silently stops being
+    traceable into the model, which is exactly the drift this column exists to
+    prevent."""
+    from cbam_model.config import regulatory_constants as rc
+
+    events = data_io.load_policy_events()
+    # Two values name input-table columns rather than module constants.
+    data_columns = {"cbam_default", "production_cost_eur_per_tonne"}
+
+    unresolved = [
+        p
+        for p in sorted(set(events["model_parameter"]) - {""})
+        if p not in data_columns and not hasattr(rc, p)
+    ]
+    assert not unresolved, f"policy_events.csv names missing constants: {unresolved}"
+
+
+def test_policy_timeline_agrees_with_the_model_on_the_quantified_events():
+    """Cross-check the numbers Alex's timeline states against what the model
+    actually implements. These are the rows where the timeline and the code
+    make the same claim, so a disagreement means one of them is wrong."""
+    from cbam_model.config import regulatory_constants as rc
+
+    events = data_io.load_policy_events().set_index("event_id")
+
+    # CA-08: revised Canadian industrial price path.
+    assert "CAD 95 (2026)" in events.loc["CA-08", "quantified_effect"]
+    assert rc.origin_carbon_price_canada_cad(2026) == pytest.approx(95.0)
+    assert rc.origin_carbon_price_canada_cad(2030) == pytest.approx(115.0)
+
+    # EU-10 / EU-14 / EU-15: the CBAM factor ramp.
+    assert rc.cbam_factor(2026) == pytest.approx(0.025)
+    assert rc.cbam_factor(2030) == pytest.approx(0.485)
+    assert rc.cbam_factor(2034) == pytest.approx(1.0)
+
+    # EU-13: the benchmarks sourced from IR 2026/1412.
+    assert rc.EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE["ammonia"] == pytest.approx(1.522)
+    assert rc.EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE["hydrogen"] == pytest.approx(7.98)
+
+    # UK-15: the international ocean leg is not covered by UK ETS.
+    assert rc.UK_ETS_INTL_VOYAGE_COVERAGE == pytest.approx(0.0)
+
+    # UK-12 / UK-14: the proposed expansion, still not law.
+    assert rc.UK_ETS_INTL_EXPANSION_PROPOSED == pytest.approx(0.50)
+    assert rc.UK_ETS_INTL_EXPANSION_EARLIEST_YEAR == 2028
+    assert rc.UK_ETS_INTL_EXPANSION_IS_LAW is False
+
+    # UK-16: UK CBAM starts in 2027.
+    assert rc.UK_CBAM_START_YEAR == 2027
+
+
+def test_superseded_policies_are_not_the_ones_driving_the_model():
+    """The Canadian 170-by-2030 plan is superseded and must never be the live
+    input. It stays in the table because it is a legitimate upper bound for an
+    accelerated scenario, which is a different thing from being the baseline."""
+    from cbam_model.config import regulatory_constants as rc
+
+    events = data_io.load_policy_events().set_index("event_id")
+    assert events.loc["CA-03", "status"] == "superseded"
+    assert events.loc["CA-03", "affects_model"] == "sensitivity_only"
+    assert events.loc["CA-08", "status"] == "in_force"
+
+    # The live path tops out at 115 in 2030, not 170.
+    assert rc.origin_carbon_price_canada_cad(2030) < 170.0
+
+
+def test_uk_cbam_indirect_emissions_gap_is_recorded_as_unimplemented():
+    """UK CBAM charges direct emissions only until 2029 at the earliest, and
+    the model does not represent that: it applies the full embedded figure on
+    the UK corridor in 2027 and 2028, overstating liability in exactly the two
+    years the lock-in reversal turns on.
+
+    This test does not assert the model is right. It asserts the gap is written
+    down, so it cannot be forgotten before submission."""
+    events = data_io.load_policy_events().set_index("event_id")
+    row = events.loc["UK-16"]
+    assert "Direct emissions only" in row["quantified_effect"]
+    assert "NOT YET IMPLEMENTED" in row["why_it_matters"]

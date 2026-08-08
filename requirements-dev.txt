@@ -25,3 +25,8 @@ ruff
 nbformat
 jupyterlab
 reportlab
+
+# capture_figures.py drives the running dashboard to regenerate
+# docs/figures/*.png. Needs a one-off browser download after install:
+#     .venv/bin/playwright install chromium
+playwright

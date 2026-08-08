@@ -66,8 +66,11 @@ def eu_cbam_cost(
         mechanism: How free allocation is netted off. See
             `regulatory_constants.EU_CBAM_MECHANISMS`. Defaults to
             `EU_CBAM_DEFAULT_MECHANISM`.
-        benchmark_tco2e_per_tonne: EU ETS product benchmark. Required by, and
-            only used by, the "benchmark_shielded" mechanism.
+        benchmark_tco2e_per_tonne: CBAM benchmark from IR 2025/2620 Annex
+            point 5. Required by, and only used by, the "benchmark_shielded"
+            mechanism. NOT the EU ETS product benchmark: the two coincide for
+            ammonia and differ by 56.8% for hydrogen. Pass
+            `regulatory_constants.cbam_benchmark(product)`.
 
     UNIT WARNING on the benchmark mechanism. The benchmark is defined per tonne
     of product, so it can only be netted off `embedded_emissions_tco2e` when
@@ -119,15 +122,22 @@ def eu_cbam_cost(
             raise ValueError(
                 "The benchmark_shielded mechanism requires "
                 "benchmark_tco2e_per_tonne. Pass "
-                "regulatory_constants.eu_product_benchmark(product), and read "
+                "regulatory_constants.cbam_benchmark(product), and read "
                 "the unit warning in this function's docstring first."
             )
-        # Free allocation shields the benchmark, not a share of the importer's
-        # own emissions. Floors at zero: a producer at or below the benchmark
-        # owes nothing while free allocation is still being phased out.
+        # IR 2025/2620, Annex Equations 1 and 6:
+        #     FAA  = SEFA x M,  SEFA = CBAM_y x CSCF_y x BM
+        # CBAM_y is the Article 10a(1a) factor, the share of free allocation
+        # still remaining, which is 1 - cbam_factor(year) in this model's terms.
+        # Certificates are due on full embedded emissions net of that
+        # adjustment. Floors at zero: recital 16 confirms the adjustment may
+        # exceed embedded emissions, leaving no certificates due, and never
+        # produces a credit.
         free_allocation_share = 1.0 - factor
         chargeable_tco2e = max(
-            0.0, emissions - benchmark_tco2e_per_tonne * free_allocation_share
+            0.0,
+            emissions
+            - benchmark_tco2e_per_tonne * free_allocation_share * rc.cbam_cscf(year),
         )
 
     net_price = cert_price_eur - origin_carbon_price_eur_per_tco2e

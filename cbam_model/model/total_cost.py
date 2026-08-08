@@ -226,7 +226,7 @@ def cbam_cost_per_tonne(
             # with an ammonia benchmark. Only read when the benchmark
             # mechanism is selected, so an unknown product does not break the
             # default path.
-            rc.eu_product_benchmark(product)
+            rc.cbam_benchmark(product)
             if mechanism == "benchmark_shielded"
             else None,
             product,

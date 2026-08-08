@@ -128,8 +128,12 @@ CBAM_CERT_PRICE_Q1_2026_ACTUAL = 75.36  # EUR/tCO2e, confirmed published figure 
 # consumption". A wider, electricity-inclusive population raises the hydrogen
 # benchmark even as the overall free allocation envelope falls by more than 16%.
 #
-# Consequence for this model, and it is large: a higher hydrogen benchmark
-# shields MORE under the Article 31 mechanism, so hydrogen CBAM liability falls.
+# DO NOT NET THESE OFF THE CBAM OBLIGATION. Until 8 August 2026 this model did
+# exactly that, and it was wrong: the free allocation adjustment is calculated
+# against a separate CBAM benchmark, not against the ETS product benchmark.
+# See CBAM_BENCHMARK_TCO2E_PER_TONNE below, which supersedes these for every
+# operative result. These stay only because `validation/reference_case.py`
+# calibrates against Ramsook et al. (2025), who worked in ETS benchmark terms.
 EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE = {"hydrogen": 7.98, "ammonia": 1.522}
 EU_ETS_PRODUCT_BENCHMARK_PERIOD = "2026-2030"
 EU_ETS_PRODUCT_BENCHMARK_SOURCE = (
@@ -140,6 +144,85 @@ EU_ETS_PRODUCT_BENCHMARK_SOURCE = (
 # not use these for any 2026-2030 result.
 EU_ETS_PRODUCT_BENCHMARK_2021_2025 = {"hydrogen": 6.84, "ammonia": 1.570}
 EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT = True
+
+
+# ---------------------------------------------------------------------------
+# CBAM benchmarks: the operative values for the free allocation adjustment
+# ---------------------------------------------------------------------------
+# CORRECTED 8 August 2026, and this was a material error while it stood.
+#
+# The model previously subtracted the EU ETS product benchmarks above. The
+# governing instrument is Commission Implementing Regulation (EU) 2025/2620 of
+# 16 December 2025, adopted under Article 31(2) of Regulation (EU) 2023/956,
+# which lays down the calculation of the free allocation adjustment. It defines
+# its own "CBAM benchmark", derived from but NOT equal to the ETS benchmark.
+#
+# Annex point 2, Equation 1:      FAA_g   = SEFA_g,y x M_g
+# Annex point 4, Equation 6:      SEFA_g,y = CBAM_y x CSCF_y x BM_g   (defaults)
+# Annex point 3.1, Equation 2:    SFA_g,y  = CBAM_y x CSCF_y x BM*_g  (actuals)
+#
+# where CBAM_y is "the CBAM factor referred to in Article 10a(1a) of Directive
+# 2003/87/EC", i.e. the share of free allocation REMAINING (0.975 in 2026), not
+# the phase-in share. That is `1 - cbam_factor(year)` in this module, so the
+# functional form already in `model/cbam.py` is correct. Only the benchmark
+# value and the missing CSCF were wrong.
+#
+# VALUES, read off the OJ PDF of IR 2025/2620, Annex point 5.3, on 8 August
+# 2026. Decimal commas again: the OJ prints "5,089" for 5.089.
+#
+#   CN 2804 10 00  Hydrogen           Column A 5.089   Column B 5.089
+#   CN 2814 10 00  Anhydrous ammonia  Column A 1.522   Column B 1.522
+#
+# Column A applies when actual data is declared (Equation 2), Column B when
+# default values are (Equation 6). For both goods modelled here the two columns
+# are identical, so this model does not need to switch between them. Do not
+# "simplify" that away: they diverge for cement, steel and most fertilisers.
+#
+# Ammonia's CBAM benchmark coincides with its ETS benchmark at 1.522, so the
+# correction does not move ammonia at all. Hydrogen does NOT coincide: 5.089
+# against an ETS benchmark of 7.98, so the model had been shielding hydrogen by
+# 56.8% more than the law allows and understating EU hydrogen CBAM liability in
+# every year. Hydrogen is the product the corridor decision turns on.
+#
+# Why they diverge is not stated for hydrogen specifically. Recital 17 gives the
+# mechanism for steel: where CBAM scope is narrower than ETS scope, only the
+# direct emission share of the ETS benchmark is carried into the CBAM
+# benchmark. The ETS hydrogen benchmark rose to 7.98 partly because section 2
+# benchmarks now count indirect emissions from electricity consumption, which
+# CBAM does not charge for. That is a plausible reading and it is consistent
+# with the numbers, but it is an inference, not a quoted recital. Do not present
+# it as the Commission's stated reason.
+#
+# VINTAGE, and one thing to re-check before submission. Recital 10: the CBAM
+# benchmarks applying from 1 January 2026 are based on ESTIMATED 2026-2030 ETS
+# benchmarks. They are to be reviewed at the latest one month after the final
+# 2026-2030 ETS benchmarks are published, and the updated values apply to goods
+# imported FROM 1 JANUARY 2027. IR 2026/1412 published those final benchmarks on
+# 29 June 2026, so a revision was due by roughly the end of July 2026. Searched
+# on 8 August 2026 and found no amending regulation. If one appears, the
+# 2027-2030 hydrogen benchmark changes again and every corridor result with it.
+CBAM_BENCHMARK_TCO2E_PER_TONNE = {"hydrogen": 5.089, "ammonia": 1.522}
+CBAM_BENCHMARK_SOURCE = (
+    "Commission Implementing Regulation (EU) 2025/2620, Annex point 5.3"
+)
+CBAM_BENCHMARK_RETRIEVED = "2026-08-08"
+CBAM_BENCHMARK_REVISION_DUE_FROM_YEAR = 2027
+
+# Cross-sectoral correction factor, the CSCF_y term in Equations 2 and 6. It is
+# determined by the Commission under Article 14(6) of Delegated Regulation (EU)
+# 2019/331 and published under Article 10a(5) of Directive 2003/87/EC, so it
+# does not appear in IR 2025/2620 itself.
+#
+# ASSUMPTION, not a sourced 2026 figure. The CSCF was 100% (no reduction) for
+# the whole 2021-2025 allocation period, and no 2026 value was found when
+# searched on 8 August 2026. 1.0 is therefore the status-quo assumption rather
+# than a confirmed input. It is held as a named constant so the assumption is
+# visible in the model and can be swept, instead of being silently absent from
+# the equation as it was before 8 August 2026. A CSCF below 1 would reduce the
+# shield and raise EU CBAM liability on both products.
+CBAM_CSCF_BY_YEAR = {}  # empty: no year has a sourced value
+CBAM_CSCF_ASSUMED = 1.0
+CBAM_CSCF_IS_SOURCED = False
 
 
 # How the EU CBAM obligation accounts for free allocation.
@@ -237,21 +320,36 @@ EU_CBAM_MECHANISMS = ("factor_scaled", "benchmark_shielded")
 EU_CBAM_DEFAULT_MECHANISM = "benchmark_shielded"
 
 
-def eu_product_benchmark(product: str) -> float:
-    """EU ETS product benchmark in tCO2e per tonne of product.
+def cbam_benchmark(product: str) -> float:
+    """CBAM benchmark in tCO2e per tonne of product, per IR 2025/2620.
+
+    This is NOT the EU ETS product benchmark. The two coincide for ammonia and
+    differ by 56.8% for hydrogen. Netting the ETS benchmark off the CBAM
+    obligation was the bug corrected on 8 August 2026, so there is deliberately
+    no function here that returns an ETS benchmark for use in a cost path.
 
     Raises on an unknown product rather than returning a zero, because a zero
     benchmark silently turns the benchmark mechanism back into the factor-scaled
     one and would look like agreement between the two forms.
     """
     try:
-        return EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE[product]
+        return CBAM_BENCHMARK_TCO2E_PER_TONNE[product]
     except KeyError:
         raise KeyError(
-            f"No EU ETS product benchmark for {product!r}. "
-            f"Known products: {sorted(EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE)}. "
-            f"Source: {EU_ETS_PRODUCT_BENCHMARK_SOURCE}"
+            f"No CBAM benchmark for {product!r}. "
+            f"Known products: {sorted(CBAM_BENCHMARK_TCO2E_PER_TONNE)}. "
+            f"Source: {CBAM_BENCHMARK_SOURCE}"
         ) from None
+
+
+def cbam_cscf(year: int) -> float:
+    """Cross-sectoral correction factor for the free allocation adjustment.
+
+    Returns the sourced value for `year` if one exists, otherwise the assumed
+    1.0. No year currently has a sourced value; see CBAM_CSCF_ASSUMED for why
+    that assumption is defensible and what it costs if wrong.
+    """
+    return CBAM_CSCF_BY_YEAR.get(year, CBAM_CSCF_ASSUMED)
 
 # Hydrogen has no de minimis mass exemption. Every shipment is in scope.
 EU_CBAM_HYDROGEN_DE_MINIMIS_EXEMPTION = False

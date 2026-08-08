@@ -257,7 +257,7 @@ def _compliance_total_per_tonne(
             # `embedded` here is per tonne of product, which is the basis the
             # benchmark is defined on, so the unit contract in `eu_cbam_cost`
             # holds either way.
-            benchmark_tco2e_per_tonne=rc.eu_product_benchmark(product),
+            benchmark_tco2e_per_tonne=rc.cbam_benchmark(product),
             # Required whenever the default-value mark-up applies, because the
             # schedule is 1% flat for fertiliser goods and 10/20/30 otherwise.
             product=product,

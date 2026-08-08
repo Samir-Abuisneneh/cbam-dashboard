@@ -316,6 +316,16 @@ Journal text of IR 2026/1412 on 6 August (ammonia 1.522, hydrogen 7.98). What re
 a decision rather than a lookup, and Samir took it on 7 August:
 `EU_CBAM_DEFAULT_MECHANISM` is now `benchmark_shielded`.
 
+**Corrected again on 8 August 2026, and this one changed the results.** The benchmarks
+above are EU ETS benchmarks, and those are the wrong instrument for CBAM. Commission
+Implementing Regulation (EU) 2025/2620 defines a separate **CBAM benchmark**: ammonia
+1.522, the same number, but hydrogen **5.089** rather than 7.98. The model had been
+shielding hydrogen by 56.8% more than the law allows. Correcting it removed hydrogen's
+corridor crossover, its lock-in reversal and the competitiveness divergence finding.
+Ammonia is unchanged throughout. Anything quoting a hydrogen result from before
+8 August 2026 is superseded, including the paragraphs immediately below if they have
+not been rewritten.
+
 **Frano has not confirmed this yet.** Treat it as the working basis and state it in your
 methodology, because it is not a neutral refinement. Flipping the mechanism does not
 rescale the results, it inverts which corridor the study concludes is cheaper for hydrogen.
@@ -354,11 +364,15 @@ Ningbo-Felixstowe is cheaper in 2026 *only* because UK CBAM doesn't exist yet.
 - **Ammonia:** it starts in 2027, the ordering reverses, and it stays reversed. The gap
   then narrows from £19.08/t to £13.04/t by 2030. One sharp flip followed by
   convergence, not a gradual UK overtake.
-- **Hydrogen:** Halifax-Hamburg is cheaper in 2027 alone (£63.23/t ahead), then
-  Ningbo-Felixstowe takes the lead back from 2028 and keeps it. The EU hydrogen
-  benchmark of 7.98 tCO2e/t sits close to Canadian grey hydrogen's 10.07, so EU
-  liability starts small and climbs steeply as free allocation is withdrawn, while the
-  UK rate fraction climbs slowly.
+- **Hydrogen:** Ningbo-Felixstowe is cheaper in every year 2026 to 2030 and there is no
+  crossover at all on the baseline UK price path. The CBAM hydrogen benchmark of
+  5.089 tCO2e/t sits well below Canadian grey hydrogen's 10.07, so EU liability is
+  substantial from the start and climbs steeply as free allocation is withdrawn, while
+  the UK rate fraction climbs slowly. On the `linked` UK price path, which is explicitly
+  not law, Halifax-Hamburg leads from 2027 instead, so any hydrogen corridor claim has
+  to name its price path. Corrected 8 August 2026: this previously read
+  "Halifax-Hamburg cheaper in 2027 alone, then Ningbo-Felixstowe from 2028", which was
+  an artefact of netting off the ETS benchmark of 7.98.
 
 If you're writing the discussion chapter, that product split is the shape to describe,
 and it is worth saying explicitly that it is a consequence of the mechanism decision
@@ -423,7 +437,7 @@ the *direction* is solid but the precise percentage is not.
   for exploring corridor/product/pathway/year/price combinations without touching code.
   Placeholder inputs and policy-uncertain what-ifs (e.g. UK CBAM phase-in overrides) are
   explicitly labelled in the UI rather than presented as forecasts.
-- `tests/test_model.py` — 168 tests, including 31 that pin Gayu's published maritime
+- `tests/test_model.py` — 213 tests, including 31 that pin Gayu's published maritime
   figures exactly so any future drift shows up as a test failure, not a silent
   divergence.
 

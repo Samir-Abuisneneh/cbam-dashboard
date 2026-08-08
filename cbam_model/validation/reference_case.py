@@ -46,16 +46,18 @@ Consequences, which are the reason this matters well beyond this module:
      materially more effective at closing the green premium than this model
      currently shows.
 
-This module therefore reports BOTH formulas and does not silently switch the
-model over. The data blocker that was the original reason for waiting is gone:
-the 2026-2030 product benchmarks were read out of IR 2026/1412 on 6 August 2026
-and are in `regulatory_constants.EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE`. The
-decision itself is still open, because switching inverts the study's headline
-corridor finding rather than merely rescaling it, so it is a supervisor call
-rather than a code change. `EU_CBAM_DEFAULT_MECHANISM` remains "factor_scaled";
-read the long comment above it before touching it, and see
-`analysis.outputs.cbam_mechanism_comparison`, which sizes the choice on the
-current benchmarks.
+This module therefore reports BOTH formulas. `EU_CBAM_DEFAULT_MECHANISM` was
+switched to "benchmark_shielded" on 7 August 2026; read the long comment above
+it before touching it, and see `analysis.outputs.cbam_mechanism_comparison`,
+which sizes the choice.
+
+Note on which benchmark this module uses. Ramsook et al. worked in EU ETS
+product benchmark terms under the 2021-2025 regime, so reproducing their
+published burden correctly uses `EU_ETS_PRODUCT_BENCHMARK_2021_2025`. That is
+the one place in this project where an ETS benchmark legitimately enters a
+calculation. Every operative cost path uses the CBAM benchmark from
+IR 2025/2620 instead (`regulatory_constants.cbam_benchmark`), which for
+hydrogen is a different number. See CBAM_BENCHMARK_TCO2E_PER_TONNE.
 
 The benchmark used in THIS module stays at the 2021-2025 ammonia figure (1.57),
 because Ramsook et al. worked under that regime and the point here is to
@@ -198,10 +200,10 @@ def benchmark_mechanism_gap(
     """How far apart the two formulas sit, year by year, for any pathway.
 
     Use this to size the risk on this study's own corridors before deciding
-    whether to switch the model over. For a current 2026-2030 figure pass
-    `regulatory_constants.eu_product_benchmark(product)`; pass
+    whether to switch the model over. For a current operative figure pass
+    `regulatory_constants.cbam_benchmark(product)`; pass
     `EU_ETS_PRODUCT_BENCHMARK_2021_2025[product]` only when reproducing a
-    result published under the superseded regime.
+    result published under the superseded ETS-benchmark regime.
 
     Returns a list of dicts, one per year.
     """

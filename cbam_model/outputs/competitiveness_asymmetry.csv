@@ -4,8 +4,8 @@ ammonia,cbam_default,medium,2027,3.86,9.51,-5.65,84.52,ningbo_felixstowe,clear,p
 ammonia,cbam_default,medium,2028,6.0,10.82,-4.82,57.31,ningbo_felixstowe,clear,production_cost
 ammonia,cbam_default,medium,2029,9.87,13.44,-3.57,30.63,ningbo_felixstowe,clear,production_cost
 ammonia,cbam_default,medium,2030,15.22,20.0,-4.78,27.14,ningbo_felixstowe,clear,production_cost
-hydrogen,cbam_default,medium,2026,15.5,0.05,15.45,198.71,halifax_hamburg,clear,production_cost
-hydrogen,cbam_default,medium,2027,27.37,20.52,6.85,28.61,halifax_hamburg,clear,production_cost
-hydrogen,cbam_default,medium,2028,47.44,23.34,24.1,68.1,halifax_hamburg,clear,production_cost
-hydrogen,cbam_default,medium,2029,68.96,29.0,39.96,81.58,halifax_hamburg,clear,production_cost
-hydrogen,cbam_default,medium,2030,91.12,43.12,48.0,71.51,halifax_hamburg,clear,production_cost
+hydrogen,cbam_default,medium,2026,25.01,0.05,24.96,199.2,halifax_hamburg,clear,production_cost
+hydrogen,cbam_default,medium,2027,40.38,20.52,19.86,65.22,halifax_hamburg,clear,production_cost
+hydrogen,cbam_default,medium,2028,64.64,23.34,41.3,93.88,halifax_hamburg,clear,production_cost
+hydrogen,cbam_default,medium,2029,87.96,29.0,58.96,100.82,halifax_hamburg,clear,production_cost
+hydrogen,cbam_default,medium,2030,104.26,43.12,61.14,82.97,halifax_hamburg,clear,production_cost

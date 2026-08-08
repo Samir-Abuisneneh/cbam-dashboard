@@ -1068,7 +1068,7 @@ def cbam_mechanism_comparison(
                     cbam_mechanism=mechanism,
                 ).eu_cbam_cost_eur_per_tonne
 
-            benchmark = rc.eu_product_benchmark(r["product"])
+            benchmark = rc.cbam_benchmark(r["product"])
             embedded = float(r["embedded_emissions_tco2e_per_tonne"])
             current = costs["factor_scaled"]
             shielded = costs["benchmark_shielded"]
@@ -1081,8 +1081,9 @@ def cbam_mechanism_comparison(
                     "price_scenario": price_scenario,
                     "embedded_emissions_tco2e_per_tonne": embedded,
                     "benchmark_tco2e_per_tonne": benchmark,
-                    "benchmark_period": rc.EU_ETS_PRODUCT_BENCHMARK_PERIOD,
-                    "benchmark_is_current": rc.EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT,
+                    "benchmark_source": rc.CBAM_BENCHMARK_SOURCE,
+                    "cscf": rc.cbam_cscf(year),
+                    "cscf_is_sourced": rc.CBAM_CSCF_IS_SOURCED,
                     "cleaner_than_benchmark": embedded < benchmark,
                     "factor_scaled_eur_per_tonne": round(current, 2),
                     "benchmark_shielded_eur_per_tonne": round(shielded, 2),

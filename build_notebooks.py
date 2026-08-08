@@ -315,17 +315,24 @@ The alternative form, `embedded x CBAM_factor`, gives 14.5% on the same inputs. 
 sit side by side in `validation/reference_case.py`, with a test that fails if the default moves without
 anyone noticing.
 
-**The model was switched to the benchmark form on 7 August 2026.** The revised 2026-2030 benchmarks were
-read out of the Official Journal text of IR 2026/1412 on 6 August 2026 (ammonia 1.522, hydrogen 7.98), so
-the data reason for staying on the factor-scaled form had already gone; what remained was that the
-factor-scaled reading is what most practitioner guidance describes and what every earlier result in this
-project was generated under. Against that sit the legal reading of Article 31, the reproduction of a
-published cross-check, and this project's own validation module, all three of which point the same way.
+**The model was switched to the benchmark form on 7 August 2026**, and the benchmark it uses was
+corrected on 8 August 2026. The correction is the more important of the two.
 
-Two things must travel with this in the write-up. The switch **inverts the headline corridor finding for
-hydrogen** rather than rescaling it, as section 6 shows, and it has not yet been confirmed by the
-supervisor. The methodology chapter has to state which form was used and why, and report both. If the
-decision is reversed, flip `rc.EU_CBAM_DEFAULT_MECHANISM` back and re-run;
+Until 8 August the model netted off the **EU ETS product benchmark** (ammonia 1.522, hydrogen 7.98,
+IR 2026/1412). That is the wrong instrument. Commission Implementing Regulation (EU) 2025/2620 of
+16 December 2025, adopted under Article 31(2), sets out the calculation directly and defines its own
+**CBAM benchmark**: ammonia 1.522, the same figure, but hydrogen **5.089**. The model had been shielding
+hydrogen by 56.8% more than the law allows, understating EU hydrogen liability in every year. The same
+regulation supplies a cross-sectoral correction factor term that was missing entirely; it is now
+represented and held at 1.0 as a stated assumption rather than a sourced value.
+
+That regulation also settles the functional form. Its `CBAM_y` is the share of free allocation still
+remaining, which is `1 - cbam_factor(year)` in this model's terms, so the factor-scaled reading is
+confirmed wrong rather than merely disfavoured, whatever practitioner guidance describes.
+
+What remains for the write-up is presentation, not correctness. The switch changes headline findings
+rather than rescaling them, as section 6 shows, and it has not been confirmed by the supervisor. The
+methodology chapter has to state which form was used and why, and report both.
 `outputs.cbam_mechanism_comparison` below sizes exactly what changes.
 """),
     code("""
@@ -367,15 +374,20 @@ allocation mechanism selected in section 8.
 because UK CBAM does not exist yet; the ordering flips in 2027, the year it starts, and stays flipped.
 One flip, not a slow overtake.
 
-**Hydrogen** does not. It flips to Halifax-Hamburg in 2027 and then flips back from 2028, leaving
-Ningbo-Felixstowe cheaper for the rest of the horizon. The reason is the benchmark shield: the EU hydrogen
-benchmark is 7.98 tCO2e per tonne against Canadian grey hydrogen's 10.07, so only the excess over the
-shielded benchmark is chargeable, and the shield shrinks as free allocation is withdrawn. EU liability
-therefore climbs steeply from a low base while the UK rate fraction climbs far more slowly.
+**Hydrogen** does not flip at all. Ningbo-Felixstowe is cheaper in every year from 2026 to 2030 and there
+is no crossover on the baseline UK price path. The reason is the benchmark shield: the CBAM hydrogen
+benchmark is 5.089 tCO2e per tonne against Canadian grey hydrogen's 10.07, so roughly half the embedded
+emissions are chargeable from the start, and the chargeable share grows as free allocation is withdrawn.
+EU liability therefore climbs steeply while the UK rate fraction climbs far more slowly.
 
-Under the factor-scaled form this model used until 7 August 2026, hydrogen followed the ammonia pattern
-and the ordering never reverted. The inversion is the mechanism decision showing up in the headline
-result, which is exactly why section 8 treats that decision as methodological rather than as a setting.
+On the `linked` UK price path, which is explicitly not law, Halifax-Hamburg takes the lead in 2027 and
+holds it, because a UK price converging upward on the EU price raises UK CBAM enough to reverse the
+ordering. So every hydrogen corridor claim has to name the price path it is on.
+
+Two superseded versions of this paragraph are quoted in documents written before 8 August 2026. Under the
+factor-scaled form hydrogen followed the ammonia pattern and never reverted. Under the benchmark form with
+the EU ETS benchmark wrongly netted off, hydrogen flipped to Halifax-Hamburg in 2027 and back from 2028.
+Neither survives the benchmark correction.
 """),
     code("""
 outputs.abatement_breakeven_year(emissions, commercial)
@@ -419,15 +431,22 @@ reconciles once the benchmark form of the obligation is used.
 2. **Supervisor confirmation of the EU CBAM free-allocation mechanism.** The model moved to
    `benchmark_shielded` on 7 August 2026 and section 8 gives the reasoning, but that is Samir's
    decision and Frano has not yet ruled on it. It is the one open item that changes a headline
-   result rather than adding one: hydrogen's corridor ordering inverts on it. Both forms stay
-   implemented so the decision can be reversed by one constant.
+   result rather than adding one. Both forms stay implemented so the decision can be reversed by
+   one constant. Note that IR 2025/2620 settles which form the law requires; what is owed is a
+   ruling on how to present it, not on which is correct.
+3. **Whether IR 2025/2620 has been amended since 29 June 2026.** Its recital 10 requires the CBAM
+   benchmarks to be reviewed within one month of the final 2026-2030 EU ETS benchmarks being
+   published, with updated values applying to goods imported from 1 January 2027. No amending
+   regulation was found on 8 August 2026. If one appears, the 2027-2030 hydrogen benchmark moves
+   and every corridor result moves with it.
 """),
     code("""
 print(f"Gayu figures reproduced: "
       f"{len(gayu_reproduction.check_gas_carrier()) + len(gayu_reproduction.check_container_ship()) + len(gayu_reproduction.check_cargo_capacity())}")
 print(f"EU CBAM mechanism in use: {rc.EU_CBAM_DEFAULT_MECHANISM}")
-print(f"Product benchmarks: {rc.EU_ETS_PRODUCT_BENCHMARK_TCO2E_PER_TONNE} "
-      f"({rc.EU_ETS_PRODUCT_BENCHMARK_PERIOD}, current={rc.EU_ETS_PRODUCT_BENCHMARK_IS_CURRENT})")
+print(f"CBAM benchmarks: {rc.CBAM_BENCHMARK_TCO2E_PER_TONNE} "
+      f"({rc.CBAM_BENCHMARK_SOURCE}, retrieved {rc.CBAM_BENCHMARK_RETRIEVED})")
+print(f"CSCF: {rc.cbam_cscf(2026)} (sourced={rc.CBAM_CSCF_IS_SOURCED})")
 print(f"Placeholder inputs remaining: {data_io.using_placeholder_data()}")
 """),
 ]

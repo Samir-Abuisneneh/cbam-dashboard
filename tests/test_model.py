@@ -2524,6 +2524,11 @@ def test_uk_cbam_indirect_emissions_gap_is_recorded_as_unimplemented():
     the UK corridor in 2027 and 2028, overstating liability in exactly the two
     years the lock-in reversal turns on.
 
+    The direct-only limitation is policy delivered through secondary
+    legislation, not a restriction in the Finance Act 2026, whose s.148 defines
+    embodied emissions broadly and lets the Treasury narrow it by regulation.
+    Do not cite the Act for it. See docs/policy_timeline_gaps.md.
+
     This test does not assert the model is right. It asserts the gap is written
     down, so it cannot be forgotten before submission."""
     events = data_io.load_policy_events().set_index("event_id")

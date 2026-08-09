@@ -371,8 +371,14 @@ UK_CBAM_IS_TAX_NOT_CERTIFICATES = True  # structural difference from the EU sche
 UK_CBAM_FIRST_PAYMENT_DEADLINE = "2028-05-31"  # for the 2027 accounting period
 
 # RESOLVED 31 July 2026. There is no flat "UK CBAM rate" - it is a formula,
-# from the draft Carbon Border Adjustment Mechanism (Calculation of CBAM Rate
-# and Determination of Carbon Price Relief) Regulations 2026:
+# from the Carbon Border Adjustment Mechanism (Calculation of CBAM Rate and
+# Determination of Carbon Price Relief) Regulations 2026:
+#
+# CITATION UPDATED 9 August 2026. These were cited here as *draft* regulations,
+# which they no longer are. They are SI 2026/809, made, in force 1 January 2027.
+# https://www.legislation.gov.uk/uksi/2026/809/contents/made
+# The formula below is unchanged; only its legal status is firmer than this
+# comment previously claimed.
 #
 #   UK CBAM rate = UK ETS price x (1 - baseline free allocation % x
 #                                       Article 16(14) factor)
@@ -566,6 +572,24 @@ EU_ETS_PRICE_SCENARIOS_BY_YEAR = {
 #
 # Note this sits well below the EU ETS figures above, which is the expected
 # relationship and was the reason the spec warned against reusing the EU series.
+#
+# WHAT THE LAW ACTUALLY SPECIFIES, established 9 August 2026. For the UK CBAM
+# rate specifically, the ETS price input is defined by SI 2026/809 regulation 3,
+# implementing Step 1 of Finance Act 2026 s.149(3). It is:
+#
+#   "the mean average of all auction clearing prices for UK ETS allowances
+#    during the quarter preceding quarter Q"
+#
+# with a fallback to the most recent quarter in which allowances were auctioned.
+# So the statutory quantity is a QUARTERLY mean of AUCTION CLEARING prices.
+#
+# The GBP 49.41 above is neither: it is an annual mean of UKA December FUTURES
+# SETTLEMENT prices. Futures settlements and auction clearing prices track each
+# other closely, so this is a defensible proxy rather than an error, but it is
+# not the statutory series and the methodology must not imply that it is.
+# Sourcing the real thing is possible - UK ETS auction results are published -
+# and would replace both this anchor and the flat 2027-2030 path in one move.
+# Recorded as an approximation, not a gap in the sources.
 UK_ETS_PRICE_SCENARIOS = {"low": 40.0, "medium": 49.41, "high": 60.0}  # GBP/tCO2e
 UK_ETS_PRICE_2026_OFFICIAL = 49.41
 

@@ -8,4 +8,4 @@ ningbo_felixstowe,ammonia,coal_gasification,2030,medium,416.5,117.41,533.91,6.15
 ningbo_felixstowe,ammonia,green_electrolysis,2030,medium,722.1,15.62,737.72,0.818,2,False
 ningbo_felixstowe,hydrogen,coal_gasification,2030,medium,1180.7,383.53,1564.23,20.09,1,True
 ningbo_felixstowe,hydrogen,blue_ccs,2030,medium,1733.7,119.89,1853.59,6.28,2,False
-ningbo_felixstowe,hydrogen,green_electrolysis,2030,medium,5416.1,44.67,5460.77,2.34,3,False
+ningbo_felixstowe,hydrogen,green_electrolysis,2030,medium,6548.5,44.67,6593.17,2.34,3,False

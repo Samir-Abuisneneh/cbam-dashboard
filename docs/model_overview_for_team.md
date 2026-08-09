@@ -326,7 +326,8 @@ Ammonia is unchanged throughout. Anything quoting a hydrogen result from before
 8 August 2026 is superseded, including the paragraphs immediately below if they have
 not been rewritten.
 
-**Frano has not confirmed this yet.** Treat it as the working basis and state it in your
+**This is a defended choice, not a pending one.** No supervisor ruling was sought and none
+is required, because IR 2025/2620 settles which form the law describes. State it in your
 methodology, because it is not a neutral refinement. Flipping the mechanism does not
 rescale the results, it inverts which corridor the study concludes is cheaper for hydrogen.
 
@@ -484,9 +485,10 @@ switching never pays there.
    official source). The DESNZ series is in **real 2025 prices** while every other price
    in the model is nominal, and it models a standalone UK ETS, so `desnz` and `linked`
    are alternative views of the same uncertainty and must never be combined.
-3. **The EU CBAM benchmark-adjustment question** (§7) — no longer a lookup. The
-   2026-2030 benchmarks are in the model as of 6 August; what remains is a supervisor
-   decision, and after the fertiliser fix it only changes the answer for **hydrogen**.
+3. **The EU CBAM benchmark-adjustment question** (§7) — no longer a lookup and no longer
+   open. The 2026-2030 benchmarks are in the model as of 6 August and the mechanism was
+   settled on 7 August on IR 2025/2620; what remains is presenting it in the methodology.
+   After the fertiliser fix it only changes the answer for **hydrogen**.
 4. **Two production-cost gaps still span separate studies** (Canada hydrogen, China
    ammonia) rather than one internally-consistent source each. Every finding that
    depends on these has already been re-run against an independent IEA cost sourcing as

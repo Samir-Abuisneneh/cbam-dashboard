@@ -249,12 +249,12 @@ CBAM_CSCF_IS_SOURCED = False
 # that "factor_scaled" was by then defended by nothing except being the
 # incumbent: the legal reading, the published cross-check and this project's own
 # validation module all point at the benchmark form (see the evidence block
-# below). IT HAS NOT YET BEEN CONFIRMED BY FRANO. It is recorded here as a
-# deliberate methodological decision rather than a config edit precisely so that
-# it can be raised, defended, or reversed on the record. The methodology chapter
-# (due 12 August 2026) must state which form was used and why; if Frano rules
-# the other way, flip this constant back and re-run, and the figures below give
-# the size of what changes.
+# below). No supervisor ruling was sought and none is required: IR 2025/2620
+# settles which form the law describes. It is recorded here as a deliberate
+# methodological decision rather than a config edit precisely so that it can be
+# defended on the record. The methodology chapter (due 12 August 2026) must
+# state which form was used and why; the figures below size what the superseded
+# form would give, so the choice stays auditable either way.
 #
 # FIGURES BELOW RE-DERIVED 7 August 2026, after the fertiliser mark-up fix.
 # That fix cut ammonia's default-value mark-up from 30% to the legislated 1%,

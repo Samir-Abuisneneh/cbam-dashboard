@@ -331,8 +331,8 @@ remaining, which is `1 - cbam_factor(year)` in this model's terms, so the factor
 confirmed wrong rather than merely disfavoured, whatever practitioner guidance describes.
 
 What remains for the write-up is presentation, not correctness. The switch changes headline findings
-rather than rescaling them, as section 6 shows, and it has not been confirmed by the supervisor. The
-methodology chapter has to state which form was used and why, and report both.
+rather than rescaling them, as section 6 shows, and it was settled on the law rather than by a
+supervisor ruling. The methodology chapter has to state which form was used and why, and report both.
 `outputs.cbam_mechanism_comparison` below sizes exactly what changes.
 """),
     code("""
@@ -428,12 +428,12 @@ reconciles once the benchmark form of the obligation is used.
 1. **Production, conversion and freight cost per tonne.** Production cost is now real; conversion and
    freight still have no owner, and they are the only thing standing between compliance cost and full
    delivered cost.
-2. **Supervisor confirmation of the EU CBAM free-allocation mechanism.** The model moved to
-   `benchmark_shielded` on 7 August 2026 and section 8 gives the reasoning, but that is Samir's
-   decision and Frano has not yet ruled on it. It is the one open item that changes a headline
-   result rather than adding one. Both forms stay implemented so the decision can be reversed by
-   one constant. Note that IR 2025/2620 settles which form the law requires; what is owed is a
-   ruling on how to present it, not on which is correct.
+2. **Presentation of the EU CBAM free-allocation mechanism.** The model moved to
+   `benchmark_shielded` on 7 August 2026 and section 8 gives the reasoning. IR 2025/2620 settles
+   which form the law requires, so this is a defended methodological choice rather than an open
+   question, and no supervisor ruling was sought. Both forms stay implemented so the size of the
+   choice remains visible and reversible by one constant. What is owed is a methodology paragraph
+   presenting it, not a decision.
 3. **Whether IR 2025/2620 has been amended since 29 June 2026.** Its recital 10 requires the CBAM
    benchmarks to be reviewed within one month of the final 2026-2030 EU ETS benchmarks being
    published, with updated values applying to goods imported from 1 January 2027. No amending

@@ -4,10 +4,10 @@ halifax_hamburg,hydrogen,blue_smr_ccs,grey_smr,2030,medium,54.52,54.52,0.0,126.0
 halifax_hamburg,hydrogen,green_electrolysis,grey_smr,2030,medium,338.61,287.96,-50.65,126.0,-168.7,-128.5,not justified,not justified,True,True,wind
 ningbo_felixstowe,ammonia,green_electrolysis,coal_gasification,2030,medium,57.31,27.57,-29.74,57.91,1.0,52.4,marginal,justified,False,True,wind
 ningbo_felixstowe,hydrogen,blue_ccs,coal_gasification,2030,medium,40.04,25.42,-14.62,57.91,30.9,56.1,justified,justified,True,True,wind
-ningbo_felixstowe,hydrogen,green_electrolysis,coal_gasification,2030,medium,238.61,98.91,-139.7,57.91,-312.0,-70.8,not justified,not justified,True,True,wind
+ningbo_felixstowe,hydrogen,green_electrolysis,coal_gasification,2030,medium,302.41,98.91,-203.5,57.91,-422.2,-70.8,not justified,not justified,True,True,wind
 halifax_hamburg,ammonia,green_electrolysis,grey_smr,2030,medium,308.33,595.64,287.31,126.0,-144.7,-372.7,not justified,not justified,True,True,solar
 halifax_hamburg,hydrogen,blue_smr_ccs,grey_smr,2030,medium,54.52,54.52,0.0,126.0,56.7,56.7,justified,justified,True,True,solar
 halifax_hamburg,hydrogen,green_electrolysis,grey_smr,2030,medium,338.61,570.97,232.36,126.0,-168.7,-353.2,not justified,not justified,True,True,solar
 ningbo_felixstowe,ammonia,green_electrolysis,coal_gasification,2030,medium,57.31,56.21,-1.1,57.91,1.0,2.9,marginal,marginal,True,True,solar
 ningbo_felixstowe,hydrogen,blue_ccs,coal_gasification,2030,medium,40.04,25.42,-14.62,57.91,30.9,56.1,justified,justified,True,True,solar
-ningbo_felixstowe,hydrogen,green_electrolysis,coal_gasification,2030,medium,238.61,143.41,-95.2,57.91,-312.0,-147.6,not justified,not justified,True,True,solar
+ningbo_felixstowe,hydrogen,green_electrolysis,coal_gasification,2030,medium,302.41,143.41,-159.0,57.91,-422.2,-147.6,not justified,not justified,True,True,solar

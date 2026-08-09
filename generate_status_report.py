@@ -28,8 +28,9 @@ likely to be quoted by mistake:
     lower figure" of Riya's two conflicting sheets (USD 4.63/kg). That was
     reversed by the source-consistency switch of 4 August 2026: the whole China
     hydrogen row now comes from one study (S0360319925010602), which puts green
-    at USD 5.72-6.62/kg, and `data_io` uses that midpoint. The higher figure is
-    in force, not the lower one.
+    at USD 5.72-9.20/kg, and `data_io` uses that midpoint. The higher figure is
+    in force, not the lower one. (The upper bound was reconciled against Riya's
+    current sheet on 9 August 2026; the 4 August transcription read 6.62.)
   - The headline "roughly 37 times lower" for 2026 hydrogen is superseded twice
     over: by the input corrections above, and by the move to the
     `benchmark_shielded` CBAM mechanism on 7 August 2026. It also compared EUR
@@ -271,10 +272,12 @@ table_data = [
     [Paragraph("Production cost", cell),
      Paragraph("<b>Resolved</b>", cell),
      Paragraph("From Riya, 4 August 2026, covering every modelled pathway on both "
-               "corridors. Converted from USD at the 23 July 2026 ECB rate. Her two "
-               "sheets disagree on China green hydrogen (4.63 vs 5.72-6.62 USD/kg); "
-               "the lower figure is used and the choice needs stating in the "
-               "methodology.", cell)],
+               "corridors, reconciled against her current sheet on 9 August 2026. "
+               "Converted from USD at the 23 July 2026 ECB rate. Her two sheets "
+               "disagreed on China green hydrogen (4.63 vs 5.72-9.20 USD/kg); the "
+               "source-consistency switch takes the latter, so the whole China "
+               "hydrogen row sits on one study, and that choice needs stating in "
+               "the methodology.", cell)],
     [Paragraph("Conversion and shipping cost", cell),
      Paragraph("<b>Not sourced, no owner</b>", cell),
      Paragraph("See Section 4. Both are invariant to production pathway, so they "

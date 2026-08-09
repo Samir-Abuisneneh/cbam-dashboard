@@ -58,6 +58,18 @@ embedded figure on the Ningbo-Felixstowe corridor from 2027, which overstates
 UK CBAM liability in 2027 and 2028, precisely the two years the lock-in
 reversal turns on.
 
+**Cite this to policy, not to the Act.** Checked against primary text on
+9 August 2026: the Finance Act 2026 is scope-*permissive*, not restrictive.
+Section 148(1) defines emissions embodied in a CBAM good broadly as those
+"attributable to the production of a CBAM good", 148(3) extends the regulations
+to emissions from materials used in production, and 149(7)(c) expressly
+contemplates heating and cooling consumed during regulated activities. The
+Treasury narrows this by regulation under 148(2). So direct-only is a
+launch-scope policy position delivered through secondary legislation and the
+government's published scope papers, not a limitation written into the primary
+legislation. Attributing it to the Act would be wrong and is checkable in one
+search.
+
 An earlier version of this note said the effect was "pathway-dependent and
 probably large", reasoning that Chinese green electrolysis is mostly grid
 electricity. **That was wrong for the study's primary scenario**, and the

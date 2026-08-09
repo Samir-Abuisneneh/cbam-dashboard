@@ -538,6 +538,24 @@ hydrogen boil-off losses are not modelled.
    from 2027 on `linked`. Every hydrogen corridor claim must name its path, and
    note that `linked` is explicitly not law.
 
+   **What the law specifies, established 9 August 2026.** For the UK CBAM rate
+   the ETS price input is not a free choice. SI 2026/809 regulation 3,
+   implementing Finance Act 2026 s.149(3) Step 1, defines it as "the mean
+   average of all auction clearing prices for UK ETS allowances during the
+   quarter preceding quarter Q", falling back to the most recent quarter that
+   held an auction. The statutory quantity is therefore a **quarterly mean of
+   auction clearing prices**.
+
+   GBP 49.41 is neither quarterly nor auction-derived: it is an annual mean of
+   UKA December futures settlement prices. The two track each other closely, so
+   this is a defensible approximation rather than a wrong number, but the
+   methodology must describe it as an approximation of the statutory series
+   rather than as the series itself. UK ETS auction results are published, so
+   sourcing the real quarterly path is achievable and would close both this and
+   the flat 2027-2030 assumption in one step. This reframes the item: it is no
+   longer "only one year could be sourced", it is "the statutory basis is known
+   and we approximate it".
+
 **Resolved 4 August 2026.** China hydrogen now comes from one study.
 `green_electrolysis`, `coal_gasification` and `blue_ccs` all take both emissions
 and production cost from S0360319925010602, agreed with Riya. Previously the row

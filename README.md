@@ -249,9 +249,13 @@ a defaulted argument would silently restore a bug whose output looks plausible.
 
 Two consequences. **The lock-in finding strengthens**: ammonia's EU cost falls,
 so the 2026 commitment to the UK corridor looks worse, with regret rising from
-95% to 146% and the breakeven from GBP 75.36 to GBP 91.60. **The open CBAM
-mechanism decision narrows**: both mechanisms now agree on ammonia's corridor
-ordering, and only hydrogen still inverts.
+95% to 146% and the breakeven from GBP 75.36 to GBP 91.60. Those four figures
+measure the fertiliser fix alone under the `factor_scaled` mechanism then in
+force, and the benchmark correction of 8 August superseded all of them; current
+ammonia figures are regret 33.45% / breakeven GBP 38.72 on `truncate` and
+26.91% / GBP 76.99 on `hold_final`. **The CBAM mechanism choice narrows**: both
+mechanisms now agree on ammonia's corridor ordering, and only hydrogen still
+inverts.
 
 ### Policy timeline is now machine readable
 
@@ -370,9 +374,10 @@ half of the argument and the asset-specificity half meeting in one number.
 No switching cost is claimed. The finding is the **threshold**, and the
 discussion argues about which side of it real corridor-specific sunk costs fall.
 
-This result remains conditional on the CBAM mechanism choice, which is Samir's
-decision of 7 August 2026 and is not yet confirmed by the supervisor. See
-unresolved item 1 below, and state that conditionality in the write-up.
+This result rests on the CBAM mechanism choice, which is Samir's decision of
+7 August 2026, taken without a supervisor ruling and defended on the law rather
+than deferred. See unresolved item 1 below and present it in the methodology as
+a defended choice, not as a pending question.
 
 ### A caveat to label in the write-up
 
@@ -387,9 +392,10 @@ hydrogen boil-off losses are not modelled.
 
 ## What is still unresolved
 
-1. **The EU CBAM mechanism choice is not confirmed by the supervisor.** This is
-   the only genuinely open item on the CBAM calculation, and everything
-   downstream rests on it.
+1. **The EU CBAM mechanism is a defended choice, not an open question.** No
+   supervisor ruling was sought and none is required; the choice is settled on
+   the law and carried in the methodology. Everything downstream rests on it,
+   which is why the reasoning is recorded here in full.
 
    The model computes the obligation as
    `max(0, embedded - CBAM_benchmark x (1 - CBAM_factor) x CSCF)`, netting off
@@ -401,10 +407,9 @@ hydrogen boil-off losses are not modelled.
    stay implemented and `analysis.outputs.cbam_mechanism_comparison` reports
    them side by side, so the size of the choice stays visible.
 
-   What is open is not which form is correct but how to present it. The switch
-   was Samir's decision of 7 August 2026 and it changes a headline finding, so
-   it belongs in the methodology as a defended choice rather than in a
-   changelog. Frano has not confirmed it.
+   What remains is presentation, not correctness. The switch was Samir's
+   decision of 7 August 2026 and it changes a headline finding, so it belongs in
+   the methodology as a defended choice rather than in a changelog.
 
    **A material error was found and fixed on 8 August 2026.** Until that date
    the model netted off the **EU ETS product benchmark**. That is the wrong
@@ -446,17 +451,49 @@ hydrogen boil-off losses are not modelled.
 2. **Two production-cost gaps are still built from separate studies, but the
    results do not depend on it.** Canada hydrogen spans three papers (grey
    S0957582024004336, blue S036031992206236X, green S0960148125012959) and China
-   ammonia spans two (Nature s43247-025-02056-z, S0360319922016019). Riya
-   confirmed on 4 August 2026 that no single study covers the Canadian pathways,
-   so unlike China hydrogen this cannot be fixed by swapping papers.
+   ammonia spans two (Nature s43247-025-02056-z, S0360319922016019).
 
-   Rather than leave it as a bare disclaimer, `analysis.outputs
+   **Why this cannot be fixed the way China hydrogen was.** One study, Ayub et
+   al. (2024) (S0957582024004336, already the primary grey source), does report
+   costs for all three Canadian pathways under a single framework, so the
+   consolidation looks available at first glance. It is not, for two reasons
+   checked against the paper on 9 August 2026:
+
+   - **Its emissions side is not physically valid.** Table 2 uses 15 kg CO2 per
+     kg of coal and 9 per kg of natural gas. Stoichiometry caps coal near 2.6
+     and methane at 2.75, so those factors exceed what mass balance allows.
+     They propagate into Table 1's throughputs to give 107.27 kg CO2/kg H2 for
+     coal gasification, against the ~20 reported elsewhere and the 20.09 this
+     model uses. Recomputed on a valid factor the same arithmetic yields about
+     18.4, which is consistent with the literature. So unlike
+     S0360319925010602, which supplied China with credible emissions *and*
+     costs, this paper cannot supply both.
+   - **Its green cost is not route-appropriate.** Equation 12 prices
+     electrolysis at Table 4's regional electricity price, sourced from
+     Statista household tariffs (Canada, 0.192 $/kWh). That is grid
+     electrolysis at retail rates, not the wind-driven electrolysis
+     Halifax-Hamburg actually represents, which is why it returns 10.80 $/kg
+     against the wind-specific study's ~4.11. The paper also contradicts
+     itself here: section 4.2.3 states 18.80 for Canada where Table 7 gives
+     10.80.
+
+   Ayub is therefore retained as a **cost** cross-check only, which is how
+   `data_io.ayub_production_costs` uses it. Its grey figure agrees with the
+   primary almost exactly (USD 700/t against 700/t). Its green figure does not
+   constitute a like-for-like check, since it compares a wind-driven cost to a
+   retail-grid one, and the resulting gap is a definitional difference rather
+   than evidence of cost uncertainty. Say that wherever the comparison is
+   reported.
+
+   Rather than leave the gap as a bare disclaimer, `analysis.outputs
    .abatement_source_robustness` recomputes every abatement result on the IEA
    cost sheet, which prices all pathways on both corridors under one
    methodology, and reports the two side by side
    (`outputs/abatement_source_robustness.csv`). **Every verdict holds its sign
    under both sourcings, and under both the IEA onshore wind and solar PV green
-   routes.** A test fails if that ever stops being true. The IEA figures are not
+   routes.** A test fails if that ever stops being true. Every verdict also
+   holds under the Ayub costs, checked 9 August 2026, so there are three
+   independent sourcings in agreement rather than two. The IEA figures are not
    used as primary because they are regional (North America, not Canada) and are
    an agency benchmark rather than a peer-reviewed country-specific study, so
    promoting them would trade a sourcing problem for a geography problem.
@@ -509,7 +546,9 @@ blue from S0959652622021151 (7.91, now 6.28), and all three costs from
 S097308262400214X. This moves blue hydrogen's abatement cost from EUR 8.3 to
 EUR 40.0/tCO2 and green's from EUR 106.6 to EUR 238.6. Both verdicts survive,
 blue still beats the UK carbon price and green still does not, but the EUR 8
-figure was an artefact of mixing studies and must not be published. An earlier
+figure was an artefact of mixing studies and must not be published. (Green's
+figure moved again on 9 August, to EUR 302.41, when this cell was reconciled
+against Riya's current sheet. The verdict is unchanged.) An earlier
 proposal in this repo to switch blue to the 13.99 with-CCS figure is superseded:
 it would have paired grey and blue while leaving green on a third paper.
 

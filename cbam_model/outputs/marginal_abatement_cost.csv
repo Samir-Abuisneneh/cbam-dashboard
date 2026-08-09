@@ -4,4 +4,4 @@ halifax_hamburg,hydrogen,blue_smr_ccs,grey_smr,2030,medium,438.9,8.05,54.52,126.
 halifax_hamburg,hydrogen,green_electrolysis,grey_smr,2030,medium,2993.3,8.84,338.61,126.0,-168.7,not justified,False
 ningbo_felixstowe,ammonia,green_electrolysis,coal_gasification,2030,medium,305.6,5.332,57.31,57.91,1.0,marginal,True
 ningbo_felixstowe,hydrogen,blue_ccs,coal_gasification,2030,medium,553.0,13.81,40.04,57.91,30.9,justified,True
-ningbo_felixstowe,hydrogen,green_electrolysis,coal_gasification,2030,medium,4235.4,17.75,238.61,57.91,-312.0,not justified,False
+ningbo_felixstowe,hydrogen,green_electrolysis,coal_gasification,2030,medium,5367.8,17.75,302.41,57.91,-422.2,not justified,False

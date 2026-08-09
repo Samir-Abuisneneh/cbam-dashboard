@@ -8,9 +8,12 @@ so this is a ten-day plan.
 > 6 August 2026 and are deliberately not kept current, so the plan can be read
 > against the state it was written for. Two things have moved since and matter
 > for anything in this plan: the EU CBAM mechanism was switched to
-> `benchmark_shielded` on 7 August 2026 (Samir's decision, not yet confirmed by
-> Frano), which inverts the hydrogen corridor ordering; and the test suite has
-> grown past 200. Use `README.md` and the test suite for current state.
+> `benchmark_shielded` on 7 August 2026 (Samir's decision, settled on the law
+> rather than by a supervisor ruling), and the benchmark itself was corrected on
+> 8 August, which between them removed hydrogen's corridor crossover, its
+> lock-in reversal and the competitiveness divergence; and the test suite has
+> grown past 200. Use `README.md`, `docs/findings_2026-08-08.md` and the test
+> suite for current state.
 
 ## Where the code actually stands
 

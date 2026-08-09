@@ -115,11 +115,19 @@ Two consequences worth knowing:
    committing to the UK corridor in 2026 looks worse, not better. Lock-in
    regret rises from 95% to 146%, and the breakeven switching cost from
    GBP 75.36 to GBP 91.60.
-2. **The open CBAM mechanism decision narrows to hydrogen.** Before the fix,
+
+   **Those four figures describe the fertiliser fix alone, measured under the
+   `factor_scaled` mechanism in force on 7 August 2026, and none of them is
+   quotable now.** The benchmark correction of 8 August superseded them. Current
+   ammonia figures are regret 33.45% and breakeven GBP 38.72 on `truncate`,
+   26.91% and GBP 76.99 on `hold_final`. The direction of the fertiliser fix is
+   unchanged; only the magnitudes moved.
+2. **The CBAM mechanism decision narrows to hydrogen.** Before the fix,
    switching mechanism inverted the corridor ordering for both products. With
    ammonia's mark-up corrected, both mechanisms now agree on ammonia and only
-   hydrogen still flips. Frano's decision still has to be taken, but it now
-   affects one product rather than two.
+   hydrogen still flips. The choice was settled on 7 August 2026 on the law
+   rather than by a supervisor ruling, and it affects one product rather than
+   two.
 
 ## Events added that were not in Alex's version
 

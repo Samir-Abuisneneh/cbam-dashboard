@@ -113,7 +113,7 @@ def _placeholder_emissions() -> pd.DataFrame:
     Int. J. Hydrogen Energy 2025), which publishes green, grey and blue with
     both emissions and production cost under one framework:
 
-      - green_electrolysis  2.34 (midpoint 1.51-3.17), USD 5.72-6.62/kg
+      - green_electrolysis  2.34 (midpoint 1.51-3.17), USD 5.72-9.20/kg
       - coal_gasification  20.09 ("Fossil-based hydrogen"), USD 1.24-1.45/kg
       - blue_ccs            6.28 ("Coal hydrogen with CCS"), USD 1.87-2.08/kg
 
@@ -143,8 +143,8 @@ def _placeholder_emissions() -> pd.DataFrame:
 
     This also resolves what was previously flagged here as UNRECONCILED: Riya's
     two sheets disagreed on China green hydrogen production cost, USD 4.63/kg
-    (ALK electrolysis, S097308262400214X) against USD 5.72-6.62/kg (Wind/PV,
-    S0360319925010602), 24-43% apart on the largest cost term for the corridor.
+    (ALK electrolysis, S097308262400214X) against USD 5.72-9.20/kg (Wind/PV,
+    S0360319925010602), a wide gap on the largest cost term for the corridor.
     Taking the whole row from one paper picks the latter and removes the
     conflict rather than leaving it to be stated in the methodology.
 
@@ -333,7 +333,14 @@ def _placeholder_commercial() -> pd.DataFrame:
     - NF hydrogen blue_ccs: China blue, coal + CCS, USD 1,870-2,080/t
       (midpoint 1,975).
     - NF hydrogen green_electrolysis: China green, wind/PV electrolysis, USD
-      5,720-6,620/t (midpoint 6,170).
+      5,720-9,200/t (midpoint 7,460). UPDATED 9 August 2026 to Riya's current
+      assumptions table. The 4 August transcription of this cell read
+      5,720-6,620 (midpoint 6,170); whether the sheet was revised afterwards or
+      the original copy was wrong could not be established, because the raw
+      delivery was never retained. Riya's table is the owner of this figure, so
+      it wins. No verdict, ranking or breakeven changes either way; the only
+      effect is on China green hydrogen's abatement cost, EUR 238.61 -> 302.41
+      per tCO2 at 2030 medium, "not justified" under both.
 
     The three China hydrogen figures above come from the emissions sheet's own
     "Production Cost Mentioned" column (S0360319925010602), not the
@@ -367,7 +374,7 @@ def _placeholder_commercial() -> pd.DataFrame:
         ("hydrogen", "blue_smr_ccs"): (1100.0 + 1300.0) / 2,
         ("hydrogen", "blue_ccs"): (1870.0 + 2080.0) / 2,
         ("hydrogen", "green_electrolysis_hh"): (3950.0 + 4270.0) / 2,
-        ("hydrogen", "green_electrolysis_nf"): (5720.0 + 6620.0) / 2,
+        ("hydrogen", "green_electrolysis_nf"): (5720.0 + 9200.0) / 2,
         ("hydrogen", "coal_gasification"): (1240.0 + 1450.0) / 2,
         ("ammonia", "grey_smr"): 509.0,
         ("ammonia", "green_electrolysis_hh"): 1057.0,

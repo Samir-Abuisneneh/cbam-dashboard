@@ -695,7 +695,11 @@ RIYA_PRODUCTION_COST_USD_PER_TONNE = {
     (rc.HALIFAX_HAMBURG, "hydrogen", "green_electrolysis"): 4110.0,
     (rc.NINGBO_FELIXSTOWE, "hydrogen", "coal_gasification"): 1345.0,
     (rc.NINGBO_FELIXSTOWE, "hydrogen", "blue_ccs"): 1975.0,
-    (rc.NINGBO_FELIXSTOWE, "hydrogen", "green_electrolysis"): 6170.0,
+    # 9 Aug 2026: 6170.0 -> 7460.0. Riya's table gives this cell as USD
+    # 5.72-9.20/kg; the 4 Aug transcription read 5.72-6.62. The raw delivery
+    # was not retained so the discrepancy could not be resolved from this side,
+    # and her table owns the figure. No verdict or ranking changes.
+    (rc.NINGBO_FELIXSTOWE, "hydrogen", "green_electrolysis"): 7460.0,
     (rc.HALIFAX_HAMBURG, "ammonia", "grey_smr"): 509.0,
     (rc.HALIFAX_HAMBURG, "ammonia", "green_electrolysis"): 1057.0,
     (rc.NINGBO_FELIXSTOWE, "ammonia", "coal_gasification"): 474.5,
@@ -1779,9 +1783,9 @@ def test_default_cbam_mechanism_is_the_benchmark_form():
     This test previously pinned "factor_scaled" and was named
     `test_default_cbam_mechanism_is_unchanged`. The default moved because the
     2026-2030 benchmarks landed on 6 August 2026 and removed the only reason
-    the factor-scaled form was the incumbent. The switch is Samir's call and is
-    NOT yet confirmed by Frano, so this test is the record of what was chosen,
-    not a claim that the question is closed. If it is reversed, flip
+    the factor-scaled form was the incumbent. The switch is Samir's call, taken
+    without a supervisor ruling and settled on IR 2025/2620, so this test is the
+    record of a defended choice. If it is ever reversed, flip
     EU_CBAM_DEFAULT_MECHANISM back and this test with it.
 
     See the long comment above the constant for the evidence on each side.

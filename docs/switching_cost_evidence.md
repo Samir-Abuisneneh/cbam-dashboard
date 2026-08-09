@@ -8,16 +8,25 @@ actually have to sink to move corridor, so the discussion can say which side of
 the breakeven reality falls on.
 
 Reminder of what has to be beaten, from `outputs/corridor_lock_in.csv`, under
-the current `factor_scaled` default:
+the `benchmark_shielded` mechanism, ammonia at decision year 2026, medium
+prices, 8% real:
 
-| Product | Breakeven switching cost |
-|---|---|
-| Ammonia | GBP 75.36 per tonne of annual contracted volume |
-| Hydrogen | GBP 491.95 per tonne of annual contracted volume |
+| Beyond-horizon treatment | Breakeven switching cost | Lock-in regret |
+|---|---|---|
+| `truncate` | GBP 38.72 per tonne of annual contracted volume | 33.45% |
+| `hold_final` | GBP 76.99 per tonne of annual contracted volume | 26.91% |
+
+**Ammonia is the only product with a threshold to argue about.** Hydrogen's
+myopic and committed corridor choices agree in every year, so it has no
+reversal and no breakeven, and nothing in this file bears on it. An earlier
+version of this table quoted GBP 75.36 for ammonia and GBP 491.95 for
+hydrogen; both came from the superseded `factor_scaled` mechanism and neither
+is quotable.
 
 Units matter here. These are per tonne of **annual** throughput, so a terminal
-handling 600,000 t/yr would justify a sunk cost of roughly GBP 45m on the
-ammonia figure. That is the comparison to make, not a per-shipment one.
+handling 600,000 t/yr would justify a sunk cost of roughly GBP 23m on the
+`truncate` figure and GBP 46m on `hold_final`. That is the comparison to make,
+not a per-shipment one.
 
 ## 1. Terminal concessions run about 15 years
 
@@ -68,11 +77,13 @@ Rotterdam ammonia import terminal from roughly 400,000 t/yr to 1.2 Mt/yr.
 Sources: gasworld, Ammonia Energy Association, Port of Rotterdam.
 
 Why it matters: it lets the breakeven be converted into something arguable. At
-600,000 t/yr the ammonia breakeven of GBP 75.36/t of annual volume corresponds
-to roughly GBP 45m of justified sunk cost. A terminal costing an order of
-magnitude more than that is decisive evidence of lock-in. Note the capex figure
-is a whole-terminal cost and a switching firm may only need incremental berth
-or storage access, so the honest framing is a range, not a point.
+600,000 t/yr the ammonia breakeven corresponds to roughly GBP 23m of justified
+sunk cost on `truncate` and GBP 46m on `hold_final`. A terminal costing an
+order of magnitude more than that is decisive evidence of lock-in, and the
+US$1,160m reference case is two orders above the `truncate` figure. Note the
+capex figure is a whole-terminal cost and a switching firm may only need
+incremental berth or storage access, so the honest framing is a range, not a
+point.
 
 ## 4. The LNG precedent
 

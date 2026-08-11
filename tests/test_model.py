@@ -2620,3 +2620,81 @@ def test_every_uk_ets_scope_variant_has_its_own_label():
         "closed in January 2026 with no legislative decision, and this variant "
         "roughly doubles the UK corridor's maritime cost where it applies"
     )
+
+
+def test_corridor_ordering_by_price_path_stacks_all_three_variants():
+    """The three-path ordering must be readable from one artefact.
+
+    `write_all` takes a single compliance frame, so every corridor artefact in
+    the 8 August result freeze was written on `frozen` alone. The finding that
+    hydrogen's ordering reverses on `linked` was pinned by
+    `test_only_ammonias_corridor_ordering_survives_all_three_uk_price_paths`
+    but was not reproducible from `cbam_model/outputs/`, which is the wrong way
+    round: the frozen set is what the results chapter cites.
+
+    This pins the stacked artefact to the same expectation as that test, so the
+    two cannot drift apart.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
+
+    by_variant = {
+        v: runner.run_compliance_matrix(emissions, uk_price_variant=v)
+        for v in rc.UK_ETS_PRICE_VARIANTS
+    }
+    stacked = outputs.corridor_ordering_by_price_path(by_variant)
+
+    assert set(stacked["uk_price_variant"].unique()) == set(rc.UK_ETS_PRICE_VARIANTS)
+
+    expected = {
+        ("frozen", "ammonia"): [nf, hh, hh, hh, hh],
+        ("linked", "ammonia"): [nf, hh, hh, hh, hh],
+        ("desnz", "ammonia"): [nf, hh, hh, hh, hh],
+        ("frozen", "hydrogen"): [nf, nf, nf, nf, nf],
+        ("linked", "hydrogen"): [nf, hh, hh, hh, hh],
+        ("desnz", "hydrogen"): [nf, nf, nf, nf, nf],
+    }
+    for (variant, product), want in expected.items():
+        rows = stacked[
+            (stacked["uk_price_variant"] == variant) & (stacked["product"] == product)
+        ].sort_values("year")
+        assert list(rows["cheaper_corridor"]) == want, (
+            f"{product} on the {variant} path should read {want}, "
+            f"got {list(rows['cheaper_corridor'])}"
+        )
+
+
+def test_by_price_path_artefacts_carry_the_not_law_caption():
+    """The `linked` caveat has to travel inside the file, not beside it.
+
+    A reader quoting hydrogen's Halifax-Hamburg lead is quoting the linkage
+    path, which is a scenario and not law. If that warning lives only in the
+    docs it will be separated from the number the first time someone opens the
+    CSV.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    by_variant = {
+        v: runner.run_compliance_matrix(emissions, uk_price_variant=v)
+        for v in rc.UK_ETS_PRICE_VARIANTS
+    }
+
+    for frame in (
+        outputs.corridor_ordering_by_price_path(by_variant),
+        outputs.corridor_crossover_by_price_path(by_variant),
+    ):
+        linked = frame[frame["uk_price_variant"] == "linked"]
+        assert len(linked)
+        assert linked["uk_price_variant_label"].str.contains("NOT law").all(), (
+            "the linked rows must carry their own not-law caption"
+        )
+
+
+def test_corridor_ordering_by_price_path_rejects_an_unknown_variant():
+    """A typo'd key must fail rather than silently write two paths of three."""
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+
+    with pytest.raises(ValueError, match="Unknown UK ETS price variant"):
+        outputs.corridor_ordering_by_price_path(
+            {"frozen": compliance, "desnzz": compliance}
+        )

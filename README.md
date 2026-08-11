@@ -221,6 +221,15 @@ So on hydrogen the corridor conclusion rests entirely on the UK price
 assumption, and every hydrogen corridor claim has to name the path it is on.
 The linkage path is explicitly not law.
 
+Both tables above come from `outputs/corridor_ordering_by_price_path.csv` and
+`outputs/corridor_crossover_by_price_path.csv`, added 9 August 2026. They exist
+because `write_all` builds every other corridor artefact from a single
+compliance frame, so the whole 8 August result freeze went out on `frozen`
+alone and this section could only be checked by re-running the model three
+times. Pass `compliance_by_variant` to `write_all` to regenerate them. The
+`uk_price_variant_label` column carries the not-law caption on `linked` into
+the data itself, so it cannot be separated from the number.
+
 Two superseded versions of this section exist and must not be requoted. Under
 `factor_scaled` all three paths agreed on both products, and that was claimed as
 a settled robustness result. Under `benchmark_shielded` with the EU ETS

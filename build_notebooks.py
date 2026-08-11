@@ -400,8 +400,17 @@ sourced), so a UK pathway showing no breakeven year is an artefact of that, not 
 ## 9. Outputs
 """),
     code("""
+# One compliance matrix per UK price path, so the corridor ordering is
+# reproducible from the outputs rather than only from re-running the model.
+# Everything else below is written on the primary `frozen` scenario.
+compliance_by_variant = {
+    v: runner.run_compliance_matrix(emissions, uk_price_variant=v)
+    for v in rc.UK_ETS_PRICE_VARIANTS
+}
+
 written = outputs.write_all(maritime, cbam_results, sweep, ranked, compliance,
-                            emissions=emissions, commercial=commercial)
+                            emissions=emissions, commercial=commercial,
+                            compliance_by_variant=compliance_by_variant)
 for name in written:
     print(f"cbam_model/outputs/{name}")
 """),

@@ -681,6 +681,85 @@ def corridor_crossover_year(
 
 
 # ---------------------------------------------------------------------------
+# Corridor ordering across all three UK price paths. Added 9 August 2026.
+# ---------------------------------------------------------------------------
+# `write_all` takes one `compliance` frame, so the two functions above write
+# one price path only, and the frozen result set went out carrying "frozen".
+# That left the outputs unable to support the caveat that travels with every
+# hydrogen corridor claim: the ordering holds on `frozen` and `desnz` and
+# reverses on `linked`, so a claim is meaningless without its path named. The
+# finding was reproducible by re-running the model three times and not from the
+# artefacts, which is the wrong way round for a frozen result set.
+
+
+def _stack_by_price_path(fn, compliance_by_variant: dict, **kwargs) -> pd.DataFrame:
+    """Run a single-variant output function once per price path and stack.
+
+    Each frame is filtered with *its own* variant. That is the whole point:
+    `_base_case_mask` reads the `uk_price_variant` column, so filtering a
+    "desnz" frame as "frozen" returns nothing and reads as "no data" rather
+    than as a mismatch.
+    """
+    unknown = set(compliance_by_variant) - set(rc.UK_ETS_PRICE_VARIANTS)
+    if unknown:
+        raise ValueError(
+            f"Unknown UK ETS price variant(s) {sorted(unknown)}. "
+            f"Expected keys from {rc.UK_ETS_PRICE_VARIANTS}."
+        )
+
+    frames = []
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        compliance = compliance_by_variant.get(variant)
+        if compliance is None or compliance.empty:
+            continue
+        frame = fn(compliance, uk_price_variant=variant, **kwargs)
+        if frame.empty:
+            continue
+        frame = frame.copy()
+        frame["uk_price_variant"] = variant
+        frame["uk_price_variant_label"] = scenarios.UK_PRICE_VARIANT_LABELS[variant]
+        frames.append(frame)
+
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True)
+
+
+def corridor_ordering_by_price_path(
+    compliance_by_variant: dict,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+) -> pd.DataFrame:
+    """`corridor_cost_comparison` stacked across every UK price path.
+
+    Keys are variant names from `rc.UK_ETS_PRICE_VARIANTS`; values are
+    compliance frames built with that variant. The label column carries the
+    not-law warning on `linked` into the artefact itself, so the caveat cannot
+    be separated from the number.
+    """
+    return _stack_by_price_path(
+        corridor_cost_comparison,
+        compliance_by_variant,
+        pathway=pathway,
+        price_scenario=price_scenario,
+    )
+
+
+def corridor_crossover_by_price_path(
+    compliance_by_variant: dict,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+) -> pd.DataFrame:
+    """`corridor_crossover_year` stacked across every UK price path."""
+    return _stack_by_price_path(
+        corridor_crossover_year,
+        compliance_by_variant,
+        pathway=pathway,
+        price_scenario=price_scenario,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Lock-in and corridor switching. Added 6 August 2026.
 # ---------------------------------------------------------------------------
 # `corridor_crossover_year` above finds the year the cheaper corridor changes.
@@ -1346,6 +1425,7 @@ def write_all(
     emissions: pd.DataFrame = None,
     commercial: pd.DataFrame = None,
     uk_price_variant: str = "frozen",
+    compliance_by_variant: dict | None = None,
 ):
     """Write every result table to `cbam_model/outputs/`.
 
@@ -1353,6 +1433,14 @@ def write_all(
     frames were built with. It is threaded into every function whose base-case
     filter reads that column; passing a "desnz" frame while this stays on
     "frozen" silently drops every UK row (see `_base_case_mask`).
+
+    `compliance_by_variant` maps each UK price path to a compliance frame built
+    with it, and is what makes the corridor ordering reproducible from the
+    outputs alone. Everything else here is written for the single
+    `uk_price_variant` above, which is correct for the primary scenario but
+    cannot show that hydrogen's ordering reverses on `linked`. Omit it and the
+    two by-price-path artefacts are simply not written, so old callers behave
+    as they did.
     """
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     written = []
@@ -1485,6 +1573,23 @@ def write_all(
                     OUTPUT_DIR / "competitiveness_asymmetry.csv", index=False
                 )
                 written.append("competitiveness_asymmetry.csv")
+
+    # Deliberately outside the `compliance` block above: these are built from
+    # their own per-variant frames, not from the single primary-scenario one.
+    if compliance_by_variant:
+        ordering = corridor_ordering_by_price_path(compliance_by_variant)
+        if len(ordering):
+            ordering.to_csv(
+                OUTPUT_DIR / "corridor_ordering_by_price_path.csv", index=False
+            )
+            written.append("corridor_ordering_by_price_path.csv")
+
+        crossover_paths = corridor_crossover_by_price_path(compliance_by_variant)
+        if len(crossover_paths):
+            crossover_paths.to_csv(
+                OUTPUT_DIR / "corridor_crossover_by_price_path.csv", index=False
+            )
+            written.append("corridor_crossover_by_price_path.csv")
 
     maritime.to_csv(OUTPUT_DIR / "maritime_cost_per_voyage.csv", index=False)
     written.append("maritime_cost_per_voyage.csv")

@@ -4,15 +4,30 @@
 does with the inputs each of you has supplied, so each of you can write the dissertation
 section you own with an accurate picture of how it fits together.*
 
-*Revised 7 August 2026. Unlike the dated `findings_*.md` notes, this document is meant to
-track the current model, so it is updated in place rather than left as a snapshot. Three
-things changed since the 5 August version and all three affect what you write:*
+*Revised 12 August 2026. Unlike the dated `findings_*.md` notes, this document is meant to
+track the current model, so it is updated in place rather than left as a snapshot.*
+
+***Read this before you write anything with an EU CBAM number in it.*** *The EU CBAM
+formula changed on 7 August and the benchmark it uses was corrected on 8 August. This
+document still printed the old formula until 12 August. What that means for each of you:*
+
+- ***The EU obligation is a benchmark netting, not a factor scaling.*** *It is
+  `max(0, emissions − benchmark × (1 − cbam_factor) × CSCF)`, not
+  `emissions × cbam_factor`. The formula block in §3 below is the current one.*
+- ***Every hydrogen EU figure taken from this model before 8 August is wrong,*** *and
+  understated. The model had been shielding hydrogen with the EU ETS benchmark of 7.98
+  instead of the CBAM benchmark of 5.089, which is 56.8% too generous. Ammonia is
+  unaffected, because its two benchmarks coincide at 1.522.*
+- ***Three findings died with that correction*** *and none of them may be requoted:
+  hydrogen's corridor crossover, hydrogen's lock-in reversal, and the result that
+  absolute cost and competitive exposure pointed in opposite directions. See
+  `docs/findings_2026-08-08.md`.*
+
+*Still current from the 7 August revision:*
 
 - ***Ammonia's CBAM default-value mark-up is 1%, not 30%.*** *Any ammonia CBAM or
   compliance figure taken from this model before 7 August is overstated (8.9% in 2026,
   28.7% from 2028) on the EU corridor. Regenerate, do not reuse.*
-- ***The EU CBAM benchmark question is no longer blocked on data,*** *and now only
-  changes the answer for hydrogen. See §7.*
 - ***A third UK carbon price path exists*** *(`desnz`), alongside `frozen` and `linked`.*
 
 ---
@@ -103,13 +118,28 @@ emissions, when it crosses into the EU or UK.
 
 ```
 emissions_used   = embedded_emissions × (1 + markup(year, product))   [only if using a regulatory-default value]
-EU CBAM cost/t   = max(0, emissions_used × cbam_factor(year) × (cert_price − origin_carbon_price))
+chargeable       = max(0, emissions_used − benchmark × (1 − cbam_factor(year)) × CSCF(year))
+EU CBAM cost/t   = max(0, chargeable × (cert_price − origin_carbon_price))
 ```
 
+- The shape of this is the point. The EU does not charge an importer a percentage of
+  their emissions. It charges them on what is left after netting off the free allocation
+  a European producer of the same good would still be receiving. That shield shrinks
+  every year as free allocation is withdrawn, so the importer's bill grows to match.
+- `benchmark` is the **CBAM benchmark** from IR 2025/2620: **ammonia 1.522, hydrogen
+  5.089**, in tCO2e per tonne of product. This is *not* the EU ETS product benchmark.
+  The two coincide for ammonia and differ by 56.8% for hydrogen, where the ETS figure is
+  7.98. Using the ETS figure was the error corrected on 8 August.
+- `CSCF(year)` is the cross-sectoral correction factor. It belongs in the equation, no
+  2026 value has been published, and the model holds it at **1.0 as a flagged
+  assumption** rather than dropping it. The outputs carry the flag.
 - `cbam_factor(year)` is the EU's certificate-surrender phase-in: **2.5% in 2026, rising
-  to 100% by 2034**. (Note: this is *not* the free-allocation share, which is the
-  inverse — confusing the two has inverted the whole result twice already in this
-  project, hence the loud warning comment in the code.)
+  to 100% by 2034**. It enters here as `1 − cbam_factor`, which is the free-allocation
+  share still remaining. (Confusing those two has inverted the whole result twice already
+  in this project, hence the loud warning comment in the code.)
+- The old form, `emissions_used × cbam_factor(year)`, is still implemented as the
+  `factor_scaled` mechanism so the results chapter can show both side by side. It is not
+  the model's answer. Do not quote it.
 - `markup(year, product)` — penalises using the regulatory default instead of a verified
   actual emissions figure. Two things about it, and both were bugs that got fixed rather
   than design choices:

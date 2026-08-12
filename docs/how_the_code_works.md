@@ -35,7 +35,9 @@ jurisdiction.
 
 ## 2. The shape of the code
 
-Roughly 9,700 lines of Python, and the split between the folders is the important part.
+Roughly 6,200 lines of Python in the library itself, with another 2,700 lines of tests
+and 1,000 of dashboard sitting on top of it. The split between the folders is the
+important part.
 
 ```
 cbam_model/
@@ -99,14 +101,21 @@ to the 98% regulatory limit holds 56,142 tonnes of ammonia or 5,828 tonnes of li
 hydrogen. That ratio of roughly nine to one is why hydrogen absorbs so much more
 shipping cost per tonne than ammonia does.
 
-**Write the outputs.** Twenty-eight files land in `cbam_model/outputs/`, covering the
-cost tables, the corridor comparison, the sensitivity ranking and the charts.
+**Write the outputs.** Thirty files land in `cbam_model/outputs/`, twenty-four tables and
+six charts, covering the cost figures, the corridor comparison, the sensitivity ranking
+and the lock-in analysis.
 
 ## 4. One number, start to finish
 
+> **Rewritten 12 August 2026.** This section originally arrived at 54.67 euros per tonne,
+> because it was written on 7 August under the factor-scaled CBAM form, hours before the
+> model switched to the benchmark form and a day before the benchmark itself was
+> corrected. The border-charge block below is the current one. If you have quoted 54.67
+> anywhere, replace it. The maritime half of the example was unaffected and is unchanged.
+
 This is the clearest way to see the whole machine. Take ammonia, Halifax to Hamburg, the
 regulatory default pathway, in 2030, at the medium carbon price. The model returns
-**54.67 euros per tonne**. Here is every step of where that comes from.
+**68.02 euros per tonne**. Here is every step of where that comes from.
 
 **The voyage.** A very large gas carrier covers 2,962 nautical miles at 14.8 knots,
 which is 8.3 days at sea. At that speed it burns 342.8 tonnes of fuel, which emits
@@ -130,34 +139,91 @@ Voyage total: **115,408.03 euros**.
 
 **The border charge, per tonne.** Ammonia's regulatory default is 1.98 tonnes of CO2e
 per tonne of product. Because it is a regulatory default rather than a verified figure,
-a penalty mark-up applies, and for ammonia that mark-up is 1%. In 2030 the European
-scheme charges 48.5% of embedded emissions, with the rest still shielded by free
-allocation. Canada's industrial carbon price for 2030 is worth 71.75 euros per tonne and
-is deducted from the 126.00 euro certificate price.
+a penalty mark-up applies, and for ammonia that mark-up is 1%.
+
+The charge is not simply a percentage of that. What the law does is net off the free
+allocation a European producer of the same good would still be receiving, and charge the
+importer on what is left over. The size of that shield is a benchmark for the good,
+1.522 tonnes of CO2e per tonne of ammonia, multiplied by the share of free allocation
+still remaining, which in 2030 is 51.5%. So the shield shrinks each year as free
+allocation is withdrawn, and the importer's bill grows to match. Canada's industrial
+carbon price for 2030 is worth 71.75 euros per tonne and is deducted from the 126.00 euro
+certificate price, because that carbon has already been paid for once.
 
 ```
-1.98  ×  1.01 mark-up  =  1.9998 tonnes CO2e
-1.9998  ×  0.485       =  0.9699 tonnes chargeable
-0.9699  ×  (126.00 − 71.75)  =  52.62 euros per tonne
+1.98  ×  1.01 mark-up            =  1.9998 tonnes CO2e
+1.522 benchmark × 0.515 × 1.0    =  0.7838 tonnes shielded
+1.9998 − 0.7838                  =  1.2160 tonnes chargeable
+1.2160  ×  (126.00 − 71.75)      =  65.97 euros per tonne
 ```
+
+That last multiplier of 1.0 is the cross-sectoral correction factor. It belongs in the
+equation, no 2026 value has been published, and the model holds it at 1.0 as a flagged
+assumption rather than dropping it.
 
 **The join.** Spread the voyage cost across the cargo.
 
 ```
 115,408.03 euros  ÷  56,142 tonnes  =  2.06 euros per tonne
-52.62  +  2.06  =  54.67 euros per tonne
+65.97  +  2.06  =  68.02 euros per tonne
 ```
 
 Notice the proportions, because they carry a finding. By 2030 the border charge is
-roughly twenty-six times the shipping charge. The maritime side dominates in 2026 and
-is close to irrelevant by 2030, which means any conclusion drawn from a single year is
-really a conclusion about that year's position in the phase-in schedule.
+roughly thirty-two times the shipping charge, where in 2026 it is ten times. The maritime
+side matters early and is close to irrelevant by 2030, which means any conclusion drawn
+from a single year is really a conclusion about that year's position in the phase-in
+schedule.
+
+| Year | Border charge | Shipping | Total |
+|---|---|---|---|
+| 2026 | 10.69 | 1.02 | 11.71 |
+| 2027 | 16.12 | 1.13 | 17.25 |
+| 2028 | 25.58 | 1.24 | 26.83 |
+| 2029 | 42.74 | 1.35 | 44.10 |
+| 2030 | 65.97 | 2.06 | 68.02 |
 
 That 1% mark-up is worth a second look. It was 30% in this model until 7 August, when
 checking the Commission's published default values revealed that fertiliser goods carry
 a flat 1% while everything else ramps to 30%. Ammonia is a fertiliser good for these
 purposes and hydrogen is not. Ammonia figures produced before that date are overstated,
 so regenerate rather than reuse them.
+
+## 4a. The benchmark, and the correction that cost us three findings
+
+The shield in the worked example above is the single most consequential number in the
+model, and until 8 August it was the wrong one.
+
+The model was netting off the **EU ETS product benchmark**. That is a different
+instrument. Implementing Regulation (EU) 2025/2620 defines its own **CBAM benchmark**,
+derived from the ETS benchmarks but not equal to them.
+
+| Good | EU ETS benchmark | CBAM benchmark |
+|---|---|---|
+| Ammonia | 1.522 | 1.522 |
+| Hydrogen | 7.98 | 5.089 |
+
+Ammonia's two figures coincide, which is why every ammonia number in this project
+survived the correction untouched, including the worked example above. Hydrogen's do not.
+Hydrogen was being shielded by 56.8% more than the law allows, so European hydrogen
+liability was understated in every single year, and hydrogen is the product the corridor
+decision turns on.
+
+Three findings died when it was fixed. Hydrogen's corridor crossover, hydrogen's lock-in
+reversal, and the result that absolute cost and competitive exposure pointed in opposite
+directions. All three were artefacts of the over-generous shield. They are recorded as
+dead in `docs/findings_2026-08-08.md` and each is now guarded by a test that fails if it
+ever comes back. None of them may be requoted.
+
+Worth saying plainly, because it is the honest version: the opposed-advice result was the
+most counterintuitive thing this model produced. What replaced it is simpler and more
+defensible, and less interesting.
+
+One thing still to watch. Recital 10 of that Regulation says the benchmarks in force from
+January 2026 rest on *estimated* 2026-2030 ETS benchmarks, and must be revised within a
+month of the final ones appearing, with the revision applying to goods imported from
+1 January 2027. The final ETS benchmarks were published on 29 June 2026 and no amending
+regulation had appeared when this was last checked on 8 August. If one lands, the
+2027-2030 hydrogen benchmark moves and every hydrogen corridor result moves with it.
 
 ## 5. How the code avoids lying to you
 

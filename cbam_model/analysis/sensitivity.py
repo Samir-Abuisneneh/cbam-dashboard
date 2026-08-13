@@ -1,19 +1,39 @@
-"""One-at-a-time sensitivity analysis on the maritime layer.
+"""One-at-a-time sensitivity analysis, on both layers.
 
 Answers the question most likely to come up at viva: which assumption actually
-drives the result. Each parameter is varied while everything else is held
-constant, and the change in per-voyage carbon cost is recorded and ranked.
+drives the result. Each parameter is varied by +/- 20% while everything else is
+held constant, and the change in cost is recorded and ranked by mean absolute
+percentage effect.
 
-This runs on the maritime layer only. That was originally because the CBAM
-layer sat on placeholder emissions, which is no longer true: Riya's figures are
-real for both products and both corridors. Extending the sweep to the CBAM
-layer is now worth doing and is not done here, so the ranking below covers
-voyage parameters only and should not be read as ranking the whole model.
+TWO SWEEPS, AND USE THE RIGHT ONE
+---------------------------------
+`sweep_corridor` / `rank_drivers` vary voyage parameters and measure the effect
+on cost **per voyage**. Maritime layer only.
 
-Limitation to state in the methodology: this is a one-at-a-time sweep, so it
-captures each parameter's individual leverage but not interactions. Carbon price
-and voyage emissions enter multiplicatively, so their joint effect exceeds the
-sum of the two individual effects.
+`sweep_compliance` / `rank_compliance_drivers` vary voyage parameters *and* the
+CBAM inputs (embedded emissions, origin carbon price, cargo tonnage) and measure
+the effect on **compliance cost per tonne of product**, which is the study's
+headline metric. This is the one to quote when ranking drivers of the result.
+
+The docstring here claimed until 12 August 2026 that the CBAM layer sweep was
+not implemented. It has been since the compliance sweep was added, and the
+claim was stale rather than true. It mattered: the maritime layer is roughly 3%
+of 2030 ammonia cost, so a reader who took the old note at face value would
+conclude the sensitivity analysis covered only the part that does not matter.
+It defaults to 2030 rather than 2026 for the same reason, because the CBAM
+factor is 2.5% in 2026 and would understate the emissions inputs.
+
+For the record, the compliance ranking on Halifax-Hamburg ammonia at 2030:
+carbon price 37.1%, embedded emissions 32.1%, origin carbon price 17.3%, then
+FuelEU intensity at 1.9% and everything maritime below that.
+
+LIMITATION TO STATE IN THE METHODOLOGY
+--------------------------------------
+Both sweeps are one-at-a-time, so they capture each parameter's individual
+leverage but not interactions. Carbon price and embedded emissions enter
+multiplicatively, so their joint effect exceeds the sum of the two individual
+effects. A variance-based global method (Sobol, Morris) would capture that and
+is not implemented here.
 """
 
 import pandas as pd

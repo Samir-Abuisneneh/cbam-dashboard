@@ -36,7 +36,7 @@ CSVs or running the notebook. It was originally built as a client-facing tool;
 since the industry partner withdrew on 6 August 2026 it is an internal one,
 used to generate figures for the dissertation and the defence presentation. It calls
 `cbam_model` live, so it can never drift from the tested regulatory logic. It
-does not accept arbitrary routes or ports — only the two corridors already
+does not accept arbitrary routes or ports, only the two corridors already
 built and covered by the test suite. Any remaining placeholder input is flagged
 in the UI; as of Riya's 4 August 2026 delivery that is conversion and shipping
 cost alone, since ammonia emissions and production cost are both real and
@@ -91,7 +91,7 @@ tables.
 10/20/30 percent default-value mark-up to every emissions row in a run, using
 one `using_default_values` flag for the whole batch. The mark-up is only
 supposed to apply to the `cbam_default` pathway, never to literature-sourced
-pathways (green electrolysis, grey SMR, blue SMR+CCS, coal gasification) —
+pathways (green electrolysis, grey SMR, blue SMR+CCS, coal gasification).
 `data_io.py`'s own docstring already said as much, but the code didn't enforce
 it. Fixed so `using_default_values` is now derived per row from
 `pathway == "cbam_default"` unless explicitly overridden.
@@ -99,7 +99,7 @@ it. Fixed so `using_default_values` is now derived per row from
 This changes literature-pathway **EU CBAM** figures (Halifax-Hamburg) by the
 mark-up percentage for that year: about 9% too high in 2026 before the fix,
 growing toward 30% too high from 2028 onward. **UK CBAM figures were never
-affected** — `uk_cbam_cost()` has no mark-up concept at all and never took a
+affected**, `uk_cbam_cost()` has no mark-up concept at all and never took a
 `using_default_values` argument, bug or no bug. `cbam_model/outputs/*.csv` and
 the headline figures below are regenerated under the fix.
 
@@ -146,7 +146,7 @@ That figure is an artefact of the override, not the legislated mechanism, and
 should be reported as such.
 
 In both years and both corridors, the CBAM-default anchor sits **above** the
-literature "high" bracket, not between the two literature brackets — a direct
+literature "high" bracket, not between the two literature brackets, a direct
 consequence of the regulation's deliberate mark-up design, not a modelling
 artefact.
 

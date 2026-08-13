@@ -1,4 +1,4 @@
-# CBAM Corridor Cost Model — Formula Reference
+# CBAM Corridor Cost Model: Formula Reference
 
 This is the complete cost model, one layer at a time, matching the implementation in
 `cbam_model/model/`, `cbam_model/config/regulatory_constants.py` and
@@ -9,7 +9,7 @@ comes from.
 model switched from the factor-scaled obligation to the benchmark-shielded one, and then
 corrected which benchmark it nets off. This file was not updated at the time and printed
 the superseded formula for four days. If you took the EU CBAM formula from here before
-12 August, take it again from section "Layer 1 — CBAM" below or from
+12 August, take it again from section "Layer 1, CBAM" below or from
 `cbam_model/model/cbam.py` directly. Every line citation in this file was also re-checked
 against the code on 12 August.
 
@@ -25,14 +25,14 @@ $$
 \text{Total compliance cost per tonne} = \text{CBAM cost per tonne} + \frac{\text{EU ETS} + \text{FuelEU} + \text{UK ETS (per voyage)}}{\text{cargo tonnes}}
 $$
 
-Only one regime's maritime terms are ever non-zero for a given corridor — EU trips carry
+Only one regime's maritime terms are ever non-zero for a given corridor, EU trips carry
 EU ETS + FuelEU, UK trips carry UK ETS only. EUR and GBP are never converted or combined.
 
 Source: `compliance_cost_per_tonne()`, `cbam_model/model/total_cost.py:247`
 
 ---
 
-## Layer 1 — CBAM (border tax on the fuel's embedded emissions)
+## Layer 1: CBAM (border tax on the fuel's embedded emissions)
 
 ### EU
 
@@ -62,7 +62,7 @@ $$
 | $\text{BM}_g$ | **CBAM benchmark**, IR 2025/2620 Annex point 5.3. Hydrogen **5.089**, ammonia **1.522**, both tCO2e per tonne of product. This is *not* the EU ETS product benchmark: the two coincide for ammonia and differ by 56.8% for hydrogen (ETS hydrogen is 7.98). Netting off the ETS figure was the material error corrected on 8 August 2026 |
 | `CSCF(year)` | Cross-sectoral correction factor from Equations 2 and 6. **Held at 1.0 as a stated assumption, not a sourced figure.** It was 100% across 2021-2025 and no 2026 value had been published. `CBAM_CSCF_IS_SOURCED` is False and the outputs carry the flag |
 | `markup(year, product)` | Penalty for using the default instead of verified data. **Not uniform across goods** (corrected 7 Aug 2026): fertiliser goods, which for CBAM purposes includes **ammonia** (CN 2814), carry a flat **1%** in every year; everything else, including **hydrogen** (CN 2804), ramps **10% (2026) / 20% (2027) / 30% (2028+)**. Verified by division against the Commission's adopted default-values workbook, which publishes each value before and after mark-up |
-| origin carbon price(year) | Credited 1-for-1 against the liability, floored at zero. Year-varying for Canada as of 5 Aug 2026 — see below |
+| origin carbon price(year) | Credited 1-for-1 against the liability, floored at zero. Year-varying for Canada as of 5 Aug 2026, see below |
 
 Unit warning: the benchmark is defined per tonne of product, so it can only be netted off
 an emissions figure that is itself per tonne of product. Every caller in this model passes
@@ -99,7 +99,7 @@ consumer carbon charge:
 | 2030 | 115 | 71.75 |
 
 Converted at the 23 July 2026 ECB reference rate, 1 CAD = 0.62393 EUR. China's origin
-price is 0 in every year — hydrogen and ammonia production are confirmed out of scope of
+price is 0 in every year, hydrogen and ammonia production are confirmed out of scope of
 China's national ETS. Source: `origin_carbon_price_eur(corridor, year)`,
 `cbam_model/config/regulatory_constants.py`. Full background:
 `docs/political_economy_canada.md`.
@@ -153,14 +153,14 @@ Source: `uk_cbam_cost()`, `cbam_model/model/cbam.py:147` ·
 
 ---
 
-## Layer 2 — Maritime (the ship's own voyage emissions, per voyage)
+## Layer 2: Maritime (the ship's own voyage emissions, per voyage)
 
 ### CO2e, added 5 August 2026
 
 From 1 January 2026, EU ETS maritime scope covers CH4 and N2O alongside CO2, on a
 CO2-equivalent basis (EMSA's ETS extension page). UK ETS mirrors this from 1 July 2026
 with identical factors (SI 2026/392, Schedule 2A). Both ETS cost formulas below now take
-CO2e, not CO2, as of this update — this is Gayu's notebook update
+CO2e, not CO2, as of this update, this is Gayu's notebook update
 (`FINAL_shipping_maritime_cost_model_updated.ipynb`), section 5b.
 
 $$
@@ -218,16 +218,16 @@ $$
 \end{cases}
 $$
 
-A pass/fail cliff-edge, not a smooth cost — the target tightens every year (89.34 gCO2e/MJ in
+A pass/fail cliff-edge, not a smooth cost, the target tightens every year (89.34 gCO2e/MJ in
 2026 → 85.69 in 2030), and the penalty rate (€2,400 per tonne-VLSFO-equivalent) is fixed by
-regulation. Not affected by the CO2e update — FuelEU is a fuel-intensity standard, not an
+regulation. Not affected by the CO2e update, FuelEU is a fuel-intensity standard, not an
 emissions charge, so it was never CO2-only in the first place.
 
 Source: `fueleu_cost()`, `cbam_model/model/fueleu.py:24` · Regulation (EU) 2023/1805 Annex IV Part B
 
 ---
 
-## Underneath both — how voyage fuel/CO2/CO2e are built
+## Underneath both: how voyage fuel/CO2/CO2e are built
 
 $$
 \text{daily fuel (t)} = \frac{\text{engine power (kW)} \times \text{load fraction} \times \text{SFOC (g/kWh)} \times 24}{1{,}000{,}000}
@@ -249,12 +249,12 @@ $$
 
 CO2e for both is then the CH4/N2O addition described above.
 
-Note: `daily_fuel_tonnes()` does **not** take speed as an input — fuel burn per day is fixed
+Note: `daily_fuel_tonnes()` does **not** take speed as an input, fuel burn per day is fixed
 by engine power/load/SFOC alone, so a faster voyage only reduces total fuel by shortening
 `voyage_days`. This is a stated modelling simplification, not a real-ship fuel curve (real
 vessels burn more fuel per day at higher speed).
 
-Source: `daily_fuel_tonnes()`, `voyage_days()`, `voyage_fuel_and_co2()`, `port_fuel_tonnes()` —
+Source: `daily_fuel_tonnes()`, `voyage_days()`, `voyage_fuel_and_co2()`, `port_fuel_tonnes()` in
 `cbam_model/config/vessel_logistics.py:143`
 
 ---
@@ -270,14 +270,14 @@ $$
 $$
 
 This division is the only point where the maritime (per-voyage) and CBAM (per-tonne) layers
-touch. `cargo_tonnes` must be supplied explicitly — an unresolved or missing value raises
+touch. `cargo_tonnes` must be supplied explicitly, an unresolved or missing value raises
 rather than silently defaulting.
 
 Source: `compliance_cost_per_tonne()`, `cbam_model/model/total_cost.py:247`
 
 ---
 
-## Layer 3 — Marginal abatement cost (pathway comparison, not a border charge)
+## Layer 3: Marginal abatement cost (pathway comparison, not a border charge)
 
 Separate from CBAM and the maritime layer: the cost of avoiding one tonne of CO2 by
 switching from the dirtiest literature pathway to a cleaner one, compared against that

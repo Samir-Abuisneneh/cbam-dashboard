@@ -1,4 +1,4 @@
-# Methodology source pack — Samir section (CBAM)
+# Methodology source pack: Samir section (CBAM)
 
 Everything needed to write the 500-word CBAM methodology section due 12 August
 2026, plus the CBAM share of the shared 500-word Limitations.
@@ -142,7 +142,7 @@ the end of this section.
 
 ### Article 31, verbatim
 
-> **Article 31 — Free allocation of allowances under the EU ETS and obligation
+> **Article 31, Free allocation of allowances under the EU ETS and obligation
 > to surrender CBAM certificates**
 >
 > 1. The CBAM certificates to be surrendered in accordance with Article 22 of

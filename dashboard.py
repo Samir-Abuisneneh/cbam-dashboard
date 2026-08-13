@@ -7,9 +7,8 @@ it can never drift from the tested regulatory logic in `cbam_model/model/`.
 Scope is deliberately the fixed scenario matrix already built and covered by
 the test suite in `tests/test_model.py`: the two named corridors, their
 existing pathway/year/price/vessel/route/speed dimensions. It does not accept
-arbitrary routes or ports - that would need the routing package wired in as a
-genuine model feature first (see memory: cbam-model-enhancement-ideas), not
-something a UI can add on its own.
+arbitrary routes or ports, which would need the routing package wired in as a
+genuine model feature first, not something a UI can add on its own.
 
 Run with:
     .venv/bin/streamlit run dashboard.py
@@ -311,7 +310,7 @@ st.markdown(
 )
 st.title("CBAM Corridor Cost Explorer")
 st.caption(
-    "Carbon compliance cost only — CBAM plus maritime ETS plus FuelEU. "
+    "Carbon compliance cost only: CBAM plus maritime ETS plus FuelEU. "
     "Conversion and freight cost are not yet included (no owner assigned in "
     "the data contracts), so this is not a full delivered cost. "
     "EUR (Halifax–Hamburg) and GBP (Ningbo–Felixstowe) are never "
@@ -417,12 +416,12 @@ if pathway == "cbam_default":
 elif not has_cbam_default:
     st.sidebar.caption(
         f"No CBAM regulatory default value exists yet for {product} on this "
-        "corridor — pending sourcing from IR 2025/2621 Annex I. Every pathway "
+        "corridor, pending sourcing from IR 2025/2621 Annex I. Every pathway "
         "shown here is literature-only, not yet anchored to a regulatory "
         "default."
     )
 else:
-    st.sidebar.caption("Literature pathway — a sensitivity scenario around the CBAM default.")
+    st.sidebar.caption("Literature pathway, a sensitivity scenario around the CBAM default.")
 
 year = st.sidebar.selectbox("Year", list(scenarios.YEARS))
 price_scenario = st.sidebar.selectbox(
@@ -524,7 +523,7 @@ if is_uk and year >= rc.UK_CBAM_START_YEAR:
     real_rate_fraction = rc.uk_cbam_rate_fraction(year)
     st.sidebar.markdown("**UK CBAM rate**")
     st.sidebar.caption(
-        f"{real_rate_fraction:.1%} of the UK ETS price — from the confirmed "
+        f"{real_rate_fraction:.1%} of the UK ETS price, from the confirmed "
         f"86.49% three-year baseline free allocation (Finance Act 2026 "
         f"s.149(4): 2019 EU ETS + 2022/2023 UK ETS, Teesside Hydrogen Plant) "
         f"and the {year} Article 16(14) factor. This is the real mechanism, "
@@ -822,7 +821,7 @@ with tab_sensitivity:
 
 with tab_choice:
     st.caption(
-        "Not an optimisation — a ranking over the small set of pathways and "
+        "Not an optimisation, but a ranking over the small set of pathways and "
         "corridors the literature actually supports. Answers \"which one, and "
         "when\", not \"what does it cost\" (that's the Compliance cost tab)."
     )
@@ -909,7 +908,7 @@ with tab_choice:
     st.subheader("Corridor comparison")
     st.caption(
         "Both corridors on one axis (GBP-equivalent, 23 July 2026 ECB rate), "
-        "for the CBAM regulatory-default pathway — the only pathway label that "
+        "for the CBAM regulatory-default pathway, the only pathway label that "
         "exists on both corridors, since Halifax-Hamburg and Ningbo-Felixstowe "
         "otherwise run different production routes. UK price path: "
         f"{UK_PRICE_VARIANT_LABELS[uk_price_variant]}."
@@ -962,7 +961,7 @@ with tab_choice:
                 f"**Cheaper corridor flips in {cy}** "
                 f"({_corridor_short(c_here.iloc[0]['cheaper_corridor_first_year'])} "
                 f"→ {_corridor_short(c_here.iloc[0]['cheaper_corridor_last_year'])}), "
-                f"the year UK CBAM starts — not a gradual overtake."
+                f"the year UK CBAM starts, not a gradual overtake."
             )
 
     st.divider()

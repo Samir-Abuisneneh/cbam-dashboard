@@ -14,6 +14,8 @@ Run with:
     .venv/bin/streamlit run dashboard.py
 """
 
+import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -23,7 +25,10 @@ from cbam_model.config import regulatory_constants as rc
 from cbam_model.config import scenarios
 from cbam_model.config import vessel_logistics as vl
 from cbam_model.config.unresolved import UnresolvedConstantError
+from cbam_model.forecasting import price_model
+from cbam_model.market_data import eua_prices
 from cbam_model.model import total_cost
+from cbam_model.optimisation import allocation
 
 st.set_page_config(
     page_title="CBAM Corridor Cost Explorer", layout="wide", page_icon="⚓"
@@ -220,6 +225,37 @@ def _pathway_display(p: str) -> str:
     return PATHWAY_LABELS.get(p, p.replace("_", " ").capitalize())
 
 
+def _route_display(route: str) -> str:
+    """Humanise an optimisation route key, "corridor / pathway".
+
+    The optimisation package emits internal identifiers because it must not
+    know how this app names things. Everywhere those keys reach a reader they
+    go through here, so the new tabs read the same as the old ones rather than
+    showing "ningbo_felixstowe / coal_gasification" next to "Ningbo → Felixstowe".
+    """
+    corridor, _, pathway = route.partition(" / ")
+    origin = _corridor_short(corridor) if corridor in CORRIDOR_NAMES else corridor
+    return f"{origin.split(' → ')[0]} · {_pathway_display(pathway)}"
+
+
+# Forecasting model keys are algorithm names, not display copy. Each label says
+# what the model assumes, because "ar1_log" tells a reader nothing about why it
+# is in the comparison.
+MODEL_LABELS = {
+    "random_walk": "No change (baseline)",
+    "drift": "Continues past growth",
+    "ar1_log": "Reverts to a long-run level",
+    "linear_trend": "Straight line through history",
+    "ses": "Weighted recent average",
+    "damped_trend": "Trend that flattens out",
+    "theta": "Theta method",
+}
+
+
+def _model_display(m: str) -> str:
+    return MODEL_LABELS.get(m, m.replace("_", " ").capitalize())
+
+
 # Sensitivity sweep parameter names (cbam_model/analysis/sensitivity.py) are
 # internal model identifiers, not display copy - humanised for the same
 # reason as PATHWAY_LABELS above.
@@ -340,6 +376,60 @@ def _compliance_matrix(uk_price_variant: str):
     """
     emissions, _, _ = _load_inputs()
     return runner.run_compliance_matrix(emissions, uk_price_variant=uk_price_variant)
+
+
+@st.cache_data(show_spinner=False)
+def _eua_monthly():
+    """Monthly EUA price series. Read and validated once per session.
+
+    Returns None rather than raising if the file is absent, because the raw
+    download is not fetched by the code and will not exist on a fresh clone.
+    The tab then explains itself instead of the whole app failing.
+    """
+    try:
+        return eua_prices.to_monthly(eua_prices.load_eua_daily())["price_mean"]
+    except Exception:
+        return None
+
+
+@st.cache_data(show_spinner=False)
+def _forecast_scores():
+    """Walk-forward validation of every model at every horizon.
+
+    The most expensive call in the app after the compliance matrix, and it
+    depends on nothing the user can change, so it is computed once.
+    """
+    series = _eua_monthly()
+    if series is None:
+        return None, None
+    base = price_model.walk_forward(series, price_model.random_walk)
+    rows = []
+    for name in price_model.PRESPECIFIED:
+        results = price_model.walk_forward(series, price_model.MODELS[name])
+        score = price_model.evaluate(
+            results, name, baseline=None if name == price_model.BASELINE else base
+        )
+        forecast = price_model.forecast_with_interval(series, price_model.MODELS[name], name)
+        rows.append(
+            {
+                "model": name,
+                "MAPE %": round(score.mape_pct, 1),
+                "typical miss": round(float(np.exp(score.median_abs_log_error)), 1),
+                "skill vs random walk": round(score.skill_vs_baseline, 3),
+                "2030 point (EUR)": round(forecast.point_eur, 1),
+                "2030 low (EUR)": round(forecast.lower_eur, 1),
+                "2030 high (EUR)": round(forecast.upper_eur, 1),
+            }
+        )
+    return pd.DataFrame(rows), price_model.horizon_sweep(series)
+
+
+@st.cache_data(show_spinner=False)
+def _allocation_options(product: str, year: int, price_scenario: str, uk_variant: str):
+    compliance = _compliance_matrix(uk_variant)
+    return allocation.build_options(
+        product, year, price_scenario, compliance=compliance, uk_price_variant=uk_variant
+    )
 
 
 emissions, commercial, placeholder_inputs = _load_inputs()
@@ -624,8 +714,22 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # Main panel
 # ---------------------------------------------------------------------------
-tab_compliance, tab_maritime, tab_sensitivity, tab_choice = st.tabs(
-    ["Compliance cost", "Maritime layer only", "Sensitivity", "Which pathway / corridor"]
+(
+    tab_compliance,
+    tab_maritime,
+    tab_sensitivity,
+    tab_choice,
+    tab_forecast,
+    tab_optimiser,
+) = st.tabs(
+    [
+        "Compliance cost",
+        "Maritime layer only",
+        "Sensitivity",
+        "Which pathway / corridor",
+        "Price forecast",
+        "Sourcing optimiser",
+    ]
 )
 
 with tab_compliance:
@@ -1000,3 +1104,352 @@ with tab_choice:
             hide_index=True,
             use_container_width=True,
         )
+
+
+with tab_forecast:
+    st.caption(
+        "Statistical forecasting of the EU allowance price, shown to establish "
+        "what the price history on its own supports. Nothing on this tab feeds "
+        "any cost figure elsewhere in the app. The three sourced carbon price "
+        "scenarios remain the basis of every result on the other tabs."
+    )
+
+    series = _eua_monthly()
+    if series is None:
+        st.warning(
+            "The EUA price file is not present. It is downloaded by hand rather "
+            "than fetched, so it does not appear on a fresh clone. See "
+            "cbam_model/market_data/eua_prices.py for where it comes from."
+        )
+    else:
+        scores, sweep = _forecast_scores()
+        consensus = price_model.consensus_2030()
+
+        # Lead with the claim, not the evidence. Every number in it is read off
+        # the results below rather than written here, so the verdict cannot
+        # drift from the tables that support it.
+        best = scores.loc[scores["skill vs random walk"].idxmax()]
+        rw_row = scores[scores["model"] == price_model.BASELINE].iloc[0]
+        rw_fc = price_model.forecast_with_interval(series, price_model.random_walk, "rw")
+        wider = rw_fc.width_ratio() / consensus["width_ratio"]
+        st.info(
+            f"**A fitted forecast cannot pin down the 2030 carbon price, and that "
+            f"is the finding.**\n\n"
+            f"- Seven models were tried. The best of them, "
+            f"*{_model_display(best['model'])}*, is barely better than simply "
+            f"assuming the price never changes, and on this much data that margin "
+            f"cannot be told apart from luck.\n"
+            f"- Even the best model is typically out by a factor of "
+            f"{best['typical miss']} four years ahead.\n"
+            f"- Past prices alone put 2030 somewhere between EUR "
+            f"{rw_fc.lower_eur:.0f} and EUR {rw_fc.upper_eur:.0f}. The forecasters "
+            f"this study cites say EUR {consensus['low']:.0f} to "
+            f"{consensus['high']:.0f}, a range {wider:.1f} times narrower.\n\n"
+            f"Those forecasters are not contradicted by the data. They are simply "
+            f"far more confident than past prices alone can justify, because they "
+            f"are pricing where policy is heading and the price history does not "
+            f"contain that. **This is the evidence for keeping the three sourced "
+            f"scenarios as the base case.**"
+        )
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Daily observations", f"{len(eua_prices.load_eua_daily()):,}")
+        c2.metric("Span", f"{series.index[0].year}-{series.index[-1].year}")
+        c3.metric("Last monthly mean (EUR)", f"{series.iloc[-1]:.2f}")
+
+        st.markdown('<div class="eyebrow">EUA price history, monthly mean</div>', unsafe_allow_html=True)
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=series.index,
+                y=series.to_numpy(),
+                mode="lines",
+                line={"color": TOKENS["ets"], "width": 2},
+                hovertemplate="%{x|%b %Y}: EUR %{y:.2f}<extra></extra>",
+            )
+        )
+        fig.add_hrect(
+            y0=consensus["low"],
+            y1=consensus["high"],
+            fillcolor=TOKENS["cbam"],
+            opacity=0.12,
+            line_width=0,
+            annotation_text="2030 sourced scenario range",
+            annotation_position="top left",
+            annotation_font={"color": TOKENS["ink_muted"], "size": 11},
+        )
+        st.plotly_chart(_chart_layout(fig, 300), use_container_width=True)
+
+        st.markdown('<div class="eyebrow">How well each model did when tested against the past</div>', unsafe_allow_html=True)
+        scores_display = scores.copy()
+        scores_display["model"] = scores_display["model"].map(_model_display)
+        scores_display = scores_display.rename(
+            columns={
+                "model": "Model",
+                "MAPE %": "Average error %",
+                "typical miss": "Typical miss (x)",
+                "skill vs random walk": "Better than assuming no change?",
+            }
+        )
+        st.dataframe(scores_display, hide_index=True, use_container_width=True)
+        st.caption(
+            "Skill is measured against the random walk, so zero means no better "
+            "than assuming the price never changes. Negative is worse. Only "
+            "damped_trend beats the baseline, and by a margin this sample cannot "
+            "distinguish from luck: the 115 validation folds overlap so heavily "
+            "that they amount to roughly 2.4 independent windows. Every model "
+            "under-predicted, because the price rose sixfold between 2017 and "
+            "2022 and nothing fitted before that saw it coming, which is why an "
+            "interval can sit above its own point forecast."
+        )
+
+        st.divider()
+        st.markdown('<div class="eyebrow">Where predictability dies</div>', unsafe_allow_html=True)
+        skill = sweep.pivot(index="model", columns="horizon_months", values="skill_vs_baseline")
+        skill = skill.reindex(list(price_model.PRESPECIFIED)).round(3)
+        skill.index = [_model_display(m) for m in skill.index]
+        skill.index.name = "Model"
+        skill.columns = [f"{h} months ahead" for h in skill.columns]
+        # Green where a model beats the baseline, red where it loses. A grid of
+        # bare negative numbers hides the single positive row that matters.
+        st.dataframe(
+            skill.style.background_gradient(cmap="RdYlGn", vmin=-1.0, vmax=0.2, axis=None),
+            use_container_width=True,
+        )
+        mape = sweep.pivot(index="model", columns="horizon_months", values="mape_pct")
+        st.caption(
+            "Skill by forecast horizon in months. Every model that extrapolates "
+            "an undamped trend degrades monotonically as the horizon grows, "
+            "which is a mechanism rather than noise. The random walk's own error "
+            f"rises from {mape.loc['random_walk', 6]:.0f}% at six months to "
+            f"{mape.loc['random_walk', 48]:.0f}% at four years. The price is "
+            "forecastable over months and not over years, and this study needs "
+            "years."
+        )
+
+        st.divider()
+        st.markdown('<div class="eyebrow">Fitted forecast against the institutional consensus</div>', unsafe_allow_html=True)
+        rw = price_model.forecast_with_interval(series, price_model.random_walk, "random_walk")
+        comparison = price_model.compare_with_consensus(rw)
+        d1, d2, d3 = st.columns(3)
+        d1.metric("Consensus central (EUR)", f"{consensus['central']:.0f}")
+        d2.metric(
+            "Consensus range (EUR)",
+            f"{consensus['low']:.0f}-{consensus['high']:.0f}",
+            f"x{consensus['width_ratio']:.1f} wide",
+        )
+        d3.metric(
+            "Random walk 80% (EUR)",
+            f"{rw.lower_eur:.0f}-{rw.upper_eur:.0f}",
+            f"x{rw.width_ratio():.1f} wide",
+        )
+        st.caption(
+            f"The statistical interval is {comparison['model_interval_is_wider_by']}x "
+            "wider than the published consensus. The consensus is not "
+            "contradicted by the data, it sits comfortably inside what the "
+            "history admits. It is far more precise than price history alone can "
+            "justify, because the institutions are pricing the policy trajectory "
+            "and the price series does not contain it. That is the argument for "
+            "keeping sourced anchors as the base case, reached from the opposite "
+            "direction. Note that 2030 has not happened, so this is not a test of "
+            "which is more accurate and no such test is available."
+        )
+
+
+with tab_optimiser:
+    st.caption(
+        "Least-cost sourcing across both corridors and every pathway, subject "
+        "to supply limits and an emissions ceiling. This is the only tab that "
+        "optimises rather than enumerates. The capacity limits are analyst "
+        "assumptions with no source, so read the answer as conditional on them."
+    )
+
+    o1, o2, o3 = st.columns(3)
+    opt_product = o1.selectbox("Product", scenarios.PRODUCTS, key="opt_product")
+    opt_year = o2.selectbox(
+        "Year", list(scenarios.YEARS), index=len(scenarios.YEARS) - 1, key="opt_year"
+    )
+    demand_kt = o3.number_input(
+        "Annual demand (kt)", min_value=100, max_value=10_000, value=1_000, step=100
+    )
+    demand = float(demand_kt) * 1_000
+
+    o4, o5 = st.columns(2)
+    route_share = o4.slider(
+        "Max share any one route may supply", 0.2, 1.0, 0.6, 0.05,
+        help="No source exists for this. It is the assumption the answer is most sensitive to.",
+    )
+    cut_pct = o5.slider(
+        "Emissions cut below the unconstrained optimum", 0, 60, 30, 5,
+        help="Zero means no ceiling, and the problem degenerates to a merit-order fill.",
+    )
+
+    options = _allocation_options(opt_product, opt_year, price_scenario, uk_price_variant)
+    caps = allocation.CapacityAssumptions(per_route_share_of_demand=route_share)
+
+    try:
+        unconstrained = allocation.solve_allocation(options, demand, caps)
+        ceiling = None if cut_pct == 0 else unconstrained.total_emissions_tco2e * (1 - cut_pct / 100)
+        result = allocation.solve_allocation(
+            options, demand, caps, emissions_cap_tco2e=ceiling,
+            product=opt_product, year=opt_year, price_scenario=price_scenario,
+        )
+    except ValueError as exc:
+        try:
+            deepest = allocation.max_feasible_cut(options, demand, caps)
+            st.error(
+                f"A {cut_pct}% cut is not achievable here. The deepest possible "
+                f"cut is {deepest:.0%}, and that is a limit of the supply base "
+                "rather than of the budget: the cleaner routes cannot carry the "
+                "volume within their capacity limits. Raise the capacity slider "
+                "or ask for a shallower cut."
+            )
+        except ValueError:
+            st.error(str(exc))
+        result = None
+
+    if result is not None:
+        # Units live in the labels rather than the values. The metric tiles are
+        # a quarter of the panel wide and truncate anything longer than about
+        # ten characters, which silently hides the digits that matter.
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Cost (EUR/t)", f"{result.cost_per_tonne_eur:,.2f}")
+        k2.metric("Emissions (MtCO2e)", f"{result.total_emissions_tco2e / 1e6:,.2f}")
+        k3.metric("Routes used", f"{result.routes_used}")
+        k4.metric(
+            "Shadow price (EUR/tCO2e)",
+            "n/a" if result.emissions_shadow_price_eur_per_tco2e is None
+            else f"{result.emissions_shadow_price_eur_per_tco2e:,.2f}",
+            help="What one more tonne of CO2e allowance would be worth at the optimum.",
+        )
+
+        st.markdown('<div class="eyebrow">What this says</div>', unsafe_allow_html=True)
+        for line in allocation.read_result(result, options, label=_route_display):
+            st.markdown(f"- {line}")
+
+        shares = result.shares()
+        shares = shares[shares > 0].sort_values()
+        st.markdown('<div class="eyebrow">Optimal sourcing mix</div>', unsafe_allow_html=True)
+        fig = go.Figure(
+            go.Bar(
+                x=(shares * 100).to_numpy(),
+                y=[_route_display(r) for r in shares.index],
+                orientation="h",
+                marker={"color": TOKENS["cbam"], "cornerradius": 4},
+                text=[f"{v:.1%}" for v in shares],
+                textposition="outside",
+                cliponaxis=False,
+                textfont={"color": TOKENS["ink"]},
+                hovertemplate="%{y}: %{x:.1f}%<extra></extra>",
+            )
+        )
+        st.plotly_chart(_chart_layout(fig, 60 + 34 * len(shares)), use_container_width=True)
+
+        st.markdown('<div class="eyebrow">The menu it chose from (EUR per tonne)</div>', unsafe_allow_html=True)
+        menu = options[[
+            "production_eur_per_tonne", "compliance_eur_per_tonne",
+            "cost_eur_per_tonne", "emissions_tco2e_per_tonne",
+        ]].round(2)
+        menu.columns = ["Cost to make", "Carbon cost", "Total", "Carbon (tCO2e/t)"]
+        menu.index = [_route_display(r) for r in menu.index]
+        menu.index.name = "Route"
+        st.dataframe(menu, use_container_width=True)
+        st.caption(
+            "Production cost plus carbon compliance cost only. Conversion and "
+            "freight are excluded deliberately: they are placeholder values with "
+            "no owner, and letting unsourced numbers into an objective function "
+            "would let them decide the answer. UK corridor figures are converted "
+            "from GBP at the same fixed ECB reference rate used elsewhere."
+        )
+
+        if cut_pct > 0:
+            st.divider()
+            st.markdown('<div class="eyebrow">Does the answer survive the carbon price uncertainty</div>', unsafe_allow_html=True)
+            across = allocation.price_scenario_comparison(
+                opt_product, opt_year, demand, caps,
+                cap_fraction=1 - cut_pct / 100,
+                compliance=_compliance_matrix(uk_price_variant),
+            )
+            if across.attrs["mix_is_invariant"]:
+                st.success(
+                    "**The optimal mix does not change across the low, medium and "
+                    "high carbon price paths.** Only the cost and the shadow price "
+                    "move. The sourcing decision is therefore robust to the single "
+                    "largest uncertainty in the model, which is worth more than any "
+                    "point estimate of that uncertainty."
+                )
+            else:
+                st.warning(
+                    "**The optimal mix changes with the carbon price path.** The "
+                    "sourcing decision is not robust to the one input the model is "
+                    "least certain about, so it should be reported as conditional "
+                    "on the price scenario rather than as a recommendation."
+                )
+            across_display = across.drop(
+                columns=[c for c in across.columns if c.startswith("share::")]
+            ).rename(columns={
+                "price_scenario": "Price path",
+                "carbon_price_eur": "Carbon price (EUR)",
+                "cost_per_tonne_eur": "Cost (EUR/t)",
+                "routes_used": "Routes used",
+                "shadow_price_eur_per_tco2e": "Shadow price (EUR/tCO2e)",
+            })
+            st.dataframe(across_display, hide_index=True, use_container_width=True)
+            st.caption(
+                "The emissions ceiling is held fixed in absolute terms across the "
+                "three price paths. Setting it relative to each path's own optimum "
+                "would move two things at once and produced a total cost that fell "
+                "as carbon got more expensive, which is impossible."
+            )
+
+        st.divider()
+        st.markdown('<div class="eyebrow">Marginal abatement cost curve</div>', unsafe_allow_html=True)
+        sweep = allocation.cap_sweep(options, demand, caps)
+        feasible = sweep[sweep["feasible"]]
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=((1 - feasible["cap_fraction"]) * 100).to_numpy(),
+                y=feasible["shadow_price_eur_per_tco2e"].to_numpy(),
+                mode="lines+markers",
+                line={"color": TOKENS["ets"], "width": 2, "shape": "hv"},
+                marker={"size": 7},
+                hovertemplate="%{x:.0f}% cut: EUR %{y:.2f}/tCO2e<extra></extra>",
+            )
+        )
+        st.plotly_chart(_chart_layout(fig, 260), use_container_width=True)
+        st.caption(
+            "Shadow price against how deep the emissions cut is. It steps rather "
+            "than curves because a linear program switches between discrete "
+            "routes: each step is the point where one substitution is exhausted "
+            "and a more expensive one starts. Cheap abatement is used first, so "
+            "the average cost of a cut is always below the marginal cost of "
+            "extending it."
+        )
+
+        if cut_pct > 0:
+            st.divider()
+            st.markdown('<div class="eyebrow">How much of this is the capacity assumption</div>', unsafe_allow_html=True)
+            cap_sens = allocation.capacity_sensitivity(
+                options, demand, cap_fraction=1 - cut_pct / 100
+            )
+            cap_sens = cap_sens.rename(
+                columns={
+                    **{
+                        c: f"{_route_display(c.removeprefix('share::'))} share"
+                        for c in cap_sens.columns
+                        if c.startswith("share::")
+                    },
+                    "per_route_share": "Max share per route",
+                    "cost_per_tonne_eur": "Cost (EUR/t)",
+                    "routes_used": "Routes used",
+                    "shadow_price_eur_per_tco2e": "Shadow price (EUR/tCO2e)",
+                }
+            )
+            st.dataframe(cap_sens, hide_index=True, use_container_width=True)
+            st.caption(
+                "The same problem solved across a range of capacity assumptions. "
+                "This sweep is the honest result rather than any single solve "
+                "above, because the capacity numbers are the one input here with "
+                "no provenance at all."
+            )

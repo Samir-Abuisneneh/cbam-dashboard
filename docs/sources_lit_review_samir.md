@@ -1,11 +1,11 @@
-# Literature review sources — Samir section
+# Literature review sources: Samir section
 
 Citations for the CBAM / free allocation adjustment section. Harvard style, convert as needed.
 
 Verification key:
 - **[V]** verified from primary text (publisher PDF, Official Journal, or the source page itself)
-- **[P]** partially verified — some fields confirmed, some not
-- **[U]** unverified — taken from a secondary summary or from a teammate's section
+- **[P]** partially verified: some fields confirmed, some not
+- **[U]** unverified: taken from a secondary summary or from a teammate's section
 
 ---
 
@@ -45,7 +45,7 @@ Verified from the Land Economics publisher page.
 
 **Used for the subsidy effect:** additional output generates additional allowances, so output-based allocation discourages conservation and shifts abatement toward costlier rate reduction.
 
-**Important — do not cite one-sidedly.** Their overall conclusion is favourable to output-based allocation: the implicit output subsidies mitigate interactions with existing taxes and can produce higher welfare than grandfathering. The section reflects this. If you shorten the sentence, keep the welfare clause.
+**Important, do not cite one-sidedly.** Their overall conclusion is favourable to output-based allocation: the implicit output subsidies mitigate interactions with existing taxes and can produce higher welfare than grandfathering. The section reflects this. If you shorten the sentence, keep the welfare clause.
 
 ---
 
@@ -72,7 +72,7 @@ Institutions: UCLA, University of Virginia, Stanford, MIT.
 
 **Used for the method:** they compute adjusted prices by "netting out free allocations and assessing carbon pricing only on Scope 1 emissions that exceed free-allocation benchmarks", using separate benchmarks for aluminium and steel that distinguish primary from secondary production.
 
-**Also available if needed:** they model CBAM coalitions, finding that without a border adjustment carbon taxes are strategic substitutes, and with one they become strategic complements. They treat Switzerland and the UK as keeping their own schemes separate from the EU ETS — relevant if anyone challenges the "second border regime" gap claim.
+**Also available if needed:** they model CBAM coalitions, finding that without a border adjustment carbon taxes are strategic substitutes, and with one they become strategic complements. They treat Switzerland and the UK as keeping their own schemes separate from the EU ETS, relevant if anyone challenges the "second border regime" gap claim.
 
 ---
 
@@ -144,7 +144,7 @@ Recital 15, which supports "a design CBAM adapts rather than replaces":
 
 > In order to reflect the EU ETS benchmarks, CBAM benchmarks for simple goods were calculated using the EU ETS product benchmarks of the same type of good.
 
-Recital 10, for Limitations — the values are provisional:
+Recital 10, for Limitations, the values are provisional:
 
 > the CBAM benchmarks in 2026 should be based on the estimated ETS benchmarks to be applied in the period from 2026 to 2030 [...] These CBAM benchmarks should be reviewed at the latest one month after the final EU ETS benchmarks for the period from 2026 to 2030 are published. The updated CBAM benchmarks [...] should apply to goods imported from 1 January 2027.
 
@@ -169,9 +169,9 @@ Recital 8:
 
 ## Outstanding before submission
 
-1. Sartor et al. — confirm volume and page numbers
-2. Williamson — confirm all fields, and resolve the overlap with Gayu
-3. Clausing et al. — check whether a published version now exists
-4. Regulation (EU) 2023/956 Article 31 — read the article text
-5. CBAM Guide — add your access date
+1. Sartor et al.: confirm volume and page numbers
+2. Williamson: confirm all fields, and resolve the overlap with Gayu
+3. Clausing et al.: check whether a published version now exists
+4. Regulation (EU) 2023/956 Article 31: read the article text
+5. CBAM Guide: add your access date
 6. Decide whether the group's four separate gap statements collapse into one

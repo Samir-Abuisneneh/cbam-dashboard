@@ -9,7 +9,7 @@ to run rather than producing a plausible wrong answer.
 
 ---
 
-## 1. `emissions_table.csv` — owner: Riya (Student 1)
+## 1. `emissions_table.csv` (owner: Riya, Student 1)
 
 | column | type | unit | notes |
 |---|---|---|---|
@@ -30,7 +30,7 @@ directly. That coincidence is also why a units error here is easy to miss.
 
 ---
 
-## 2. `corridor_logistics.csv` — DELIVERED by Gayu (Student 2)
+## 2. `corridor_logistics.csv` (DELIVERED by Gayu, Student 2)
 
 Generated from her notebooks by `config/vessel_logistics.py` rather than hand
 transcribed, and checked against her published outputs by
@@ -84,7 +84,7 @@ deliberate counterfactual that isolates cargo density by holding the vessel
 constant, and should be labelled as such rather than presented as a shipping
 option available today.
 
-## 3. `commercial_inputs.csv` — owner: UNASSIGNED (production cost partly filled 4 Aug 2026)
+## 3. `commercial_inputs.csv` (owner: UNASSIGNED, production cost partly filled 4 Aug 2026)
 
 | column | type | unit |
 |---|---|---|

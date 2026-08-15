@@ -369,37 +369,61 @@ def test_which_market_is_cheaper_to_clean_is_not_a_fixed_story():
     """Guards against asserting a mechanism instead of computing one.
 
     A first version of the dashboard claimed abatement is always cheaper on the
-    dirtier corridor. That holds for ammonia and is false for hydrogen at a
-    shallow target, where the UK route's low-carbon alternative carries a large
-    enough premium to outweigh the extra CO2e each switched tonne saves.
+    dirtier corridor. At a shallow target that is now true for BOTH products,
+    so this pair no longer supplies the counterexample. It did until 15 August
+    2026: hydrogen read EU 4.32 against UK 20.95, because a cheap grey-to-blue
+    swap was available on the EU side and the UK's low-carbon alternative
+    carried a larger premium.
+
+    The origin price correction removed that cheap swap by removing the
+    over-deduction that made EU grey hydrogen artificially cheap. Blue SMB+CCS
+    is now cheaper outright than grey on Halifax-Hamburg, so the LP takes it
+    before the ceiling binds and the next tonne of abatement has to come from
+    green, at EUR 237.27.
+
+    THE COUNTEREXAMPLE HAS NOT DISAPPEARED, IT MOVED. It is now the depth of the
+    cut rather than the product, and it is pinned by
+    test_the_cheaper_market_to_decarbonise_depends_on_how_deep_the_cut_is. Do
+    not let this test's current uniformity be read as "always cheaper on the
+    dirtier corridor".
     """
     ammonia = al.market_comparison("ammonia", 2030, DEMAND, cut_fraction=0.15).set_index("regime")
     hydrogen = al.market_comparison("hydrogen", 2030, DEMAND, cut_fraction=0.15).set_index("regime")
     assert ammonia.loc["UK", "shadow_price_eur_per_tco2e"] < ammonia.loc["EU", "shadow_price_eur_per_tco2e"]
-    assert hydrogen.loc["UK", "shadow_price_eur_per_tco2e"] > hydrogen.loc["EU", "shadow_price_eur_per_tco2e"]
+    assert hydrogen.loc["UK", "shadow_price_eur_per_tco2e"] < hydrogen.loc["EU", "shadow_price_eur_per_tco2e"]
 
 
 def test_the_cheaper_market_to_decarbonise_depends_on_how_deep_the_cut_is():
     """A finding, and a warning against quoting one target as though general.
 
-    For hydrogen at a 15% cut the EU corridor is far cheaper to clean, EUR 4.32
-    against 20.95, because a cheap grey-to-blue swap is available. By 30% that
-    swap is exhausted, both markets are pushed onto green, and the ranking
-    reverses to 292.89 against 283.32.
+    For hydrogen at a 15% cut the UK corridor is far cheaper to clean, EUR 20.95
+    against 237.27. By 30% the UK's cheap swap is exhausted, it is pushed onto
+    green, and the ranking reverses to 283.32 against 237.27.
 
-    Quoting either number alone would be quoting an artefact of the ambition
-    level chosen, so the write-up has to name the target it used.
+    THE DIRECTION FLIPPED ON 15 AUGUST 2026 and the finding survived the flip.
+    It used to read EU 4.32 against UK 20.95 at 15%, reversing to EU 292.89
+    against UK 283.32 at 30%: the same shape with the corridors swapped. The
+    origin price correction removed the over-deduction that made EU grey
+    hydrogen cheap, so the EU side no longer has a cheap first swap to spend.
+
+    That the ranking reverses with ambition is the result. Which corridor is on
+    which side of it is contingent, and has already changed once, so the write-up
+    must name the target it used and not generalise from one.
     """
     shallow = al.market_comparison("hydrogen", 2030, DEMAND, cut_fraction=0.15).set_index("regime")
     deep = al.market_comparison("hydrogen", 2030, DEMAND, cut_fraction=0.30).set_index("regime")
 
-    assert shallow.loc["EU", "shadow_price_eur_per_tco2e"] < shallow.loc["UK", "shadow_price_eur_per_tco2e"]
-    assert deep.loc["EU", "shadow_price_eur_per_tco2e"] > deep.loc["UK", "shadow_price_eur_per_tco2e"]
-    # And the deeper target is far more expensive on both sides.
-    for regime in ("EU", "UK"):
-        assert deep.loc[regime, "shadow_price_eur_per_tco2e"] > (
-            10 * shallow.loc[regime, "shadow_price_eur_per_tco2e"]
-        )
+    assert shallow.loc["UK", "shadow_price_eur_per_tco2e"] < shallow.loc["EU", "shadow_price_eur_per_tco2e"]
+    assert deep.loc["UK", "shadow_price_eur_per_tco2e"] > deep.loc["EU", "shadow_price_eur_per_tco2e"]
+    # The deeper target is an order of magnitude dearer on the side that had the
+    # cheap swap to lose. The EU side is already on green at 15%, so it does not
+    # move; that asymmetry is the mechanism, not an artefact.
+    assert deep.loc["UK", "shadow_price_eur_per_tco2e"] > (
+        10 * shallow.loc["UK", "shadow_price_eur_per_tco2e"]
+    )
+    assert deep.loc["EU", "shadow_price_eur_per_tco2e"] == pytest.approx(
+        shallow.loc["EU", "shadow_price_eur_per_tco2e"], rel=0.01
+    )
 
 
 def test_capacity_sensitivity_reports_infeasibility_rather_than_raising(eu_ammonia):

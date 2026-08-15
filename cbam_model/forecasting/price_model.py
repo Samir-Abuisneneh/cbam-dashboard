@@ -24,8 +24,8 @@ THE THREE MODELS, AND WHY THESE THREE
                 toward a long-run level rather than wandering freely. If carbon
                 prices are policy-anchored rather than random, this should win.
 
-Deliberately no ARIMA, no gradient boosting, no neural network. With about
-three and a half effectively independent observations at this horizon (see
+Deliberately no ARIMA, no gradient boosting, no neural network. With 2.4
+effectively independent observations at this horizon (see
 `effective_sample_size`), a more flexible model would fit the noise and its
 apparent skill would be an artefact of overlapping folds. Choosing the simplest
 model the data can support is the methodological point, not a limitation.
@@ -41,7 +41,7 @@ study actually needs forecast.
 THE CAVEAT THAT GOVERNS EVERY NUMBER OUT OF HERE
 ------------------------------------------------
 Walk-forward folds at a 48-month horizon overlap almost completely. 115 folds
-sound like 115 tests; they are closer to three independent ones. Every error
+sound like 115 tests; they amount to 2.4 independent ones. Every error
 metric here is computed over correlated samples and should be read as
 indicative rather than as a precise estimate of out-of-sample accuracy.
 `effective_sample_size` returns the honest number and it belongs beside any
@@ -194,9 +194,9 @@ MODELS = {
 BASELINE = "random_walk"
 
 # The set fixed before any of it was run, so that reporting all seven is not a
-# choice made after seeing which one won. With roughly two and a half
-# independent windows at the four-year horizon, searching model space until
-# something beats the baseline would find a winner whether or not one exists.
+# choice made after seeing which one won. With 2.4 independent windows at the
+# four-year horizon, searching model space until something beats the baseline
+# would find a winner whether or not one exists.
 PRESPECIFIED = tuple(MODELS)
 
 
@@ -400,10 +400,9 @@ def horizon_sweep(
     knowing, because it says the problem is the horizon the study needs rather
     than the models it chose.
 
-    Read the columns, not the maximum. At four years there are about two and a
-    half independent windows, so the best cell in that column is close to
-    meaningless on its own. At six months there are roughly twenty, and a
-    result there is worth something.
+    Read the columns, not the maximum. At four years there are 2.4 independent
+    windows, so the best cell in that column is close to meaningless on its
+    own. At six months there are 26.2, and a result there is worth something.
     """
     rows = []
     for h in horizons:

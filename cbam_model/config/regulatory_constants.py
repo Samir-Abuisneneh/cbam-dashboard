@@ -751,10 +751,29 @@ def cbam_cert_price_within_ets_scenario_bounds(year: int = 2026) -> bool:
 # that were in the model until this was looked up on 26-27 July 2026.
 
 # CANADA. Federal Output-Based Pricing System (OBPS) rate, the industrial half
-# of the Greenhouse Gas Pollution Pricing Act. Nova Scotia, where EverWind is
-# based, does not run its own industrial carbon price and follows the federal
-# one directly, confirmed via the Nova Scotia government's own climate change
-# pages.
+# of the Greenhouse Gas Pollution Pricing Act.
+#
+# CORRECTED 15 August 2026. This comment previously said Nova Scotia, where
+# EverWind is based, does not run its own industrial carbon price and follows
+# the federal one directly. That is wrong. Nova Scotia operates its own OBPS,
+# established by amendments to the Environment Act and made under the
+# Output-Based Pricing System Registration and Opt-in Regulations, N.S. Reg
+# 32/2023. It was approved federally in November 2022, began operating in 2023,
+# and replaced the province's cap-and-trade programme. It covers facilities
+# emitting 50,000 tCO2e or more, with an opt-in route from 10,000 tCO2e.
+#
+# The federal price path below is still the right figure to deduct, but for a
+# different reason than the one this comment used to give. Nova Scotia does not
+# set its own price: the price of its performance and fund credits follows the
+# federal backstop carbon price. So the province runs the system and the
+# federal schedule sets the number.
+#
+# Sources: https://icapcarbonaction.com/en/ets/canada-nova-scotia-output-based-pricing-system-industry
+#          https://climatechange.novascotia.ca/output-based-pricing-system
+#          https://novascotia.ca/just/regulations/regs/envoutput.htm
+#
+# Raised by Alex, whose methodology draft cited the provincial system while
+# this file asserted the opposite.
 #
 # CORRECTED 5 August 2026 (Alex, Student 4). The figure below through 4 August
 # was CAD 110/tCO2e flat, taken from the December 2020 plan (CAD 95 in 2025,
@@ -791,10 +810,22 @@ def cbam_cert_price_within_ets_scenario_bounds(year: int = 2026) -> bool:
 # units trade provincially and prices vary widely - around CAD 65/t in British
 # Columbia, CAD 72/t in Ontario, and as low as roughly CAD 37.50/t where cheap
 # Alberta-linked credits are available (mid-2026 figures, carboncredits.com).
-# The federal benchmark is used here anyway because it is what Nova Scotia,
-# EverWind's own jurisdiction, actually applies, not a shopping exercise
-# across provinces. Still worth stating as a limitation: the true effective
-# price could plausibly be lower than the federal benchmark used here.
+#
+# Those figures are NOT used as a low/central/high band on the deduction, and
+# the reason is deliberate rather than an oversight. They are trading prices in
+# three provinces the modelled corridor does not originate in. Halifax is in
+# Nova Scotia, whose credits track the federal backstop, so applying Alberta or
+# Ontario prices here would be shopping across provinces for a cheaper number.
+# Re-checked 15 August 2026 and the reasoning holds after the Nova Scotia
+# correction above.
+#
+# The limitation that does stand, and it is the one to write up: under any OBPS
+# a facility receives free allowances up to a performance standard and pays only
+# on emissions above it, so the effective price per tonne of embedded emissions
+# is below the headline rate in every province, Nova Scotia included. The
+# schedule below is therefore the ceiling on what could be deducted rather than
+# a confirmed effective price, which means the model's Canadian CBAM liability
+# is more likely understated than overstated.
 #
 # Converted at the ECB reference rate for 23 July 2026, 1 CAD = 0.62393 EUR.
 FX_EUR_PER_CAD_2026_07_23 = 0.62393

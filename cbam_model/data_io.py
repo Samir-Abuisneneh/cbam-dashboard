@@ -458,7 +458,7 @@ def ayub_production_costs() -> pd.DataFrame:
 
     Grey production cost agrees almost exactly with the current primary
     figure (USD 700/t vs this paper's USD 700/t). Blue and, especially,
-    green diverge substantially - see `docs/` for the three-way comparison
+    green diverge substantially - see the three-way comparison
     against the primary literature source and the IEA check. That divergence
     is reported as a genuine finding (production cost uncertainty, not a
     error to resolve by picking a winner), consistent with how the IEA check

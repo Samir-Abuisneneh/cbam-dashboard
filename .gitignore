@@ -14,3 +14,11 @@ __pycache__/
 *supervisor_*.md
 *draft_review_*.md
 action_plan_*.md
+
+# Everything human-facing lives outside this repository, in
+# "MCG Dissertation - private notes": written documentation, meeting records,
+# supervisor material, findings write-ups and generated figures. This repo is
+# the model, its tests and the dashboard.
+docs/
+*.pdf
+.DS_Store

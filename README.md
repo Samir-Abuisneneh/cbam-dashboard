@@ -275,8 +275,7 @@ decision are not treated as the same kind of fact, plus the quantified
 translation and the model parameter it bears on.
 
 A test cross-checks the timeline against the code, and every quantified event
-agrees. See `docs/policy_timeline_gaps.md` for what is still unfilled, and for
-the one substantive gap it surfaced: **UK CBAM charges direct emissions only
+agrees. One substantive gap it surfaced: **UK CBAM charges direct emissions only
 until 2029 at the earliest, which the model does not represent.**
 
 ### Competitiveness: the two rankings now agree everywhere

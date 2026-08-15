@@ -2527,7 +2527,8 @@ def test_uk_cbam_indirect_emissions_gap_is_recorded_as_unimplemented():
     The direct-only limitation is policy delivered through secondary
     legislation, not a restriction in the Finance Act 2026, whose s.148 defines
     embodied emissions broadly and lets the Treasury narrow it by regulation.
-    Do not cite the Act for it. See docs/policy_timeline_gaps.md.
+    Do not cite the Act for it. Cite the policy papers and the secondary
+    legislation instead.
 
     This test does not assert the model is right. It asserts the gap is written
     down, so it cannot be forgotten before submission."""

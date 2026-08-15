@@ -117,7 +117,7 @@ legible to someone who was not in these meetings.
 
 ## 7. Presentation scheduling
 
-The group wants 25, 26 or 27 August. `[uncertain]` — the transcript attributes
+The group wants 25, 26 or 27 August. `[uncertain]`: the transcript attributes
 this preference to "Joshua" but the reply comes from Josh himself, so the source
 of the preferred dates is unclear.
 

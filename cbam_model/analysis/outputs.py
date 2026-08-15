@@ -88,7 +88,7 @@ def carbon_cost_per_tonne_co2(maritime: pd.DataFrame) -> pd.DataFrame:
     cargo tonnage. It divides what each corridor pays by what it emits, so the
     two are comparable even though one is priced in EUR and the other in GBP.
 
-    `effective_cost_per_tonne_co2_gbp` additionally converts the EUR corridor's
+    `effective_cost_per_tonne_co2_gbp` also converts the EUR corridor's
     figure to GBP (23 July 2026 ECB reference rate), so the two corridors can
     be compared directly in one currency alongside the native-currency figure.
     """

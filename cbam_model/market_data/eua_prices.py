@@ -231,7 +231,7 @@ def validate_eua_daily(df: pd.DataFrame) -> pd.DataFrame:
 def data_quality_report(df: pd.DataFrame) -> dict:
     """Counts worth quoting in the methodology rather than leaving implicit.
 
-    Every number a reader would want in order to judge whether the series is
+    Every number a reader would want to judge whether the series is
     fit for what it is being asked to do, computed rather than asserted.
     """
     flat = (

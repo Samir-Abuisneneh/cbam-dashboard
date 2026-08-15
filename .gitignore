@@ -6,3 +6,11 @@ __pycache__/
 .DS_Store
 .claude/
 .streamlit/secrets.toml
+
+# Internal working notes live outside this repository, in
+# "MCG Dissertation - private notes". Meeting records, supervisor prep and
+# internal review notes are candid about the industry partner and the
+# supervisors, and are not part of the submitted work.
+*supervisor_*.md
+*draft_review_*.md
+action_plan_*.md

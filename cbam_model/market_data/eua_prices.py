@@ -36,8 +36,10 @@ verified the way a regulatory constant can.
 
 The reason it is here anyway: daily EUA history is a commercial product.
 Checked on 13 August 2026 and found paywalled, bot-protected or chart-only at
-ICE, EEX, the World Bank Carbon Pricing Dashboard, Sandbag and Ember. See
-`docs/supervisor_meeting_2026-08-13_technical.md` for the search.
+ICE (report 278, CSV is subscription only), EEX (public widget API returns 403),
+the World Bank Carbon Pricing Dashboard (direct download 403s, and annual
+granularity in any case), Sandbag (chart with no export) and Ember (open file
+server, but electricity prices only).
 
 BEFORE THIS APPEARS IN THE DISSERTATION, replace it with the same series from
 Refinitiv Datastream or Eikon through the university library if that access

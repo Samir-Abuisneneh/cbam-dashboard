@@ -374,12 +374,35 @@ the appendix.
    static parameters per scenario; THETIS-MRV operator registration unavailable
    so shipping emissions are validated against IMO and EU MRV aggregates; static
    exchange rates across EUR, GBP and CAD.
-7. From the proposal's limitations, **check before reusing**: it claims the model
-   "cannot evaluate production pathway granularity for the Ningbo-Felixstowe
-   corridor to the same extent" because UK CBAM uses a single default per CN
-   code. The model now reports China pathway results (coal gasification, blue
-   CCS, green electrolysis) on that corridor. Verify whether this limitation
-   still holds before repeating it.
+7. From the proposal's limitations, **RESOLVED 15 August 2026**: it claims the
+   model "cannot evaluate production pathway granularity for the
+   Ningbo-Felixstowe corridor to the same extent" because UK CBAM uses a single
+   default per CN code. The limitation still holds, and more narrowly than the
+   proposal put it.
+
+   It does not affect the literature pathways. Coal gasification, blue CCS and
+   green electrolysis on that corridor use Riya's LCA figures and are unaffected
+   by how the UK sets defaults, so pathway granularity is reported normally.
+
+   It affects the `cbam_default` pathway only, and there it is worse than a
+   granularity problem. UK CBAM defaults are a single global average per CN
+   code, weighted by the production volumes of the UK's main trading partners.
+   The government considered jurisdiction-specific values and rejected them as
+   "deemed infeasible by 2027". HMRC has not published the figures: checked
+   15 August 2026, ammonia-specific values expected late 2026, after
+   submission. The model substitutes the EU's China-specific IR 2025/2621
+   default, which is not what UK law specifies.
+
+   State the direction of the error, since it is inferable and runs against
+   intuition. A global average is diluted by cleaner origins, so it sits below
+   a value set for a high-intensity exporter. The substitution therefore most
+   likely **overstates** UK CBAM liability on this corridor.
+
+   Cite CITP on the mechanism rather than presenting it as an original
+   observation: using global averages instead of country-specific defaults
+   understated emissions from high-intensity origins by 1.48 MtCO2e across four
+   sectors in 2023, about GBP 1.62bn, roughly 10% of CBAM imports.
+   https://citp.ac.uk/publications/default-values-in-the-uks-cbam
 
 ---
 

@@ -364,7 +364,20 @@ EU_CBAM_FIRST_SURRENDER_DEADLINE = "2027-09-30"
 # Source: UK Government CBAM policy summary (HMRC).
 
 UK_CBAM_START_YEAR = 2027  # Ningbo-Felixstowe carries zero CBAM liability in 2026
-UK_CBAM_COUNTRY_DIFFERENTIATED_DEFAULTS = False  # single flat default per CN code, year 1
+# Single flat default per CN code in year one: a global average weighted by the
+# production volumes of the UK's main trading partners, not a country-specific
+# value. The government considered jurisdiction-specific defaults and rejected
+# them as "deemed infeasible by 2027".
+#
+# HMRC has not published the figures. Checked 15 August 2026; ammonia-specific
+# values are expected late 2026, after submission. The model therefore feeds the
+# EU's country-specific default into `uk_cbam_cost` as a stand-in, which is not
+# what UK law specifies. See that function's docstring for the direction of the
+# error, which is most likely an overstatement of UK liability on the China
+# corridor rather than an understatement.
+UK_CBAM_COUNTRY_DIFFERENTIATED_DEFAULTS = False
+UK_CBAM_DEFAULTS_PUBLISHED = False  # HMRC, as at 15 August 2026
+UK_CBAM_DEFAULT_BASIS = "global average weighted by UK trading-partner production volumes"
 UK_CBAM_VALUE_THRESHOLD_GBP = 50_000  # value threshold, not the EU's 50-tonne mass threshold
 UK_CBAM_INDIRECT_EMISSIONS_INCLUDED_FROM = 2029  # at the earliest
 UK_CBAM_IS_TAX_NOT_CERTIFICATES = True  # structural difference from the EU scheme

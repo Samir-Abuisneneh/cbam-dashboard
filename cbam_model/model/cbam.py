@@ -157,6 +157,33 @@ def uk_cbam_cost(
     year one it uses a single flat default value per CN code with no
     country differentiation.
 
+    THE DEFAULT VALUE THIS MODEL FEEDS IN IS A STAND-IN, AND THE UK CORRIDOR'S
+    `cbam_default` RESULTS INHERIT THAT.
+
+    UK CBAM defaults are a single global average per CN code, weighted by the
+    production volumes of the UK's main trading partners. The government
+    considered jurisdiction-specific values and rejected them as "deemed
+    infeasible by 2027". HMRC has committed to publishing the figures before
+    the regime starts and, as of 15 August 2026, has not: ammonia-specific
+    values are expected late 2026, after this study is submitted.
+
+    So there is no correct number to use. The emissions table supplies the EU's
+    China-specific IR 2025/2621 default (4.36 tCO2e/t for ammonia) on the
+    Ningbo-Felixstowe corridor instead. That is not what UK law specifies.
+
+    The direction of the resulting error is inferable even though its size is
+    not. A global average is diluted by cleaner origins, so it sits below a
+    value set specifically for a high-intensity exporter. Substituting China's
+    own EU default therefore most likely OVERSTATES UK CBAM liability on this
+    corridor rather than understating it. That is the opposite of the direction
+    a reader might assume, which is why it is written down here.
+
+    This is also the mechanism the Centre for Inclusive Trade Policy quantifies:
+    using global averages rather than country-specific defaults understated
+    emissions from high-intensity origins by 1.48 MtCO2e across four sectors in
+    2023, around GBP 1.62bn. The study should cite that finding rather than
+    present the observation as its own.
+
     Liability = embedded_emissions x rate_fraction x (UK ETS price - origin
     carbon price), where rate_fraction = 1 - (baseline free allocation % x
     Article 16(14) factor) per the draft CBAM (Calculation of CBAM Rate and

@@ -425,10 +425,23 @@ def _forecast_scores():
 
 
 @st.cache_data(show_spinner=False)
-def _allocation_options(product: str, year: int, price_scenario: str, uk_variant: str):
+def _allocation_options(
+    product: str, year: int, price_scenario: str, corridor: str, uk_variant: str
+):
     compliance = _compliance_matrix(uk_variant)
     return allocation.build_options(
-        product, year, price_scenario, compliance=compliance, uk_price_variant=uk_variant
+        product, year, price_scenario, corridor,
+        compliance=compliance, uk_price_variant=uk_variant,
+    )
+
+
+@st.cache_data(show_spinner=False)
+def _market_comparison(product: str, year: int, demand: float, price_scenario: str,
+                       cut_fraction: float, route_share: float, uk_variant: str):
+    return allocation.market_comparison(
+        product, year, demand, price_scenario, cut_fraction,
+        allocation.CapacityAssumptions(per_route_share_of_demand=route_share),
+        uk_price_variant=uk_variant,
     )
 
 
@@ -1260,31 +1273,41 @@ with tab_optimiser:
     st.caption(
         "Least-cost sourcing across both corridors and every pathway, subject "
         "to supply limits and an emissions ceiling. This is the only tab that "
-        "optimises rather than enumerates. The capacity limits are analyst "
-        "assumptions with no source, so read the answer as conditional on them."
+        "optimises rather than enumerates. **One destination market at a time**: "
+        "Halifax-Hamburg lands in Germany and Ningbo-Felixstowe lands in Britain, "
+        "so a single solve never spans both and volume is never allocated from "
+        "one corridor to the other. The two markets are compared by solving each "
+        "separately, lower down this tab. The capacity limits are analyst "
+        "assumptions with no source, so read every answer as conditional on them."
     )
 
-    o1, o2, o3 = st.columns(3)
-    opt_product = o1.selectbox("Product", scenarios.PRODUCTS, key="opt_product")
-    opt_year = o2.selectbox(
+    o1, o2, o3, o4 = st.columns(4)
+    opt_corridor = o1.selectbox(
+        "Destination market", list(CORRIDOR_NAMES), format_func=_corridor_short,
+        key="opt_corridor",
+    )
+    opt_product = o2.selectbox("Product", scenarios.PRODUCTS, key="opt_product")
+    opt_year = o3.selectbox(
         "Year", list(scenarios.YEARS), index=len(scenarios.YEARS) - 1, key="opt_year"
     )
-    demand_kt = o3.number_input(
+    demand_kt = o4.number_input(
         "Annual demand (kt)", min_value=100, max_value=10_000, value=1_000, step=100
     )
     demand = float(demand_kt) * 1_000
 
-    o4, o5 = st.columns(2)
-    route_share = o4.slider(
-        "Max share any one route may supply", 0.2, 1.0, 0.6, 0.05,
+    o5, o6 = st.columns(2)
+    route_share = o5.slider(
+        "Max share any one pathway may supply", 0.2, 1.0, 0.6, 0.05,
         help="No source exists for this. It is the assumption the answer is most sensitive to.",
     )
-    cut_pct = o5.slider(
-        "Emissions cut below the unconstrained optimum", 0, 60, 30, 5,
+    cut_pct = o6.slider(
+        "Emissions cut below the unconstrained optimum", 0, 60, 15, 5,
         help="Zero means no ceiling, and the problem degenerates to a merit-order fill.",
     )
 
-    options = _allocation_options(opt_product, opt_year, price_scenario, uk_price_variant)
+    options = _allocation_options(
+        opt_product, opt_year, price_scenario, opt_corridor, uk_price_variant
+    )
     caps = allocation.CapacityAssumptions(per_route_share_of_demand=route_share)
 
     try:
@@ -1366,7 +1389,7 @@ with tab_optimiser:
             st.divider()
             st.markdown('<div class="eyebrow">Does the answer survive the carbon price uncertainty</div>', unsafe_allow_html=True)
             across = allocation.price_scenario_comparison(
-                opt_product, opt_year, demand, caps,
+                opt_product, opt_year, demand, opt_corridor, caps,
                 cap_fraction=1 - cut_pct / 100,
                 compliance=_compliance_matrix(uk_price_variant),
             )
@@ -1402,6 +1425,85 @@ with tab_optimiser:
                 "as carbon got more expensive, which is impossible."
             )
 
+        if cut_pct > 0:
+            st.divider()
+            st.markdown('<div class="eyebrow">The two markets, each solved on its own</div>', unsafe_allow_html=True)
+            markets = _market_comparison(
+                opt_product, opt_year, demand, price_scenario,
+                cut_pct / 100, route_share, uk_price_variant,
+            )
+            eu_row = markets[markets["regime"] == "EU"].iloc[0]
+            uk_row = markets[markets["regime"] == "UK"].iloc[0]
+            dearer, cheaper = sorted(
+                (eu_row, uk_row), key=lambda r: -r["shadow_price_eur_per_tco2e"]
+            )
+            ratio = (
+                dearer["shadow_price_eur_per_tco2e"] / cheaper["shadow_price_eur_per_tco2e"]
+                if cheaper["shadow_price_eur_per_tco2e"] > 0
+                else float("inf")
+            )
+            def _swap(row):
+                return (
+                    f"{_pathway_display(row['cheapest_swap_from'])} to "
+                    f"{_pathway_display(row['cheapest_swap_to'])}, which saves "
+                    f"{row['swap_saves_tco2e_per_tonne']:.2f} tCO2e per tonne for an extra "
+                    f"EUR {row['swap_costs_eur_per_tonne']:,.2f}"
+                )
+
+            dirtier = markets.loc[markets["baseline_emissions_tco2e"].idxmax()]
+            same_side = dirtier["corridor"] == dearer["corridor"]
+            st.info(
+                f"**Cutting emissions by {markets.attrs['applied_cut']:.0%} costs an importer "
+                f"on {_corridor_short(dearer['corridor'])} EUR "
+                f"{dearer['shadow_price_eur_per_tco2e']:,.2f} per tonne of CO2e, against EUR "
+                f"{cheaper['shadow_price_eur_per_tco2e']:,.2f} on "
+                f"{_corridor_short(cheaper['corridor'])}, a factor of {ratio:.1f}.**\n\n"
+                f"The gap is set by the cheapest substitution available in each market, not "
+                f"by which corridor is dirtier. On "
+                f"{_corridor_short(cheaper['corridor'])} it is {_swap(cheaper)}. On "
+                f"{_corridor_short(dearer['corridor'])} it is {_swap(dearer)}.\n\n"
+                + (
+                    "Here the dirtier corridor is also the more expensive one to clean up, "
+                    "so its low-carbon alternative carries a premium large enough to "
+                    "outweigh the extra CO2e each switched tonne saves."
+                    if same_side
+                    else "Here the dirtier corridor is the cheaper one to clean up, because "
+                    "a high-carbon baseline means each switched tonne saves more, and that "
+                    "outweighs the premium on its low-carbon alternative."
+                )
+            )
+            if markets.attrs["cut_was_limited"]:
+                st.caption(
+                    f"Requested {markets.attrs['requested_cut']:.0%} but applied "
+                    f"{markets.attrs['applied_cut']:.1%}, the deepest cut achievable in "
+                    "both markets at this capacity limit. Both must receive the same "
+                    "proportional cut or the shadow prices are not comparable."
+                )
+            st.dataframe(
+                markets.rename(
+                    columns={
+                        "corridor": "Market",
+                        "regime": "Regime",
+                        "pathways_available": "Pathways",
+                        "baseline_emissions_tco2e": "Baseline emissions (tCO2e)",
+                        "cost_per_tonne_eur": "Cost (EUR/t)",
+                        "shadow_price_eur_per_tco2e": "Abatement cost (EUR/tCO2e)",
+                        "low_carbon_share": "Low-carbon share",
+                        "allocation_is_determined": "Mix is forced",
+                    }
+                ).assign(Market=lambda d: d["Market"].map(_corridor_short)),
+                hide_index=True,
+                use_container_width=True,
+            )
+            if markets.attrs["any_market_determined"]:
+                st.caption(
+                    "Where 'Mix is forced' is true the corridor offers only two "
+                    "pathways, so demand and the ceiling pin the answer exactly and "
+                    "there is no freedom left to optimise. The abatement cost is still "
+                    "meaningful, it is simply the price of the one substitution "
+                    "available rather than the outcome of a search."
+                )
+
         st.divider()
         st.markdown('<div class="eyebrow">Marginal abatement cost curve</div>', unsafe_allow_html=True)
         sweep = allocation.cap_sweep(options, demand, caps)
@@ -1435,6 +1537,8 @@ with tab_optimiser:
             )
             cap_sens = cap_sens.rename(
                 columns={
+                    "feasible": "Feasible",
+                    "why": "If not, why",
                     **{
                         c: f"{_route_display(c.removeprefix('share::'))} share"
                         for c in cap_sens.columns

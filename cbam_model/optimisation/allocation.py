@@ -1,50 +1,81 @@
-"""Least-cost sourcing allocation across corridors and production pathways.
+"""Least-cost sourcing allocation within a single destination market.
 
 THE PROBLEM
 -----------
-An importer needs D tonnes of a product in a given year. Each corridor and
-pathway combination has a cost per tonne and an embedded emissions intensity.
-Supply from any one route is capped. Total embedded emissions must sit under a
-ceiling. Minimise cost.
+An importer serving ONE market needs D tonnes of a product in a given year.
+Each production pathway available on that market's corridor has a cost per
+tonne and an embedded emissions intensity. Supply from any one pathway is
+capped. Total embedded emissions must sit under a ceiling. Minimise cost.
 
     minimise    sum_i  c_i x_i
     subject to  sum_i  x_i        =  D          demand is met exactly
                 sum_i  e_i x_i    <= E          emissions ceiling
-                       x_i        <= k_i        capacity of route i
+                       x_i        <= k_i        capacity of pathway i
                        x_i        >= 0
 
-WHY THE EMISSIONS CEILING IS NOT OPTIONAL
------------------------------------------
-Without it this problem is solvable by sorting. Fill the cheapest route to its
-capacity, spill into the next cheapest, stop when demand is met. A solver adds
-nothing to a merit-order fill, and presenting one as optimisation would be
-overclaiming in exactly the way the model overview already warns against.
+ONE MARKET AT A TIME, AND WHY THAT IS NOT A DETAIL
+--------------------------------------------------
+The first version of this module allocated a single pool of demand across BOTH
+corridors. That was wrong, and badly so. Halifax-Hamburg lands in Germany,
+Ningbo-Felixstowe lands in Britain. A buyer in Hamburg cannot take delivery at
+Felixstowe, so the two are not substitutable supply options and an answer of
+the form "60% Halifax, 15% Ningbo" describes a decision nobody faces.
 
-The ceiling is what makes the problem genuinely linear-programmatic. It couples
-the routes together, so the cheapest available route is no longer necessarily
-the right one to fill next: a cheap dirty route consumes emissions budget that
-a later tonne may need more. Greedy stops being optimal, and the dual variable
-on the ceiling becomes meaningful.
+It also silently broke a rule the study states on the front of its own
+dashboard: EUR and GBP figures for the two corridors are never converted or
+combined. The old `build_options` converted precisely so it could combine.
 
-WHAT THE SHADOW PRICE MEANS, AND IT IS THE MOST USEFUL NUMBER HERE
-------------------------------------------------------------------
-The dual on the emissions constraint is the cost of one more tonne of CO2e of
-allowance, in euros, at the optimum. It is the internal carbon price the
-importer's own sourcing problem implies. Compare it against the actual CBAM
-carbon price: if the shadow price is far above it, the emissions ceiling binds
-harder than regulation does, and regulation is not what is driving behaviour.
+So `corridor` is now required, and each market is solved on its own. Compare
+two solved markets side by side with `market_comparison`. Comparing two
+independent optimisations is legitimate; merging them was not.
 
-WHY THE ALLOCATION IS INTERESTING AT ALL
-----------------------------------------
-Checked on 13 August 2026 before this module was written: the single cheapest
-option does not change across the low, medium and high carbon price scenarios,
-but the ordering below it does. Four of six ammonia routes and five of eight
-hydrogen routes change rank between the low and high scenario at 2030.
+Note the one conversion that remains and why it is different: production cost
+is only published in EUR, so a UK-market solve converts its GBP compliance cost
+into EUR to have one currency in one objective function. That is a conversion
+inside a single market, not a comparison across two.
 
-So an unconstrained "pick the cheapest" is invariant to the carbon price and
-would produce nothing. Once capacity binds and the second and third choices
-matter, the answer becomes price-sensitive. That is the empirical reason the
-capacity constraint is in the formulation, rather than a modelling preference.
+WHY `cbam_default` IS NOT A DECISION VARIABLE
+---------------------------------------------
+It is excluded from the decision set, and this is not a preference.
+
+`cbam_default` is the IR 2025/2621 regulatory default emissions value, applied
+when a declarant does not supply verified data. It is not a production method.
+The data shows it plainly: on every corridor and product its production cost is
+identical to the fossil pathway's, because it IS the fossil pathway, declared
+differently. Halifax ammonia grey and default are both EUR 446.80; Ningbo
+ammonia coal and default are both EUR 416.50.
+
+Allocating volume between "grey_smr" and "cbam_default" therefore splits one
+physical supply between two accounting treatments and calls it a sourcing
+decision. The earlier version did exactly that and reported it as a result.
+
+A REAL FINDING CAME OUT OF THAT MISTAKE, and it belongs in the discussion
+chapter rather than here: the default is *more favourable than verified
+reality* on both corridors. Canadian ammonia declares 1.98 tCO2e by default
+against an actual LCA figure of 2.18; Chinese ammonia declares 4.36 against
+6.15. An exporter therefore has no incentive to verify its emissions, which is
+a statement about how the regulation is designed, not about how to source.
+
+HOW HARD IS THIS PROBLEM, HONESTLY
+----------------------------------
+Harder than a sort, easier than the word "optimisation" suggests, and the
+write-up should say so rather than let a reader assume otherwise.
+
+Greedy over *pathways* fails once the ceiling binds, and there is a test
+proving it. But greedy over *substitutions*, ranking every possible swap by
+cost per tonne of CO2e saved and buying them cheapest first, does find the
+optimum. This is a fractional knapsack. An operational research reader will
+notice within seconds, so claim only what is true.
+
+What the LP formulation buys is generality and the dual: the greedy rule stops
+working the moment a second coupling constraint is added, and the shadow price
+falls out of the solve rather than needing to be derived.
+
+With only two pathways on a corridor, as for ammonia once `cbam_default` is
+excluded, demand and the ceiling together determine the answer outright and
+there is no freedom left to optimise. Say so when reporting it. The useful
+outputs there are the shadow price and the cross-market comparison, not the
+mix. Hydrogen, with three pathways, has genuine choice.
 
 SCOPE OF THE COST
 -----------------
@@ -123,28 +154,40 @@ class AllocationResult:
         return (self.allocation / self.demand_tonnes).round(4)
 
 
+# Excluded from every decision set. See the module docstring: this is a
+# declaration treatment for an existing pathway, not a pathway of its own, and
+# allocating volume to it splits one physical supply in two.
+NON_PATHWAYS = ("cbam_default",)
+
+
 def build_options(
     product: str,
     year: int,
     price_scenario: str,
+    corridor: str,
     compliance: pd.DataFrame | None = None,
     uk_price_variant: str = "frozen",
 ) -> pd.DataFrame:
-    """Cost and emissions per tonne for every corridor-pathway route.
+    """Cost and emissions per tonne for the pathways serving ONE market.
 
-    Compliance cost arrives per corridor in its own currency, EUR for the EU
-    corridor and GBP for the UK one, because the study never silently mixes
-    them. An optimisation has to compare them, so they are converted here at
-    the same fixed ECB reference rate the rest of the model uses, and the
-    conversion is done in one place so it is visible rather than implied.
+    `corridor` is required. Each corridor delivers into a different
+    jurisdiction, so a single solve must never span both. See the module
+    docstring for what went wrong when it did.
 
-    `uk_price_variant` is exposed because it turns out to drive the headline
-    result rather than merely colour it. Under `frozen` the UK price is held at
-    the 2026 determination while the EU price rises, so the two regimes
-    diverge; under `linked` they converge. Any finding about corridor
-    switching has to be reported against the variant that produced it, and
-    `linked` is not law, so `frozen` stays the base case.
+    A UK-market solve converts its GBP compliance cost to EUR at the same fixed
+    ECB reference rate used elsewhere, because production cost is only
+    published in EUR and one objective function needs one currency. That is a
+    conversion within a market, not a comparison across two.
+
+    `uk_price_variant` matters to the UK market's answer rather than merely
+    colouring it. Under `frozen` the UK price is held at the 2026 determination
+    while the EU price rises; under `linked` they converge. Report any finding
+    against the variant that produced it, and since `linked` is not law,
+    `frozen` stays the base case.
     """
+    if corridor not in rc.CORRIDORS:
+        raise ValueError(f"Unknown corridor {corridor!r}. Expected one of {list(rc.CORRIDORS)}.")
+
     if compliance is None:
         compliance = runner.run_compliance_matrix(uk_price_variant=uk_price_variant)
 
@@ -152,12 +195,17 @@ def build_options(
         (compliance["product"] == product)
         & (compliance["year"] == year)
         & (compliance["price_scenario"] == price_scenario)
+        & (compliance["corridor"] == corridor)
+        & (~compliance["pathway"].isin(NON_PATHWAYS))
         & (compliance["uk_ets_variant"].isin(["current_scope", "n/a"]))
         & (compliance["uk_price_variant"].isin([uk_price_variant, "n/a"]))
     ].copy()
 
     if rows.empty:
-        raise ValueError(f"No compliance rows for {product} in {year} at {price_scenario}.")
+        raise ValueError(
+            f"No compliance rows for {product} on {corridor} in {year} at "
+            f"{price_scenario}, once declaration-only pathways are excluded."
+        )
 
     rows["compliance_eur_per_tonne"] = np.where(
         rows["currency"] == "GBP",
@@ -450,6 +498,7 @@ def price_scenario_comparison(
     product: str,
     year: int,
     demand_tonnes: float,
+    corridor: str,
     capacities: CapacityAssumptions | None = None,
     cap_fraction: float | None = 0.7,
     compliance: pd.DataFrame | None = None,
@@ -482,12 +531,14 @@ def price_scenario_comparison(
 
     cap = None
     if cap_fraction is not None:
-        reference = build_options(product, year, cap_reference_scenario, compliance=compliance)
+        reference = build_options(
+            product, year, cap_reference_scenario, corridor, compliance=compliance
+        )
         cap = unconstrained_emissions(reference, demand_tonnes, caps) * cap_fraction
 
     rows = []
     for scenario in rc.PRICE_SCENARIOS:
-        options = build_options(product, year, scenario, compliance=compliance)
+        options = build_options(product, year, scenario, corridor, compliance=compliance)
         res = solve_allocation(
             options, demand_tonnes, caps, cap, product=product, year=year, price_scenario=scenario
         )
@@ -511,6 +562,140 @@ def price_scenario_comparison(
     return out
 
 
+def cheapest_substitution(options: pd.DataFrame) -> dict:
+    """The cheapest way to buy a tonne of CO2e reduction in this market.
+
+    Ranks every ordered pair of pathways by the cost of switching a tonne of
+    product from the dirtier to the cleaner one, divided by the CO2e that saves.
+    The minimum is the marginal abatement cost, and it is what the LP's shadow
+    price converges to once the ceiling starts to bind.
+
+    Exists so that a comparison between markets can name the mechanism instead
+    of asserting one. Abatement being cheap or dear depends on BOTH how much
+    cleaner the alternative is and how much more it costs, and which of those
+    dominates is not something to guess at: for ammonia the dirtier corridor
+    has the cheaper abatement, for hydrogen it does not.
+    """
+    best = None
+    for dirty in options.index:
+        for clean in options.index:
+            saved = (
+                options.loc[dirty, "emissions_tco2e_per_tonne"]
+                - options.loc[clean, "emissions_tco2e_per_tonne"]
+            )
+            if saved <= 0:
+                continue
+            extra = (
+                options.loc[clean, "cost_eur_per_tonne"]
+                - options.loc[dirty, "cost_eur_per_tonne"]
+            )
+            rate = extra / saved
+            if best is None or rate < best["eur_per_tco2e"]:
+                best = {
+                    "from_route": dirty,
+                    "to_route": clean,
+                    "eur_per_tco2e": rate,
+                    "tco2e_saved_per_tonne": saved,
+                    "extra_cost_per_tonne": extra,
+                }
+    if best is None:
+        raise ValueError("No pathway is cleaner than another, so no abatement is possible.")
+    return best
+
+
+def market_comparison(
+    product: str,
+    year: int,
+    demand_tonnes: float,
+    price_scenario: str = "medium",
+    cut_fraction: float = 0.3,
+    capacities: CapacityAssumptions | None = None,
+    uk_price_variant: str = "frozen",
+) -> pd.DataFrame:
+    """Solve each destination market on its own, then set the answers side by side.
+
+    This is the corridor comparison the study needs, done in the only way that
+    is defensible. Each market gets its own demand, its own pathways and its own
+    solve. Nothing is pooled and no volume is ever allocated from one corridor
+    to the other, because a Hamburg buyer cannot take delivery at Felixstowe.
+
+    The comparison is like for like: both markets are given the same volume to
+    source and the same proportional emissions cut against their own
+    cost-minimising baseline. That is what makes the shadow prices comparable.
+    An identical absolute ceiling would not be, since the two baselines differ.
+
+    The column worth reading is the shadow price. It is what one more tonne of
+    CO2e headroom is worth to an importer in that market, so a gap between the
+    two says the same decarbonisation target costs more on one corridor than
+    the other, and by how much.
+    """
+    capacities = capacities or CapacityAssumptions()
+    compliance = runner.run_compliance_matrix(uk_price_variant=uk_price_variant)
+
+    by_corridor = {
+        corridor: build_options(
+            product, year, price_scenario, corridor,
+            compliance=compliance, uk_price_variant=uk_price_variant,
+        )
+        for corridor in rc.CORRIDORS
+    }
+
+    # Both markets get the same proportional cut, and it has to be one that
+    # both can actually achieve, or the comparison silently becomes a
+    # comparison of two different targets. With few pathways and a capacity
+    # limit, the deepest achievable cut is often well under what a user asks
+    # for: two pathways capped at 60% cannot cut much at all.
+    achievable = min(
+        max_feasible_cut(options, demand_tonnes, capacities)
+        for options in by_corridor.values()
+    )
+    applied_cut = min(cut_fraction, achievable)
+
+    rows = []
+    for corridor, options in by_corridor.items():
+        baseline = unconstrained_emissions(options, demand_tonnes, capacities)
+        result = solve_allocation(
+            options, demand_tonnes, capacities,
+            emissions_cap_tco2e=baseline * (1 - applied_cut),
+            product=product, year=year, price_scenario=price_scenario,
+        )
+        swap = cheapest_substitution(options)
+        shares = result.shares()
+        green = float(
+            sum(v for route, v in shares.items() if "green" in route or "ccs" in route)
+        )
+        rows.append(
+            {
+                "corridor": corridor,
+                "regime": rc.CORRIDOR_REGIME[corridor],
+                "pathways_available": len(options),
+                "baseline_emissions_tco2e": round(baseline, 0),
+                "cost_per_tonne_eur": round(result.cost_per_tonne_eur, 2),
+                "shadow_price_eur_per_tco2e": (
+                    round(result.emissions_shadow_price_eur_per_tco2e, 2)
+                    if result.emissions_shadow_price_eur_per_tco2e is not None
+                    else None
+                ),
+                "low_carbon_share": round(green, 4),
+                "allocation_is_determined": len(options) <= 2,
+                "cheapest_swap_from": swap["from_route"].split(" / ")[1],
+                "cheapest_swap_to": swap["to_route"].split(" / ")[1],
+                "swap_saves_tco2e_per_tonne": round(swap["tco2e_saved_per_tonne"], 2),
+                "swap_costs_eur_per_tonne": round(swap["extra_cost_per_tonne"], 2),
+            }
+        )
+
+    out = pd.DataFrame(rows)
+    out.attrs["requested_cut"] = cut_fraction
+    out.attrs["applied_cut"] = applied_cut
+    out.attrs["cut_was_limited"] = applied_cut < cut_fraction - 1e-9
+    # Flag rather than hide the case where the LP has no freedom left. With two
+    # pathways, demand and the ceiling pin the answer exactly and the mix is
+    # arithmetic rather than a choice.
+    out.attrs["any_market_determined"] = bool(out["allocation_is_determined"].any())
+    return out
+
+
 def capacity_sensitivity(
     options: pd.DataFrame,
     demand_tonnes: float,
@@ -523,18 +708,36 @@ def capacity_sensitivity(
     the capacity numbers are the one input here with no provenance at all. If
     the reported allocation swings wildly across this sweep, the result is a
     statement about the assumption, not about the corridors.
+
+    A share can be infeasible in two distinct ways and both are reported rather
+    than raised, because each is a fact about the supply base worth reading.
+    Too little total capacity cannot meet demand at all. And where the capacity
+    limit exactly divides demand between the available pathways, the mix is
+    pinned with no slack, so no emissions cut is possible at any price: with two
+    pathways and a 50% limit, both must supply exactly half.
     """
     rows = []
     for share in shares:
         caps = CapacityAssumptions(per_route_share_of_demand=share)
         if share * len(options) < 1.0:
+            rows.append(
+                {"per_route_share": share, "feasible": False, "why": "capacity below demand"}
+            )
             continue
         baseline = unconstrained_emissions(options, demand_tonnes, caps)
-        res = solve_allocation(
-            options, demand_tonnes, caps, emissions_cap_tco2e=baseline * cap_fraction
-        )
+        try:
+            res = solve_allocation(
+                options, demand_tonnes, caps, emissions_cap_tco2e=baseline * cap_fraction
+            )
+        except ValueError:
+            rows.append(
+                {"per_route_share": share, "feasible": False, "why": "mix is pinned, no cut possible"}
+            )
+            continue
         row = {
             "per_route_share": share,
+            "feasible": True,
+            "why": "",
             "cost_per_tonne_eur": round(res.cost_per_tonne_eur, 2),
             "routes_used": res.routes_used,
             "shadow_price_eur_per_tco2e": round(res.emissions_shadow_price_eur_per_tco2e, 2),

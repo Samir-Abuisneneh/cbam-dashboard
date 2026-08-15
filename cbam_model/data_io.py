@@ -183,7 +183,12 @@ def _placeholder_emissions() -> pd.DataFrame:
     product-level one, so ammonia gets the same Canada/China figures as
     hydrogen.
     """
-    ca = rc.ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E  # EUR 59.27, 2026 baseline, see above
+    # EUR 2.37, the 2026 baseline. This is the EFFECTIVELY PAID price, ie the
+    # federal rate net of the free allocation a Nova Scotia facility receives
+    # against its performance standard. Corrected 15 August 2026; it was the
+    # headline EUR 59.27 before, which assumed a plant pays carbon on all of its
+    # emissions. See regulatory_constants for the mechanism and the sourcing.
+    ca = rc.ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E
     cn = rc.ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E  # EUR 0.00, neither product yet in scope
 
     rows = [

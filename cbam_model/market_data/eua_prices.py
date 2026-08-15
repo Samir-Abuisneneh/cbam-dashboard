@@ -41,11 +41,18 @@ the World Bank Carbon Pricing Dashboard (direct download 403s, and annual
 granularity in any case), Sandbag (chart with no export) and Ember (open file
 server, but electricity prices only).
 
-BEFORE THIS APPEARS IN THE DISSERTATION, replace it with the same series from
-Refinitiv Datastream or Eikon through the university library if that access
-exists. Identical data, licensed for academic use, citable. This file is the
-unblocking copy, not the submission copy. If the swap happens, the only thing
-that should need to change is the file this module reads.
+DECIDED 15 AUGUST 2026: this file stays, and the methodology names Investing.com
+rather than describing it vaguely. The swap to Refinitiv Datastream or Eikon
+through the university library was considered and dropped. Bristol does provide
+it, as LSEG Workspace to Masters students in the Business and Economics Schools,
+so the option remains open if anyone wants it later; the only thing that should
+need to change is the file this module reads, plus the column names and date
+format in `load_eua_daily`, which are specific to the Investing.com export.
+
+The reason for keeping it: nothing this module produces reaches a corridor
+result, so the weak provenance is contained. Both the methodology and the
+limitations say so explicitly. Do not quietly upgrade the description of this
+source in any write-up to imply it is exchange or vendor-of-record data.
 
 WHAT IT IS FOR
 --------------

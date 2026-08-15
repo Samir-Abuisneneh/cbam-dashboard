@@ -351,8 +351,68 @@ def cbam_cscf(year: int) -> float:
     """
     return CBAM_CSCF_BY_YEAR.get(year, CBAM_CSCF_ASSUMED)
 
-# Hydrogen has no de minimis mass exemption. Every shipment is in scope.
-EU_CBAM_HYDROGEN_DE_MINIMIS_EXEMPTION = False
+# De minimis, Article 2a of Regulation (EU) 2023/956 as inserted by Regulation
+# (EU) 2025/2083. An importer under a cumulative 50 tonnes of net mass per
+# calendar year (Annex VII point 1) is exempt from every obligation under the
+# regulation. Article 2a(4) then removes electricity and hydrogen from that
+# exemption entirely; recital 4 gives the reason, that quantities, trade
+# patterns and emission intensities in those two sectors differ too much from
+# the four covered ones for a mass threshold to work.
+#
+# So the two products modelled here sit on opposite sides of it: ammonia is a
+# fertiliser good and is covered, hydrogen is not. Recorded rather than applied.
+# At 56,142 t of ammonia per voyage the threshold cannot bind, so no figure in
+# this model changes, but only half of the asymmetry was written down before.
+EU_CBAM_DE_MINIMIS_MASS_THRESHOLD_T = 50.0  # Annex VII point 1
+EU_CBAM_HYDROGEN_DE_MINIMIS_EXEMPTION = False  # Article 2a(4)
+EU_CBAM_AMMONIA_DE_MINIMIS_EXEMPTION = True  # fertiliser good, Article 2a applies
+
+# Emissions boundary, Article 7(1) and Annex II. Goods listed in Annex II count
+# DIRECT emissions only; everything else counts direct plus indirect (emissions
+# from electricity consumed in production). Hydrogen CN 2804 10 00 is in Annex
+# II. Ammonia CN 2814 is not. Recital 34 of Regulation (EU) 2025/2083 states the
+# rule when adding electricity to the same Annex.
+#
+# NOT APPLIED AS A TRANSFORM, and deliberately so: embedded emissions here come
+# from the IR 2025/2621 CBAM default values, which are already published on the
+# correct boundary per good. Applying a boundary adjustment on top would double
+# count it. These constants exist so the boundary is auditable rather than
+# implicit in someone else's published number.
+#
+# OPEN QUESTION, worth resolving before the discussion chapter cites it. The EU
+# ETS hydrogen benchmark counts indirect emissions from electricity (IR
+# 2026/1412 recital 8, and the note near CBAM_BENCHMARK above), while the CBAM
+# obligation for hydrogen does not. IR 2025/2620 recital 17 says that where CBAM
+# covers direct emissions only, only the direct share of the ETS benchmark
+# should be used to set the CBAM benchmark - but says it about steel, and
+# hydrogen appears in none of the recitals. The hydrogen figures are consistent
+# with that adjustment having been made silently: 5.089 against an ETS benchmark
+# of 7.98 is roughly a 36% reduction. Ammonia's two benchmarks coincide at 1.522,
+# which is what you would expect for a good outside Annex II.
+EU_CBAM_DIRECT_EMISSIONS_ONLY_GOODS = ("hydrogen",)  # Annex II
+EU_CBAM_EMISSIONS_BOUNDARY = {
+    "hydrogen": "direct",  # CN 2804 10 00, Annex II
+    "ammonia": "direct_and_indirect",  # CN 2814, not in Annex II
+}
+
+
+def cbam_emissions_boundary(product: str) -> str:
+    """Which emissions the CBAM obligation counts for `product`.
+
+    Returns "direct" or "direct_and_indirect". Documentation of Article 7(1)
+    and Annex II rather than a calculation input: the IR 2025/2621 defaults the
+    model consumes are already on the right boundary. Raises on an unknown
+    product rather than guessing, since guessing wrong here would silently
+    change what a comparison between the two products means.
+    """
+    try:
+        return EU_CBAM_EMISSIONS_BOUNDARY[product]
+    except KeyError:
+        raise KeyError(
+            f"No CBAM emissions boundary recorded for {product!r}. "
+            f"Known products: {sorted(EU_CBAM_EMISSIONS_BOUNDARY)}. "
+            "Source: Regulation (EU) 2023/956 Article 7(1) and Annex II."
+        ) from None
 
 # First annual declaration and certificate surrender for 2026 imports.
 EU_CBAM_FIRST_SURRENDER_DEADLINE = "2027-09-30"
@@ -600,9 +660,23 @@ EU_ETS_PRICE_SCENARIOS_BY_YEAR = {
 # SETTLEMENT prices. Futures settlements and auction clearing prices track each
 # other closely, so this is a defensible proxy rather than an error, but it is
 # not the statutory series and the methodology must not imply that it is.
-# Sourcing the real thing is possible - UK ETS auction results are published -
-# and would replace both this anchor and the flat 2027-2030 path in one move.
-# Recorded as an approximation, not a gap in the sources.
+#
+# ATTEMPTED AND BLOCKED, 15 August 2026. An earlier version of this comment said
+# sourcing the real series was possible because UK ETS auction results are
+# published. They are published, but not freely:
+#
+#   - DESNZ's "Functioning of the UK carbon market" report points to ICE report
+#     278 for auction outcomes. That is the same report already found to be
+#     subscription-only for EUA data on 13 August (see market_data/eua_prices).
+#   - The DESNZ report itself gives narrative and a chart, not a series. For
+#     2024 it states only that clearing prices ranged from GBP 32.10 on
+#     21 February to GBP 46.92 on 12 June.
+#   - It is annual and roughly a year in arrears, so the 2026 quarterly means
+#     this model would need are not expected in public before late 2027.
+#
+# So the proxy stays, and the limitation is written up as an approximation with
+# the direction of the difference stated. Do not spend time on this again
+# without a paid ICE subscription or an LSEG Workspace login.
 UK_ETS_PRICE_SCENARIOS = {"low": 40.0, "medium": 49.41, "high": 60.0}  # GBP/tCO2e
 UK_ETS_PRICE_2026_OFFICIAL = 49.41
 
@@ -819,16 +893,77 @@ def cbam_cert_price_within_ets_scenario_bounds(year: int = 2026) -> bool:
 # Re-checked 15 August 2026 and the reasoning holds after the Nova Scotia
 # correction above.
 #
-# The limitation that does stand, and it is the one to write up: under any OBPS
-# a facility receives free allowances up to a performance standard and pays only
-# on emissions above it, so the effective price per tonne of embedded emissions
-# is below the headline rate in every province, Nova Scotia included. The
-# schedule below is therefore the ceiling on what could be deducted rather than
-# a confirmed effective price, which means the model's Canadian CBAM liability
-# is more likely understated than overstated.
+# RESOLVED 15 AUGUST 2026, and this is a correction rather than a caveat.
+#
+# The comment here used to say the schedule below is "the ceiling on what could
+# be deducted rather than a confirmed effective price", and left it as a
+# limitation. That was the right diagnosis and the wrong response: the model was
+# deducting the full headline rate, which assumes a facility pays carbon on
+# 100% of its emissions. It does not, and Nova Scotia publishes by how much.
+#
+# Article 9 of Regulation (EU) 2023/956 allows a deduction for the carbon price
+# EFFECTIVELY PAID, and as replaced by Regulation (EU) 2025/2083 it adds that
+# "any rebate or other form of compensation available in that country that would
+# have resulted in a reduction of that carbon price shall be taken into account".
+# Free allocation under an output-based system is exactly such a compensation.
+#
+# THE MECHANISM. A Nova Scotia facility's annual limit is its own baseline
+# emissions intensity multiplied by a Performance Standards Reduction Factor.
+# For emissions-intensive, trade-exposed (EITE) products the PSRF starts at 99%
+# of baseline in reduction period 1 and falls one point per period to 92% in
+# period 8. The eight periods run 2023 to 2030, so period 1 is 2023 and this
+# model's 2026-2030 range maps to periods 4 to 8. A facility emitting at its own
+# baseline is therefore over its standard by (1 - PSRF), and pays the federal
+# rate on that share alone.
+#
+# Source: Output-Based Pricing System Reporting and Compliance Regulations,
+# Schedule A, Table 1 (N.S.), corroborated by IETA, "Nova Scotia OBPS at a
+# glance", September 2025.
+#
+# CORROBORATION FROM OUTTURN, which is why this is not just a reading of a
+# table. Nova Scotia publishes actual compliance totals across all 15 regulated
+# facilities:
+#
+#   2023: 429,943 tCO2e obligation on 5,250,823 tCO2e emitted =  8.2%
+#   2024: 550,000 tCO2e obligation on 5.5 MtCO2e emitted       = 10.0%
+#
+# Revenue confirms the same mechanism: C$17,426,240 over 268,096 fund credits is
+# C$65 each, exactly the 2023 federal rate.
+#
+# WHY THE RULE IS THE BASE CASE AND THE OUTTURN IS THE CHECK. The outturn covers
+# every regulated facility, including coal and oil generators, which sit on the
+# Table 3 ABSOLUTE standards in tCO2e/GWh rather than a share of their own
+# baseline, and exceed them heavily. That drags the aggregate above what an
+# industrial EITE product faces. Hydrogen and ammonia are Table 1 products, so
+# the PSRF share is the right one. The two differ by 3.8% of total compliance
+# cost in 2026 and 0.6% by 2030, so the choice is not load-bearing; the outturn
+# is retained because it proves the mechanism yields single-digit percentages in
+# practice and not only on paper.
+#
+# The rule is also the reading LESS favourable to Canada: a smaller share means
+# a smaller deduction and a higher CBAM liability.
+#
+# WHAT IS STILL ASSUMED. That the facility performs at its own baseline. One
+# running cleaner than its standard pays nothing and earns credits; one running
+# dirtier pays on more. EverWind's performance against its standard is not
+# published, so this remains the central case rather than a measured figure.
 #
 # Converted at the ECB reference rate for 23 July 2026, 1 CAD = 0.62393 EUR.
 FX_EUR_PER_CAD_2026_07_23 = 0.62393
+
+# Share of a facility's emissions that is actually charged, ie 1 - PSRF, for an
+# EITE product performing at its own baseline. Periods 4 to 8 of 8.
+OBPS_CHARGEABLE_SHARE_NOVA_SCOTIA_BY_YEAR = {
+    2026: 0.04,  # period 4, PSRF 96%
+    2027: 0.05,  # period 5, PSRF 95%
+    2028: 0.06,  # period 6, PSRF 94%
+    2029: 0.07,  # period 7, PSRF 93%
+    2030: 0.08,  # period 8, PSRF 92%
+}
+
+# Nova Scotia's published outturn, kept for the robustness check rather than the
+# base case. See the note above for why it runs higher than the rule.
+OBPS_OBSERVED_CHARGEABLE_SHARE_NOVA_SCOTIA = {2023: 0.082, 2024: 0.100}
 
 ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR = {
     2026: 95.0,
@@ -853,10 +988,52 @@ def origin_carbon_price_canada_cad(year: int) -> float:
     return ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR[years[-1]]
 
 
-def origin_carbon_price_canada_eur(year: int) -> float:
+def obps_chargeable_share_nova_scotia(year: int, basis: str = "rule") -> float:
+    """Share of a facility's emissions that actually attracts the carbon price.
+
+    `rule` is the base case: 1 - PSRF for an EITE product performing at its own
+    baseline, from Schedule A Table 1 of the Nova Scotia Reporting and
+    Compliance Regulations, year-mapped through the eight reduction periods.
+
+    `observed` is the robustness check: Nova Scotia's published outturn across
+    all regulated facilities, averaged over 2023 and 2024. It runs higher than
+    the rule because it includes coal and oil generators on absolute tCO2e/GWh
+    standards. See the note above OBPS_CHARGEABLE_SHARE_NOVA_SCOTIA_BY_YEAR.
+
+    `headline` disables the adjustment entirely and returns 1.0, reproducing the
+    pre-15-August behaviour. Kept so the size of the correction stays auditable,
+    not because deducting the full rate is defensible.
+    """
+    if basis == "headline":
+        return 1.0
+    if basis == "observed":
+        vals = OBPS_OBSERVED_CHARGEABLE_SHARE_NOVA_SCOTIA.values()
+        return sum(vals) / len(vals)
+    if basis != "rule":
+        raise ValueError(f"Unknown basis {basis!r}. Expected rule, observed or headline.")
+
+    table = OBPS_CHARGEABLE_SHARE_NOVA_SCOTIA_BY_YEAR
+    if year in table:
+        return table[year]
+    years = sorted(table)
+    return table[years[0]] if year < years[0] else table[years[-1]]
+
+
+def origin_carbon_price_canada_eur(year: int, basis: str = "rule") -> float:
     """Canada's origin carbon price in EUR/tCO2e for `year`, for the Article 9
-    CBAM deduction."""
-    return round(origin_carbon_price_canada_cad(year) * FX_EUR_PER_CAD_2026_07_23, 2)
+    CBAM deduction.
+
+    Returns the EFFECTIVELY PAID price, not the headline federal rate: the rate
+    multiplied by the share of emissions actually charged under Nova Scotia's
+    output-based system. Article 9 allows a deduction for the price effectively
+    paid and, as replaced by Regulation (EU) 2025/2083, requires any rebate or
+    compensation reducing it to be taken into account. Free allocation against a
+    performance standard is such a compensation.
+
+    Pass basis="headline" for the pre-correction figure.
+    """
+    headline = origin_carbon_price_canada_cad(year) * FX_EUR_PER_CAD_2026_07_23
+    return round(headline * obps_chargeable_share_nova_scotia(year, basis), 2)
 
 
 # Backward-compatible flat figure, now the 2026 baseline rather than the old
@@ -866,7 +1043,10 @@ def origin_carbon_price_canada_eur(year: int) -> float:
 # do NOT use this - they call `origin_carbon_price_eur(corridor, year)` below,
 # so their outputs correctly vary year to year even though this constant does
 # not.
-ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E = origin_carbon_price_canada_eur(2026)  # EUR 59.27
+ORIGIN_CARBON_PRICE_CANADA_EUR_PER_TCO2E = origin_carbon_price_canada_eur(2026)  # EUR 2.37
+ORIGIN_CARBON_PRICE_CANADA_HEADLINE_EUR_PER_TCO2E = origin_carbon_price_canada_eur(
+    2026, basis="headline"
+)  # EUR 59.27, the federal rate before the OBPS free allocation is netted off
 
 # CHINA. Set to zero, and this is a finding rather than a missing figure.
 # China's national ETS as of 2026 covers only power generation, steel, cement

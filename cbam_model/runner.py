@@ -85,6 +85,7 @@ def run_cbam_matrix(
     skip_unresolved: bool = True,
     uk_price_variant: str = "frozen",
     cbam_mechanism: str | None = None,
+    obps_basis: str = "rule",
 ) -> pd.DataFrame:
     """CBAM liability per tonne of product.
 
@@ -93,6 +94,11 @@ def run_cbam_matrix(
     to `cbam_default` rows, never to literature pathways). Pass an explicit
     True/False only to force every row the same way, which is rarely correct
     once literature and default pathways are mixed in the same run.
+
+    `obps_basis` selects the Nova Scotia chargeable-share assumption behind the
+    Article 9 deduction and affects the Canadian corridor only. See
+    `rc.obps_chargeable_share_nova_scotia`; the default `rule` is the base case
+    and the alternatives are robustness checks, not competing central estimates.
     """
     if emissions is None:
         emissions, _, _ = data_io.load_inputs()
@@ -117,7 +123,7 @@ def run_cbam_matrix(
                             # 2026-baseline column - see
                             # rc.origin_carbon_price_eur's docstring.
                             origin_carbon_price_eur_per_tco2e=rc.origin_carbon_price_eur(
-                                e["corridor"], year
+                                e["corridor"], year, obps_basis
                             ),
                             using_default_values=using_default_values,
                             uk_cbam_rate_override=uk_cbam_rate_override,
@@ -153,6 +159,7 @@ def run_compliance_matrix(
     skip_unresolved: bool = True,
     uk_price_variant: str = "frozen",
     cbam_mechanism: str | None = None,
+    obps_basis: str = "rule",
 ) -> pd.DataFrame:
     """Total carbon compliance cost per tonne of product, both layers joined.
 
@@ -160,6 +167,9 @@ def run_compliance_matrix(
     per-tonne basis that CBAM works in. Defaults to the gas carrier base case
     on the Suez routing, since that is the primary scenario; the maritime matrix
     covers the full spread.
+
+    `obps_basis` is passed straight through to the Article 9 deduction and
+    affects the Canadian corridor only. See `run_cbam_matrix`.
     """
     if emissions is None:
         emissions, _, _ = data_io.load_inputs()
@@ -197,7 +207,7 @@ def run_compliance_matrix(
                                 # 2026-baseline column - see
                                 # rc.origin_carbon_price_eur's docstring.
                                 origin_carbon_price_eur_per_tco2e=rc.origin_carbon_price_eur(
-                                    corridor, year
+                                    corridor, year, obps_basis
                                 ),
                                 uk_cbam_rate_override=uk_cbam_rate_override,
                                 uk_price_variant=uk_price_variant,

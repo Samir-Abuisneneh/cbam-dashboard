@@ -952,8 +952,12 @@ def cbam_cert_price_within_ets_scenario_bounds(year: int = 2026) -> bool:
 FX_EUR_PER_CAD_2026_07_23 = 0.62393
 
 # Share of a facility's emissions that is actually charged, ie 1 - PSRF, for an
-# EITE product performing at its own baseline. Periods 4 to 8 of 8.
+# EITE product performing at its own baseline. The eight reduction periods run
+# 2023 to 2030, so this covers all of them; the model's range is 2026-2030.
 OBPS_CHARGEABLE_SHARE_NOVA_SCOTIA_BY_YEAR = {
+    2023: 0.01,  # period 1, PSRF 99%
+    2024: 0.02,  # period 2, PSRF 98%
+    2025: 0.03,  # period 3, PSRF 97%
     2026: 0.04,  # period 4, PSRF 96%
     2027: 0.05,  # period 5, PSRF 95%
     2028: 0.06,  # period 6, PSRF 94%
@@ -964,6 +968,44 @@ OBPS_CHARGEABLE_SHARE_NOVA_SCOTIA_BY_YEAR = {
 # Nova Scotia's published outturn, kept for the robustness check rather than the
 # base case. See the note above for why it runs higher than the rule.
 OBPS_OBSERVED_CHARGEABLE_SHARE_NOVA_SCOTIA = {2023: 0.082, 2024: 0.100}
+
+# CHALLENGED 16 AUGUST 2026 (Alex), and the challenge is recorded here because
+# it is a good one that turned out not to bite.
+#
+# The objection: 4% is what a facility pays sitting exactly at its standard, ie
+# a floor, whereas 8.2% and 10.0% are what facilities actually paid. Applying
+# the floor to `cbam_default`, which is the dirty pathway by construction,
+# understates the deduction and so overstates Halifax's CBAM cost.
+#
+# The floor-versus-outturn distinction is right and is why `observed` exists.
+# The inference from "dirty pathway" to "higher chargeable share" is not: a
+# Table 1 standard is a fraction of the facility's OWN baseline intensity, not
+# an absolute sector benchmark, so absolute emissions intensity does not move
+# the share at all. Only deterioration against a facility's own history does.
+# The outturn runs high for the separate compositional reason already given
+# above, namely the Table 3 generators.
+#
+# The two rates are also not like for like, and correcting that makes the
+# objection stronger rather than weaker. 8.2% was 2023, a period-1 year whose
+# rule floor is 1%, and 10.0% was 2024, a period-2 year whose floor is 2%. The
+# outturn therefore ran 7.2 and 8.0 points ABOVE the contemporaneous standard.
+# Carrying that mean overage of 7.6 points onto each year's floor gives the
+# `overage` basis below: 11.6% in 2026 rising to 15.6% in 2030, harsher than
+# the flat 10% originally proposed.
+#
+# NOTHING IN THE OUTPUTS MOVES ACROSS ANY OF IT. The corridor ordering is
+# identical on all four bases for both products on all three UK price paths,
+# and the ammonia lock-in reversal on the linkage path survives and strengthens
+# (breakeven 8.29 GBP/t of annual volume on `rule`, 21.32 on `overage`). The
+# tightest margin anywhere is ammonia on the frozen path in 2027, where
+# Ningbo-Felixstowe's lead narrows from 8.93 to 6.69 GBP/t and does not close.
+# Locked by `test_corridor_ordering_is_invariant_to_the_obps_basis`.
+#
+# `rule` stays the base case for the mechanism reason above. The point of the
+# other bases is that the result no longer depends on which one is chosen.
+OBPS_OBSERVED_OVERAGE_ABOVE_STANDARD_NOVA_SCOTIA = 0.076
+
+OBPS_BASES = ("rule", "observed", "overage", "headline")
 
 ORIGIN_CARBON_PRICE_CANADA_CAD_PER_TCO2E_BY_YEAR = {
     2026: 95.0,
@@ -995,10 +1037,16 @@ def obps_chargeable_share_nova_scotia(year: int, basis: str = "rule") -> float:
     baseline, from Schedule A Table 1 of the Nova Scotia Reporting and
     Compliance Regulations, year-mapped through the eight reduction periods.
 
-    `observed` is the robustness check: Nova Scotia's published outturn across
+    `observed` is a robustness check: Nova Scotia's published outturn across
     all regulated facilities, averaged over 2023 and 2024. It runs higher than
     the rule because it includes coal and oil generators on absolute tCO2e/GWh
     standards. See the note above OBPS_CHARGEABLE_SHARE_NOVA_SCOTIA_BY_YEAR.
+
+    `overage` is the harsher robustness check, and the one to quote when the
+    floor-versus-outturn objection is raised. It compares each outturn to the
+    standard in force that year rather than to a 2026 floor, and carries the
+    resulting mean overage of 7.6 points onto each year's rule share. Runs
+    higher than `observed` from 2026 on.
 
     `headline` disables the adjustment entirely and returns 1.0, reproducing the
     pre-15-August behaviour. Kept so the size of the correction stays auditable,
@@ -1009,14 +1057,21 @@ def obps_chargeable_share_nova_scotia(year: int, basis: str = "rule") -> float:
     if basis == "observed":
         vals = OBPS_OBSERVED_CHARGEABLE_SHARE_NOVA_SCOTIA.values()
         return sum(vals) / len(vals)
-    if basis != "rule":
-        raise ValueError(f"Unknown basis {basis!r}. Expected rule, observed or headline.")
+    if basis not in ("rule", "overage"):
+        raise ValueError(
+            f"Unknown basis {basis!r}. Expected one of {', '.join(OBPS_BASES)}."
+        )
 
     table = OBPS_CHARGEABLE_SHARE_NOVA_SCOTIA_BY_YEAR
     if year in table:
-        return table[year]
-    years = sorted(table)
-    return table[years[0]] if year < years[0] else table[years[-1]]
+        share = table[year]
+    else:
+        years = sorted(table)
+        share = table[years[0]] if year < years[0] else table[years[-1]]
+
+    if basis == "overage":
+        share += OBPS_OBSERVED_OVERAGE_ABOVE_STANDARD_NOVA_SCOTIA
+    return share
 
 
 def origin_carbon_price_canada_eur(year: int, basis: str = "rule") -> float:
@@ -1059,7 +1114,7 @@ ORIGIN_CARBON_PRICE_CANADA_HEADLINE_EUR_PER_TCO2E = origin_carbon_price_canada_e
 ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E = 0.0
 
 
-def origin_carbon_price_eur(corridor: str, year: int) -> float:
+def origin_carbon_price_eur(corridor: str, year: int, basis: str = "rule") -> float:
     """Origin carbon price in EUR/tCO2e for `corridor` in `year`.
 
     The single entry point `run_cbam_matrix` and `run_compliance_matrix` use,
@@ -1068,9 +1123,15 @@ def origin_carbon_price_eur(corridor: str, year: int) -> float:
     of year - not because no figure was sourced, but because hydrogen and
     ammonia production are confirmed out of scope of China's national ETS
     (see the constant above), which is itself year-independent.
+
+    `basis` selects the OBPS chargeable-share assumption and reaches Canada
+    only, China having nothing to deduct on any basis. It is plumbed all the
+    way from the runners so the robustness check documented above can actually
+    be run from the pipeline; before 16 August 2026 the alternative bases
+    existed on `obps_chargeable_share_nova_scotia` but nothing could call them.
     """
     if corridor == HALIFAX_HAMBURG:
-        return origin_carbon_price_canada_eur(year)
+        return origin_carbon_price_canada_eur(year, basis)
     if corridor == NINGBO_FELIXSTOWE:
         return ORIGIN_CARBON_PRICE_CHINA_EUR_PER_TCO2E
     raise ValueError(f"No origin carbon price sourced for corridor {corridor!r}")

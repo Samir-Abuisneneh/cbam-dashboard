@@ -5,6 +5,8 @@ previous run, so a regression in the model cannot quietly update its own
 expectations.
 """
 
+import warnings
+
 import pandas as pd
 import pytest
 
@@ -2466,6 +2468,289 @@ def test_only_ammonias_corridor_ordering_survives_all_three_uk_price_paths():
     # was the other way round.
     assert len(hydrogen_orderings) == 1, "hydrogen should be price-path robust"
     assert len(ammonia_orderings) > 1, "ammonia should not be price-path robust"
+
+
+def test_obps_bases_order_from_smallest_deduction_to_largest():
+    """The four bases must actually span a range, or the invariance test below
+    proves nothing. `rule` is the base case and the least favourable to Canada;
+    `headline` is the superseded pre-15-August behaviour and deducts the full
+    federal rate, which is why it is an audit trail and not a scenario."""
+    for year in scenarios.YEARS:
+        rule = rc.origin_carbon_price_canada_eur(year, "rule")
+        observed = rc.origin_carbon_price_canada_eur(year, "observed")
+        overage = rc.origin_carbon_price_canada_eur(year, "overage")
+        headline = rc.origin_carbon_price_canada_eur(year, "headline")
+        assert rule < overage < headline, year
+        assert rule < observed < headline, year
+        # `observed` is a flat average, `rule` and `overage` both tighten with
+        # the reduction periods, so the gap between them narrows over time.
+        assert overage > observed, year
+
+    # The overage is derived from outturns measured against the standard in
+    # force in those years, not against the 2026 floor. 2023 was period 1.
+    for year, obs in rc.OBPS_OBSERVED_CHARGEABLE_SHARE_NOVA_SCOTIA.items():
+        floor = rc.OBPS_CHARGEABLE_SHARE_NOVA_SCOTIA_BY_YEAR[year]
+        assert obs - floor == pytest.approx(
+            rc.OBPS_OBSERVED_OVERAGE_ABOVE_STANDARD_NOVA_SCOTIA, abs=0.005
+        ), year
+
+    with pytest.raises(ValueError, match="Unknown basis"):
+        rc.obps_chargeable_share_nova_scotia(2026, "made_up")
+
+
+def test_corridor_ordering_is_invariant_to_the_obps_basis():
+    """Alex's 16 August 2026 challenge, locked as a robustness result.
+
+    The objection was that 4% is the floor a facility pays sitting exactly at
+    its standard, while Nova Scotia's published outturn was 8.2% and 10.0%, so
+    the model understates the Article 9 deduction and overstates Halifax's CBAM
+    cost. Since the corridor ordering had just come to rest on that deduction,
+    the worry was that the ordering itself was an artefact of the floor.
+
+    It is not. The ordering is identical on `rule`, `observed` and `overage`,
+    for both products, on all three UK price paths. `overage` is the harshest
+    defensible reading at 11.6% in 2026 rising to 15.6% in 2030, above the flat
+    10% originally proposed, and it does not move a single row.
+
+    Raising the deduction moves cost toward Halifax, so this is also the first
+    correction in the sequence that runs in Halifax's favour. The finding
+    survives it, which is a stronger claim than the one made before.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    baseline = {}
+
+    for basis in ("rule", "observed", "overage"):
+        for variant in rc.UK_ETS_PRICE_VARIANTS:
+            compliance = runner.run_compliance_matrix(
+                emissions, uk_price_variant=variant, obps_basis=basis
+            )
+            comparison = outputs.corridor_cost_comparison(
+                compliance, uk_price_variant=variant
+            )
+            for product in rc.PRODUCTS:
+                rows = comparison[comparison["product"] == product].sort_values("year")
+                got = list(rows["cheaper_corridor"])
+                key = (variant, product)
+                baseline.setdefault(key, got)
+                assert got == baseline[key], f"{basis}/{variant}/{product}"
+
+
+def test_the_ammonia_lock_in_reversal_survives_a_higher_origin_deduction():
+    """The other half of the 16 August challenge, and the half that was wrong.
+
+    The claim was that if Ningbo-Felixstowe is cheaper in every year for both
+    products then spot and present value agree everywhere, so no reversal and
+    no breakeven threshold survive. That holds on the frozen and DESNZ paths
+    and already did. It does not hold on the linkage path, where ammonia runs
+    NF in 2026 and Halifax-Hamburg from 2027, so a 2026 decision year has a
+    myopic choice that disagrees with the committed one.
+
+    That reversal not only survives a larger deduction, it strengthens with it,
+    because a larger deduction widens Halifax's later-year lead. Linkage is
+    still not law, so the result stays conditional on a hypothetical - but it
+    is conditional, not dead.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    breakevens = {}
+
+    for basis in ("rule", "observed", "overage"):
+        compliance = runner.run_compliance_matrix(
+            emissions, uk_price_variant="linked", obps_basis=basis
+        )
+        lock_in = outputs.corridor_lock_in(compliance, uk_price_variant="linked")
+        reversals = lock_in[lock_in["decision_reverses"]]
+
+        assert len(reversals) == 1, basis
+        row = reversals.iloc[0]
+        assert row["product"] == "ammonia", basis
+        assert row["decision_year"] == 2026, basis
+        breakevens[basis] = row[
+            "breakeven_switching_cost_gbp_per_tonne_annual_volume"
+        ]
+
+        # And it is genuinely absent from the two paths that are law.
+        for variant in ("frozen", "desnz"):
+            law = runner.run_compliance_matrix(
+                emissions, uk_price_variant=variant, obps_basis=basis
+            )
+            assert not outputs.corridor_lock_in(
+                law, uk_price_variant=variant
+            )["decision_reverses"].any(), f"{basis}/{variant}"
+
+    assert breakevens["rule"] < breakevens["observed"] < breakevens["overage"]
+
+
+def test_cape_routing_reaches_the_corridor_comparison_at_all():
+    """Regression for a filter bug found on 16 August 2026.
+
+    `_base_case_mask` hard-pinned `route_scenario == "suez"`, so a compliance
+    frame built with `run_compliance_matrix(route="cape")` lost all 273 of its
+    rows and `corridor_cost_comparison` handed back an empty frame. That reads
+    as "no data" rather than as a filter bug, which is precisely the failure
+    the same docstring warned about for `uk_price_variant` and then did not
+    generalise to routing.
+
+    Cape is not hypothetical: 14,815 nm against 10,403 for Ningbo-Felixstowe,
+    42% more voyage CO2e, and already exercised in the Gayu validation. Any
+    chokepoint-closure scenario runs through this parameter.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions, route="cape")
+
+    assert (compliance["route_scenario"] == "cape").all()
+    mask = outputs._base_case_mask(compliance, "frozen", "cape")
+    assert mask.any(), "cape rows must survive the base case filter"
+
+    comparison = outputs.corridor_cost_comparison(
+        compliance, uk_price_variant="frozen", route="cape"
+    )
+    assert not comparison.empty
+    assert set(comparison["product"]) == set(rc.PRODUCTS)
+
+
+def test_routing_does_not_move_the_base_case_and_the_reason_is_uk_ets_scope():
+    """Cape routing is now reachable and provably changes nothing in the base
+    case. That is a result rather than a null: UK ETS as currently legislated
+    does not cover international voyages, so the extra 4,412 nm attracts no
+    charge. Only `proposed_expansion` rows move, and the base case filters to
+    `current_scope`.
+
+    Asserted so that if UK ETS scope is ever extended in the model, this test
+    fails and the routing assumption gets revisited rather than inherited.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    suez = runner.run_compliance_matrix(emissions, route="suez")
+    cape = runner.run_compliance_matrix(emissions, route="cape")
+
+    delta = (
+        cape["total_compliance_cost_per_tonne"]
+        - suez["total_compliance_cost_per_tonne"]
+    )
+    moved = suez[delta.abs() > 1e-9]
+    assert len(moved), "cape must move something, or the route is not plumbed"
+    assert set(moved["uk_ets_variant"]) == {"proposed_expansion"}
+    assert set(moved["corridor"]) == {rc.NINGBO_FELIXSTOWE}
+    assert not set(moved["uk_ets_variant"]) & set(outputs.BASE_CASE_UK_ETS_VARIANTS)
+
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        by_route = {}
+        for route in ("suez", "cape"):
+            compliance = runner.run_compliance_matrix(
+                emissions, uk_price_variant=variant, route=route
+            )
+            comparison = outputs.corridor_cost_comparison(
+                compliance, uk_price_variant=variant, route=route
+            )
+            by_route[route] = list(comparison.sort_values(["product", "year"])[
+                "cheaper_corridor"
+            ])
+        assert by_route["suez"] == by_route["cape"], variant
+
+
+def test_a_base_case_filter_that_matches_nothing_warns_instead_of_going_quiet():
+    """The generalisation of the two bugs above. Both were a scenario axis the
+    filter silently disagreed with, and in both cases the symptom was an empty
+    frame that looked like missing data. Any future instance must announce
+    itself."""
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions, route="cape")
+
+    with pytest.warns(UserWarning, match="matched 0 of"):
+        outputs._base_case_mask(compliance, "frozen", "suez")
+
+    # And the well-matched case stays silent.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        outputs._base_case_mask(compliance, "frozen", "cape")
+
+
+def test_the_corridor_finding_is_reported_on_one_price_scenario_of_three():
+    """Found 16 August 2026 by auditing for unexercised scenario axes.
+
+    `run_compliance_matrix` computes low, medium and high, and every output
+    function defaults to medium. No caller anywhere, including this test file
+    before today, ever supplied anything else, so two thirds of every matrix
+    was computed and discarded.
+
+    Most of the picture holds. Hydrogen is Ningbo-Felixstowe on every scenario
+    and every path, and frozen and DESNZ never reverse for either product. What
+    does move is the one thing the contribution rests on: on the linkage path
+    the ammonia crossover slips from 2027 to 2028 under the low scenario, and
+    2027 there is a 0.3 GBP/t dead heat rather than a 2.1 GBP/t lead.
+
+    So the crossover year is a medium-scenario figure and must be quoted as
+    one. This test exists to stop it being quoted bare.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
+
+    orderings = {}
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        compliance = runner.run_compliance_matrix(emissions, uk_price_variant=variant)
+        for scenario in rc.PRICE_SCENARIOS:
+            comparison = outputs.corridor_cost_comparison(
+                compliance, price_scenario=scenario, uk_price_variant=variant
+            )
+            assert not comparison.empty, f"{variant}/{scenario}"
+            for product in rc.PRODUCTS:
+                rows = comparison[comparison["product"] == product].sort_values("year")
+                orderings[(variant, scenario, product)] = list(rows["cheaper_corridor"])
+
+    # Robust across all three: hydrogen everywhere, and both products on the
+    # two paths that are actually law.
+    for scenario in rc.PRICE_SCENARIOS:
+        for variant in rc.UK_ETS_PRICE_VARIANTS:
+            assert orderings[(variant, scenario, "hydrogen")] == [nf] * 5
+        for variant in ("frozen", "desnz"):
+            assert orderings[(variant, scenario, "ammonia")] == [nf] * 5
+
+    # Not robust: the linkage-path ammonia crossover moves a year on low.
+    assert orderings[("linked", "low", "ammonia")] == [nf, nf, hh, hh, hh]
+    assert orderings[("linked", "medium", "ammonia")] == [nf, hh, hh, hh, hh]
+    assert orderings[("linked", "high", "ammonia")] == [nf, hh, hh, hh, hh]
+
+
+def test_the_lock_in_decision_year_is_also_a_medium_scenario_figure():
+    """Same audit, applied to the surviving contribution.
+
+    The reversal itself is robust: it is present on the linkage path and absent
+    on frozen and DESNZ under every price scenario. The figures around it are
+    not. The decision year moves from 2026 to 2027 under low, and the breakeven
+    ranges from 8.29 to 30.78 GBP per tonne of annual volume without being
+    monotonic in the price level.
+
+    Report the reversal as the finding and the breakeven as a range.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    found = {}
+
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        compliance = runner.run_compliance_matrix(emissions, uk_price_variant=variant)
+        for scenario in rc.PRICE_SCENARIOS:
+            lock_in = outputs.corridor_lock_in(
+                compliance, price_scenario=scenario, uk_price_variant=variant
+            )
+            reversals = lock_in[lock_in["decision_reverses"]]
+            if variant == "linked":
+                assert len(reversals) == 1, (variant, scenario)
+                row = reversals.iloc[0]
+                assert row["product"] == "ammonia"
+                found[scenario] = (
+                    int(row["decision_year"]),
+                    row["breakeven_switching_cost_gbp_per_tonne_annual_volume"],
+                )
+            else:
+                assert reversals.empty, (variant, scenario)
+
+    assert found["low"][0] == 2027, "low slips the decision year"
+    assert found["medium"][0] == 2026
+    assert found["high"][0] == 2026
+
+    breakevens = [v[1] for v in found.values()]
+    assert min(breakevens) < 10.0 < max(breakevens)
+    # Explicitly not monotonic in the price level, so a single quoted figure
+    # cannot be defended as a central case with the others as bounds.
+    assert not (found["low"][1] < found["medium"][1] < found["high"][1])
 
 
 # ---------------------------------------------------------------------------

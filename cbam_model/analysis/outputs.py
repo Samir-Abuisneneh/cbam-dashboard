@@ -4,6 +4,7 @@ Two layers, reported separately because they cannot yet be joined. Currencies
 are never mixed on a chart axis.
 """
 
+import warnings
 from pathlib import Path
 
 import pandas as pd
@@ -548,6 +549,7 @@ def corridor_cost_comparison(
     pathway: str = "cbam_default",
     price_scenario: str = "medium",
     uk_price_variant: str = "frozen",
+    route: str = "suez",
 ) -> pd.DataFrame:
     """Total compliance cost per tonne, both corridors side by side, by year.
 
@@ -572,7 +574,7 @@ def corridor_cost_comparison(
     df = compliance[
         (compliance["pathway"] == pathway)
         & (compliance["price_scenario"] == price_scenario)
-        & _base_case_mask(compliance, uk_price_variant)
+        & _base_case_mask(compliance, uk_price_variant, route)
     ].copy()
     if df.empty:
         return pd.DataFrame()
@@ -780,6 +782,7 @@ def corridor_lock_in(
     discount_rate: float | None = None,
     beyond_horizon: str = "truncate",
     uk_price_variant: str = "frozen",
+    route: str = "suez",
 ) -> pd.DataFrame:
     """Whether the spot-cheapest corridor is also the right one to commit to.
 
@@ -824,7 +827,7 @@ def corridor_lock_in(
     )
 
     comparison = corridor_cost_comparison(
-        compliance, pathway, price_scenario, uk_price_variant
+        compliance, pathway, price_scenario, uk_price_variant, route
     )
     if comparison.empty:
         return pd.DataFrame()
@@ -883,7 +886,11 @@ def corridor_lock_in(
     return pd.DataFrame(rows)
 
 
-def _base_case_mask(compliance: pd.DataFrame, uk_price_variant: str = "frozen"):
+def _base_case_mask(
+    compliance: pd.DataFrame,
+    uk_price_variant: str = "frozen",
+    route: str = "suez",
+):
     """Boolean mask selecting the study's primary scenario rows.
 
     Suez routing, UK ETS as currently legislated, conventional bunker, and one
@@ -898,6 +905,19 @@ def _base_case_mask(compliance: pd.DataFrame, uk_price_variant: str = "frozen"):
     happened when the DESNZ path was first added, and an empty frame reads as
     "no data" rather than as a filter bug.
 
+    `route` is the same defect and was fixed on 16 August 2026, having been
+    left in place when the `uk_price_variant` version of it was fixed. Routing
+    was hard-pinned to "suez" here, so a frame built with
+    `run_compliance_matrix(route="cape")` lost every one of its 273 rows and
+    `corridor_cost_comparison` returned an empty frame. Cape routing is fully
+    implemented (14,815 nm against 10,403 for Ningbo-Felixstowe, 42% more
+    voyage CO2e) and is exercised in the Gayu validation, so the capability
+    existed and simply could not reach the corridor comparison. Any
+    chokepoint-closure scenario runs through this parameter.
+
+    The zero-row warning below exists so the next instance of this pattern
+    announces itself instead of reading as an empty result.
+
     The `isna()` arm matters for a different reason. The EU corridor stores
     "n/a" in the UK-only columns, and pandas reads that literal string back
     from CSV as NaN, so without it this silently drops every Halifax-Hamburg
@@ -908,12 +928,25 @@ def _base_case_mask(compliance: pd.DataFrame, uk_price_variant: str = "frozen"):
     def col(column, allowed):
         return compliance[column].isin(allowed) | compliance[column].isna()
 
-    return (
-        (compliance["route_scenario"] == "suez")
+    mask = (
+        col("route_scenario", ["n/a", route])
         & col("uk_ets_variant", BASE_CASE_UK_ETS_VARIANTS)
         & col("uk_price_variant", ["n/a", uk_price_variant])
         & col("bunker_fuel", BASE_CASE_BUNKERS)
     )
+
+    if len(compliance) and not mask.any():
+        warnings.warn(
+            f"\n  The base-case filter matched 0 of {len(compliance)} compliance rows. "
+            f"This is a filter mismatch, not an absence of data: the frame was most "
+            f"likely built with a scenario this call did not ask for. Asked for "
+            f"route={route!r}, uk_price_variant={uk_price_variant!r}; frame carries "
+            f"route_scenario={sorted(compliance['route_scenario'].dropna().unique())}, "
+            f"uk_price_variant={sorted(compliance['uk_price_variant'].dropna().unique())}.",
+            stacklevel=3,
+        )
+
+    return mask
 
 
 def competitiveness_burden(
@@ -922,6 +955,7 @@ def competitiveness_burden(
     pathway: str = "cbam_default",
     price_scenario: str = "medium",
     uk_price_variant: str = "frozen",
+    route: str = "suez",
 ) -> pd.DataFrame:
     """Carbon compliance cost as a share of production cost, per corridor.
 
@@ -955,7 +989,7 @@ def competitiveness_burden(
     df = compliance[
         (compliance["pathway"] == pathway)
         & (compliance["price_scenario"] == price_scenario)
-        & _base_case_mask(compliance, uk_price_variant)
+        & _base_case_mask(compliance, uk_price_variant, route)
     ].copy()
     if df.empty:
         return pd.DataFrame()

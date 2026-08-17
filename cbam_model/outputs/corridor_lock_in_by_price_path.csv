@@ -1,0 +1,181 @@
+product,pathway,price_scenario,decision_year,tenor_years,years_evaluated,discount_rate,beyond_horizon,spot_cost_gap_gbp_per_tonne,myopic_choice,committed_choice,decision_reverses,pv_halifax_hamburg_gbp_per_tonne_annual_volume,pv_ningbo_felixstowe_gbp_per_tonne_annual_volume,breakeven_switching_cost_gbp_per_tonne_annual_volume,lock_in_regret_pct,uk_price_variant,uk_price_variant_label
+ammonia,cbam_default,low,2026,10,5,0.08,truncate,-30.51,ningbo_felixstowe,ningbo_felixstowe,False,194.13,125.05,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2027,10,4,0.08,truncate,-6.23,ningbo_felixstowe,ningbo_felixstowe,False,176.66,135.02,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2028,10,3,0.08,truncate,-8.0,ningbo_felixstowe,ningbo_felixstowe,False,154.52,116.27,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2029,10,2,0.08,truncate,-13.34,ningbo_felixstowe,ningbo_felixstowe,False,124.62,91.95,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2030,10,1,0.08,truncate,-20.88,ningbo_felixstowe,ningbo_felixstowe,False,78.41,57.53,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2026,10,5,0.08,truncate,-407.6,ningbo_felixstowe,ningbo_felixstowe,False,2413.63,764.78,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2027,10,4,0.08,truncate,-322.81,ningbo_felixstowe,ningbo_felixstowe,False,2166.07,825.52,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2028,10,3,0.08,truncate,-394.3,ningbo_felixstowe,ningbo_felixstowe,False,1809.99,710.83,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2029,10,2,0.08,truncate,-403.24,ningbo_felixstowe,ningbo_felixstowe,False,1323.34,562.09,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2030,10,1,0.08,truncate,-386.65,ningbo_felixstowe,ningbo_felixstowe,False,738.33,351.68,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2026,10,10,0.08,hold_final,-30.51,ningbo_felixstowe,ningbo_felixstowe,False,424.24,293.89,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2027,10,10,0.08,hold_final,-6.23,ningbo_felixstowe,ningbo_felixstowe,False,464.41,346.14,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2028,10,10,0.08,hold_final,-8.0,ningbo_felixstowe,ningbo_felixstowe,False,504.51,373.06,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2029,10,10,0.08,hold_final,-13.34,ningbo_felixstowe,ningbo_felixstowe,False,541.84,398.06,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2030,10,10,0.08,hold_final,-20.88,ningbo_felixstowe,ningbo_felixstowe,False,568.23,416.91,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2026,10,10,0.08,hold_final,-407.6,ningbo_felixstowe,ningbo_felixstowe,False,4580.45,1796.88,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2027,10,10,0.08,hold_final,-322.81,ningbo_felixstowe,ningbo_felixstowe,False,4875.59,2116.11,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2028,10,10,0.08,hold_final,-394.3,ningbo_felixstowe,ningbo_felixstowe,False,5105.62,2280.6,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2029,10,10,0.08,hold_final,-403.24,ningbo_felixstowe,ningbo_felixstowe,False,5251.96,2433.37,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,low,2030,10,10,0.08,hold_final,-386.65,ningbo_felixstowe,ningbo_felixstowe,False,5350.59,2548.59,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2026,10,5,0.08,truncate,-34.98,ningbo_felixstowe,ningbo_felixstowe,False,276.34,154.48,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2027,10,4,0.08,truncate,-8.93,ningbo_felixstowe,ningbo_felixstowe,False,260.61,166.78,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2028,10,3,0.08,truncate,-15.95,ningbo_felixstowe,ningbo_felixstowe,False,235.32,143.62,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2029,10,2,0.08,truncate,-30.46,ningbo_felixstowe,ningbo_felixstowe,False,195.38,113.58,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2030,10,1,0.08,truncate,-55.45,ningbo_felixstowe,ningbo_felixstowe,False,126.52,71.07,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2026,10,5,0.08,truncate,-467.53,ningbo_felixstowe,ningbo_felixstowe,False,3382.47,944.68,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2027,10,4,0.08,truncate,-417.08,ningbo_felixstowe,ningbo_felixstowe,False,3147.59,1019.71,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2028,10,3,0.08,truncate,-578.37,ningbo_felixstowe,ningbo_felixstowe,False,2725.72,878.05,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2029,10,2,0.08,truncate,-670.11,ningbo_felixstowe,ningbo_felixstowe,False,2065.16,694.32,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2030,10,1,0.08,truncate,-756.79,ningbo_felixstowe,ningbo_felixstowe,False,1191.2,434.41,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2026,10,10,0.08,hold_final,-34.98,ningbo_felixstowe,ningbo_felixstowe,False,647.65,363.05,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2027,10,10,0.08,hold_final,-8.93,ningbo_felixstowe,ningbo_felixstowe,False,724.92,427.6,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2028,10,10,0.08,hold_final,-15.95,ningbo_felixstowe,ningbo_felixstowe,False,800.05,460.85,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2029,10,10,0.08,hold_final,-30.46,ningbo_felixstowe,ningbo_felixstowe,False,868.59,491.74,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2030,10,10,0.08,hold_final,-55.45,ningbo_felixstowe,ningbo_felixstowe,False,916.88,515.04,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2026,10,10,0.08,hold_final,-467.53,ningbo_felixstowe,ningbo_felixstowe,False,6878.36,2219.57,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2027,10,10,0.08,hold_final,-417.08,ningbo_felixstowe,ningbo_felixstowe,False,7519.05,2613.9,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2028,10,10,0.08,hold_final,-578.37,ningbo_felixstowe,ningbo_felixstowe,False,8042.79,2817.09,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2029,10,10,0.08,hold_final,-670.11,ningbo_felixstowe,ningbo_felixstowe,False,8403.49,3005.8,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2030,10,10,0.08,hold_final,-756.79,ningbo_felixstowe,ningbo_felixstowe,False,8632.49,3148.12,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2026,10,5,0.08,truncate,-39.46,ningbo_felixstowe,ningbo_felixstowe,False,320.16,187.58,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2027,10,4,0.08,truncate,-7.82,ningbo_felixstowe,ningbo_felixstowe,False,303.09,202.52,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2028,10,3,0.08,truncate,-16.17,ningbo_felixstowe,ningbo_felixstowe,False,274.57,174.4,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2029,10,2,0.08,truncate,-33.14,ningbo_felixstowe,ningbo_felixstowe,False,228.63,137.92,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2030,10,1,0.08,truncate,-62.18,ningbo_felixstowe,ningbo_felixstowe,False,148.48,86.3,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2026,10,5,0.08,truncate,-527.43,ningbo_felixstowe,ningbo_felixstowe,False,3912.37,1147.16,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2027,10,4,0.08,truncate,-462.46,ningbo_felixstowe,ningbo_felixstowe,False,3655.08,1238.28,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2028,10,3,0.08,truncate,-654.65,ningbo_felixstowe,ningbo_felixstowe,False,3176.95,1066.26,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2029,10,2,0.08,truncate,-766.57,ningbo_felixstowe,ningbo_felixstowe,False,2415.67,843.14,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2030,10,1,0.08,truncate,-870.43,ningbo_felixstowe,ningbo_felixstowe,False,1397.95,527.52,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2026,10,10,0.08,hold_final,-39.46,ningbo_felixstowe,ningbo_felixstowe,False,755.91,440.85,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2027,10,10,0.08,hold_final,-7.82,ningbo_felixstowe,ningbo_felixstowe,False,847.98,519.23,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2028,10,10,0.08,hold_final,-16.17,ningbo_felixstowe,ningbo_felixstowe,False,937.32,559.61,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2029,10,10,0.08,hold_final,-33.14,ningbo_felixstowe,ningbo_felixstowe,False,1018.69,597.12,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,high,2030,10,10,0.08,hold_final,-62.18,ningbo_felixstowe,ningbo_felixstowe,False,1076.02,625.41,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2026,10,10,0.08,hold_final,-527.43,ningbo_felixstowe,ningbo_felixstowe,False,8015.02,2695.31,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2027,10,10,0.08,hold_final,-462.46,ningbo_felixstowe,ningbo_felixstowe,False,8785.26,3174.17,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2028,10,10,0.08,hold_final,-654.65,ningbo_felixstowe,ningbo_felixstowe,False,9416.87,3420.91,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2029,10,10,0.08,hold_final,-766.57,ningbo_felixstowe,ningbo_felixstowe,False,9854.11,3650.06,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,high,2030,10,10,0.08,hold_final,-870.43,ningbo_felixstowe,ningbo_felixstowe,False,10130.79,3822.88,0.0,0.0,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,low,2026,10,5,0.08,truncate,-30.51,ningbo_felixstowe,ningbo_felixstowe,False,194.13,192.11,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2027,10,4,0.08,truncate,-0.27,ningbo_felixstowe,halifax_hamburg,True,176.66,207.44,30.78,17.42,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2028,10,3,0.08,truncate,5.56,halifax_hamburg,halifax_hamburg,False,154.52,188.05,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2029,10,2,0.08,truncate,11.91,halifax_hamburg,halifax_hamburg,False,124.62,154.83,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2030,10,1,0.08,truncate,19.76,halifax_hamburg,halifax_hamburg,False,78.41,98.17,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2026,10,5,0.08,truncate,-407.6,ningbo_felixstowe,ningbo_felixstowe,False,2413.63,1174.73,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2027,10,4,0.08,truncate,-286.39,ningbo_felixstowe,ningbo_felixstowe,False,2166.07,1268.27,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2028,10,3,0.08,truncate,-311.42,ningbo_felixstowe,ningbo_felixstowe,False,1809.99,1149.67,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2029,10,2,0.08,truncate,-248.82,ningbo_felixstowe,ningbo_felixstowe,False,1323.34,946.52,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2030,10,1,0.08,truncate,-138.24,ningbo_felixstowe,ningbo_felixstowe,False,738.33,600.09,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2026,10,10,0.08,hold_final,-30.51,ningbo_felixstowe,halifax_hamburg,True,424.24,480.22,55.98,13.19,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2027,10,10,0.08,hold_final,-0.27,ningbo_felixstowe,halifax_hamburg,True,464.41,567.7,103.29,22.24,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2028,10,10,0.08,hold_final,5.56,halifax_hamburg,halifax_hamburg,False,504.51,626.24,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2029,10,10,0.08,hold_final,11.91,halifax_hamburg,halifax_hamburg,False,541.84,677.19,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2030,10,10,0.08,hold_final,19.76,halifax_hamburg,halifax_hamburg,False,568.23,711.43,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2026,10,10,0.08,hold_final,-407.6,ningbo_felixstowe,ningbo_felixstowe,False,4580.45,2935.85,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2027,10,10,0.08,hold_final,-286.39,ningbo_felixstowe,ningbo_felixstowe,False,4875.59,3470.47,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2028,10,10,0.08,hold_final,-311.42,ningbo_felixstowe,ningbo_felixstowe,False,5105.62,3828.24,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2029,10,10,0.08,hold_final,-248.82,ningbo_felixstowe,ningbo_felixstowe,False,5251.96,4139.57,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,low,2030,10,10,0.08,hold_final,-138.24,ningbo_felixstowe,ningbo_felixstowe,False,5350.59,4348.78,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2026,10,5,0.08,truncate,-34.98,ningbo_felixstowe,halifax_hamburg,True,276.34,284.63,8.29,3.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2027,10,4,0.08,truncate,2.08,halifax_hamburg,halifax_hamburg,False,260.61,307.34,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2028,10,3,0.08,truncate,9.1,halifax_hamburg,halifax_hamburg,False,235.32,283.53,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2029,10,2,0.08,truncate,16.23,halifax_hamburg,halifax_hamburg,False,195.38,237.63,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2030,10,1,0.08,truncate,28.1,halifax_hamburg,halifax_hamburg,False,126.52,154.62,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2026,10,5,0.08,truncate,-467.53,ningbo_felixstowe,ningbo_felixstowe,False,3382.47,1740.31,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2027,10,4,0.08,truncate,-349.76,ningbo_felixstowe,ningbo_felixstowe,False,3147.59,1879.0,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2028,10,3,0.08,truncate,-425.18,ningbo_felixstowe,ningbo_felixstowe,False,2725.72,1733.38,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2029,10,2,0.08,truncate,-384.7,ningbo_felixstowe,ningbo_felixstowe,False,2065.16,1452.63,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2030,10,1,0.08,truncate,-246.06,ningbo_felixstowe,ningbo_felixstowe,False,1191.2,945.14,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2026,10,10,0.08,hold_final,-34.98,ningbo_felixstowe,halifax_hamburg,True,647.65,738.4,90.75,14.01,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2027,10,10,0.08,hold_final,2.08,halifax_hamburg,halifax_hamburg,False,724.92,874.77,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2028,10,10,0.08,hold_final,9.1,halifax_hamburg,halifax_hamburg,False,800.05,973.7,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2029,10,10,0.08,hold_final,16.23,halifax_hamburg,halifax_hamburg,False,868.59,1060.35,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2030,10,10,0.08,hold_final,28.1,halifax_hamburg,halifax_hamburg,False,916.88,1120.51,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2026,10,10,0.08,hold_final,-467.53,ningbo_felixstowe,ningbo_felixstowe,False,6878.36,4514.07,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2027,10,10,0.08,hold_final,-349.76,ningbo_felixstowe,ningbo_felixstowe,False,7519.05,5347.47,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2028,10,10,0.08,hold_final,-425.18,ningbo_felixstowe,ningbo_felixstowe,False,8042.79,5952.13,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2029,10,10,0.08,hold_final,-384.7,ningbo_felixstowe,ningbo_felixstowe,False,8403.49,6481.68,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2030,10,10,0.08,hold_final,-246.06,ningbo_felixstowe,ningbo_felixstowe,False,8632.49,6849.32,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2026,10,5,0.08,truncate,-39.46,ningbo_felixstowe,halifax_hamburg,True,320.16,332.57,12.41,3.88,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2027,10,4,0.08,truncate,4.33,halifax_hamburg,halifax_hamburg,False,303.09,359.11,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2028,10,3,0.08,truncate,11.47,halifax_hamburg,halifax_hamburg,False,274.57,330.39,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2029,10,2,0.08,truncate,18.36,halifax_hamburg,halifax_hamburg,False,228.63,276.54,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2030,10,1,0.08,truncate,31.91,halifax_hamburg,halifax_hamburg,False,148.48,180.39,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2026,10,5,0.08,truncate,-527.43,ningbo_felixstowe,ningbo_felixstowe,False,3912.37,2033.49,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2027,10,4,0.08,truncate,-388.19,ningbo_felixstowe,ningbo_felixstowe,False,3655.08,2195.51,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2028,10,3,0.08,truncate,-485.66,ningbo_felixstowe,ningbo_felixstowe,False,3176.95,2019.86,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2029,10,2,0.08,truncate,-451.73,ningbo_felixstowe,ningbo_felixstowe,False,2415.67,1690.52,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2030,10,1,0.08,truncate,-295.29,ningbo_felixstowe,ningbo_felixstowe,False,1397.95,1102.66,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2026,10,10,0.08,hold_final,-39.46,ningbo_felixstowe,halifax_hamburg,True,755.91,861.97,106.06,14.03,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2027,10,10,0.08,hold_final,4.33,halifax_hamburg,halifax_hamburg,False,847.98,1021.1,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2028,10,10,0.08,hold_final,11.47,halifax_hamburg,halifax_hamburg,False,937.32,1135.59,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2029,10,10,0.08,hold_final,18.36,halifax_hamburg,halifax_hamburg,False,1018.69,1236.39,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,high,2030,10,10,0.08,hold_final,31.91,halifax_hamburg,halifax_hamburg,False,1076.02,1307.27,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2026,10,10,0.08,hold_final,-527.43,ningbo_felixstowe,ningbo_felixstowe,False,8015.02,5269.53,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2027,10,10,0.08,hold_final,-388.19,ningbo_felixstowe,ningbo_felixstowe,False,8785.26,6242.04,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2028,10,10,0.08,hold_final,-485.66,ningbo_felixstowe,ningbo_felixstowe,False,9416.87,6941.72,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2029,10,10,0.08,hold_final,-451.73,ningbo_felixstowe,ningbo_felixstowe,False,9854.11,7557.73,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,high,2030,10,10,0.08,hold_final,-295.29,ningbo_felixstowe,ningbo_felixstowe,False,10130.79,7990.85,0.0,0.0,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,low,2026,10,5,0.08,truncate,-30.53,ningbo_felixstowe,ningbo_felixstowe,False,194.13,73.25,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2027,10,4,0.08,truncate,-17.86,ningbo_felixstowe,ningbo_felixstowe,False,176.66,79.09,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2028,10,3,0.08,truncate,-21.23,ningbo_felixstowe,ningbo_felixstowe,False,154.52,68.42,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2029,10,2,0.08,truncate,-30.75,ningbo_felixstowe,ningbo_felixstowe,False,124.62,54.57,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2030,10,1,0.08,truncate,-42.45,ningbo_felixstowe,ningbo_felixstowe,False,78.41,35.96,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2026,10,5,0.08,truncate,-407.79,ningbo_felixstowe,ningbo_felixstowe,False,2413.63,447.97,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2027,10,4,0.08,truncate,-393.93,ningbo_felixstowe,ningbo_felixstowe,False,2166.07,483.57,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2028,10,3,0.08,truncate,-475.21,ningbo_felixstowe,ningbo_felixstowe,False,1809.99,418.34,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2029,10,2,0.08,truncate,-509.64,ningbo_felixstowe,ningbo_felixstowe,False,1323.34,333.58,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2030,10,1,0.08,truncate,-518.53,ningbo_felixstowe,ningbo_felixstowe,False,738.33,219.8,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2026,10,10,0.08,hold_final,-30.53,ningbo_felixstowe,ningbo_felixstowe,False,424.24,178.78,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2027,10,10,0.08,hold_final,-17.86,ningbo_felixstowe,ningbo_felixstowe,False,464.41,211.05,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2028,10,10,0.08,hold_final,-21.23,ningbo_felixstowe,ningbo_felixstowe,False,504.51,228.94,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2029,10,10,0.08,hold_final,-30.75,ningbo_felixstowe,ningbo_felixstowe,False,541.84,245.91,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,low,2030,10,10,0.08,hold_final,-42.45,ningbo_felixstowe,ningbo_felixstowe,False,568.23,260.6,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2026,10,10,0.08,hold_final,-407.79,ningbo_felixstowe,ningbo_felixstowe,False,4580.45,1093.03,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2027,10,10,0.08,hold_final,-393.93,ningbo_felixstowe,ningbo_felixstowe,False,4875.59,1290.19,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2028,10,10,0.08,hold_final,-475.21,ningbo_felixstowe,ningbo_felixstowe,False,5105.62,1399.44,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2029,10,10,0.08,hold_final,-509.64,ningbo_felixstowe,ningbo_felixstowe,False,5251.96,1503.13,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,low,2030,10,10,0.08,hold_final,-518.53,ningbo_felixstowe,ningbo_felixstowe,False,5350.59,1592.87,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2026,10,5,0.08,truncate,-34.99,ningbo_felixstowe,ningbo_felixstowe,False,276.34,138.57,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2027,10,4,0.08,truncate,-14.68,ningbo_felixstowe,ningbo_felixstowe,False,260.61,149.61,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2028,10,3,0.08,truncate,-23.28,ningbo_felixstowe,ningbo_felixstowe,False,235.32,131.29,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2029,10,2,0.08,truncate,-36.65,ningbo_felixstowe,ningbo_felixstowe,False,195.38,108.17,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2030,10,1,0.08,truncate,-54.6,ningbo_felixstowe,ningbo_felixstowe,False,126.52,71.92,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2026,10,5,0.08,truncate,-467.64,ningbo_felixstowe,ningbo_felixstowe,False,3382.47,847.34,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2027,10,4,0.08,truncate,-452.26,ningbo_felixstowe,ningbo_felixstowe,False,3147.59,914.7,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2028,10,3,0.08,truncate,-623.15,ningbo_felixstowe,ningbo_felixstowe,False,2725.72,802.64,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2029,10,2,0.08,truncate,-708.0,ningbo_felixstowe,ningbo_felixstowe,False,2065.16,661.24,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2030,10,1,0.08,truncate,-751.6,ningbo_felixstowe,ningbo_felixstowe,False,1191.2,439.6,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2026,10,10,0.08,hold_final,-34.99,ningbo_felixstowe,ningbo_felixstowe,False,647.65,349.64,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2027,10,10,0.08,hold_final,-14.68,ningbo_felixstowe,ningbo_felixstowe,False,724.92,413.55,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2028,10,10,0.08,hold_final,-23.28,ningbo_felixstowe,ningbo_felixstowe,False,800.05,452.31,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2029,10,10,0.08,hold_final,-36.65,ningbo_felixstowe,ningbo_felixstowe,False,868.59,490.86,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2030,10,10,0.08,hold_final,-54.6,ningbo_felixstowe,ningbo_felixstowe,False,916.88,521.2,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2026,10,10,0.08,hold_final,-467.64,ningbo_felixstowe,ningbo_felixstowe,False,6878.36,2137.46,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2027,10,10,0.08,hold_final,-452.26,ningbo_felixstowe,ningbo_felixstowe,False,7519.05,2527.94,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2028,10,10,0.08,hold_final,-623.15,ningbo_felixstowe,ningbo_felixstowe,False,8042.79,2764.85,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2029,10,10,0.08,hold_final,-708.0,ningbo_felixstowe,ningbo_felixstowe,False,8403.49,3000.33,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2030,10,10,0.08,hold_final,-751.6,ningbo_felixstowe,ningbo_felixstowe,False,8632.49,3185.73,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2026,10,5,0.08,truncate,-39.47,ningbo_felixstowe,ningbo_felixstowe,False,320.16,183.31,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2027,10,4,0.08,truncate,-13.29,ningbo_felixstowe,ningbo_felixstowe,False,303.09,197.92,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2028,10,3,0.08,truncate,-20.84,ningbo_felixstowe,ningbo_felixstowe,False,274.57,175.34,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2029,10,2,0.08,truncate,-35.07,ningbo_felixstowe,ningbo_felixstowe,False,228.63,143.98,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2030,10,1,0.08,truncate,-53.55,ningbo_felixstowe,ningbo_felixstowe,False,148.48,94.93,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2026,10,5,0.08,truncate,-527.56,ningbo_felixstowe,ningbo_felixstowe,False,3912.37,1120.95,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2027,10,4,0.08,truncate,-495.92,ningbo_felixstowe,ningbo_felixstowe,False,3655.08,1210.11,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2028,10,3,0.08,truncate,-683.21,ningbo_felixstowe,ningbo_felixstowe,False,3176.95,1071.97,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2029,10,2,0.08,truncate,-778.4,ningbo_felixstowe,ningbo_felixstowe,False,2415.67,880.16,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2030,10,1,0.08,truncate,-817.68,ningbo_felixstowe,ningbo_felixstowe,False,1397.95,580.27,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2026,10,10,0.08,hold_final,-39.47,ningbo_felixstowe,ningbo_felixstowe,False,755.91,461.91,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2027,10,10,0.08,hold_final,-13.29,ningbo_felixstowe,ningbo_felixstowe,False,847.98,546.3,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2028,10,10,0.08,hold_final,-20.84,ningbo_felixstowe,ningbo_felixstowe,False,937.32,599.07,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2029,10,10,0.08,hold_final,-35.07,ningbo_felixstowe,ningbo_felixstowe,False,1018.69,649.1,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,high,2030,10,10,0.08,hold_final,-53.55,ningbo_felixstowe,ningbo_felixstowe,False,1076.02,687.95,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2026,10,10,0.08,hold_final,-527.56,ningbo_felixstowe,ningbo_felixstowe,False,8015.02,2823.9,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2027,10,10,0.08,hold_final,-495.92,ningbo_felixstowe,ningbo_felixstowe,False,8785.26,3339.57,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2028,10,10,0.08,hold_final,-683.21,ningbo_felixstowe,ningbo_felixstowe,False,9416.87,3662.08,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2029,10,10,0.08,hold_final,-778.4,ningbo_felixstowe,ningbo_felixstowe,False,9854.11,3967.75,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,high,2030,10,10,0.08,hold_final,-817.68,ningbo_felixstowe,ningbo_felixstowe,False,10130.79,4205.15,0.0,0.0,desnz,"DESNZ traded carbon values (official, real 2025 prices)"

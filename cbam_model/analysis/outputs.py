@@ -761,6 +761,142 @@ def corridor_crossover_by_price_path(
     )
 
 
+def free_allocation_phase_out(
+    emissions: pd.DataFrame | None = None,
+    years: tuple = (2027, 2030),
+) -> pd.DataFrame:
+    """How fast each scheme actually withdraws free allocation, by product.
+
+    Added 17 August 2026. The findings chapter compares the two phase-out
+    speeds and the figures behind that comparison lived only in the prose,
+    which made the one structural claim in the chapter the one claim no
+    artefact supported.
+
+    The two schemes are not commensurable at face value. The UK absorbs free
+    allocation into a rate, so its withdrawal is a single number that applies to
+    every good. The EU subtracts a per-product benchmark from per-product
+    embedded emissions, so its withdrawal depends on how far above its benchmark
+    the good sits and differs by product. `effective_charged_share` puts both on
+    the EU's footing: the fraction of embedded emissions that ends up carrying a
+    charge.
+
+    That difference is the point rather than a nuisance. Ammonia's EU ratio of
+    2.195 sits within four per cent of the UK's 2.104 and invites the reading
+    that the schemes withdraw in step. Hydrogen's 1.296 does not, and hydrogen
+    is the product the corridor result turns on. Quote the column, not one cell
+    of it.
+    """
+    if emissions is None:
+        emissions = _data_io().load_inputs()[0]
+
+    defaults = (
+        emissions[emissions["pathway"] == "cbam_default"]
+        .drop_duplicates(subset=["corridor", "product"])
+        .set_index(["corridor", "product"])["embedded_emissions_tco2e_per_tonne"]
+    )
+
+    rows = []
+    for corridor in rc.CORRIDORS:
+        for product in rc.PRODUCTS:
+            try:
+                raw = float(defaults.loc[(corridor, product)])
+            except KeyError:
+                continue
+            benchmark = rc.cbam_benchmark(product)
+            shares = {}
+            for year in years:
+                marked_up = raw * (1.0 + rc.default_value_markup(year, product))
+                remaining = 1.0 - rc.cbam_factor(year)
+                chargeable = max(
+                    0.0, marked_up - benchmark * remaining * rc.cbam_cscf(year)
+                )
+                shares[year] = chargeable / marked_up if marked_up else 0.0
+            first, last = years[0], years[-1]
+            rows.append(
+                {
+                    "scheme": "EU CBAM",
+                    "corridor": corridor,
+                    "product": product,
+                    "basis": "embedded emissions net of the benchmark deduction",
+                    f"effective_charged_share_{first}": round(shares[first], 4),
+                    f"effective_charged_share_{last}": round(shares[last], 4),
+                    "ratio": round(shares[last] / shares[first], 3)
+                    if shares[first]
+                    else None,
+                }
+            )
+
+    uk = {y: rc.uk_cbam_rate_fraction(y) for y in years}
+    first, last = years[0], years[-1]
+    rows.append(
+        {
+            "scheme": "UK CBAM",
+            "corridor": "any",
+            "product": "any",
+            "basis": "statutory rate fraction, SI 2026/809",
+            f"effective_charged_share_{first}": round(uk[first], 4),
+            f"effective_charged_share_{last}": round(uk[last], 4),
+            "ratio": round(uk[last] / uk[first], 3) if uk[first] else None,
+        }
+    )
+    return pd.DataFrame(rows)
+
+
+def corridor_lock_in_by_price_path(
+    compliance_by_variant: dict,
+    pathway: str = "cbam_default",
+) -> pd.DataFrame:
+    """`corridor_lock_in` across every price path, price scenario and horizon.
+
+    Added 17 August 2026 for the same reason `corridor_ordering_by_price_path`
+    exists. `corridor_lock_in` is written to disk for one variant and one price
+    scenario only, so `corridor_lock_in.csv` holds the frozen-path rows, on
+    which nothing reverses and every breakeven is zero. The reversal the write-up
+    reports is on the linkage path, and it was reproducible only by re-running
+    the model by hand. A results chapter should not carry a table its own
+    artefacts contradict.
+
+    Three axes vary here rather than the usual one, because all three move the
+    result: the reversal appears on `linked` alone, the decision year slips from
+    2026 to 2027 under `low`, and the breakeven roughly triples between the two
+    beyond-horizon treatments. Quoting one row without the grid around it is how
+    a conditional finding turns into an unconditional one.
+    """
+    unknown = set(compliance_by_variant) - set(rc.UK_ETS_PRICE_VARIANTS)
+    if unknown:
+        raise ValueError(
+            f"Unknown UK ETS price variant(s) {sorted(unknown)}. "
+            f"Expected keys from {rc.UK_ETS_PRICE_VARIANTS}."
+        )
+
+    frames = []
+    for variant in rc.UK_ETS_PRICE_VARIANTS:
+        compliance = compliance_by_variant.get(variant)
+        if compliance is None or compliance.empty:
+            continue
+        for price_scenario in rc.PRICE_SCENARIOS:
+            for horizon in ("truncate", "hold_final"):
+                frame = corridor_lock_in(
+                    compliance,
+                    pathway=pathway,
+                    price_scenario=price_scenario,
+                    beyond_horizon=horizon,
+                    uk_price_variant=variant,
+                )
+                if frame.empty:
+                    continue
+                frame = frame.copy()
+                frame["uk_price_variant"] = variant
+                frame["uk_price_variant_label"] = scenarios.UK_PRICE_VARIANT_LABELS[
+                    variant
+                ]
+                frames.append(frame)
+
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True)
+
+
 # ---------------------------------------------------------------------------
 # Corridor ordering across both free-allocation mechanisms. Added 16 Aug 2026.
 # ---------------------------------------------------------------------------
@@ -1902,6 +2038,13 @@ def write_all(
             mechanism.to_csv(OUTPUT_DIR / "cbam_mechanism_comparison.csv", index=False)
             written.append("cbam_mechanism_comparison.csv")
 
+        phase_out = free_allocation_phase_out(emissions)
+        if len(phase_out):
+            phase_out.to_csv(
+                OUTPUT_DIR / "free_allocation_phase_out.csv", index=False
+            )
+            written.append("free_allocation_phase_out.csv")
+
     if compliance is not None and len(compliance):
         compliance.to_csv(OUTPUT_DIR / "compliance_cost_per_tonne.csv", index=False)
         written.append("compliance_cost_per_tonne.csv")
@@ -1985,6 +2128,13 @@ def write_all(
                 OUTPUT_DIR / "corridor_crossover_by_price_path.csv", index=False
             )
             written.append("corridor_crossover_by_price_path.csv")
+
+        lock_in_paths = corridor_lock_in_by_price_path(compliance_by_variant)
+        if len(lock_in_paths):
+            lock_in_paths.to_csv(
+                OUTPUT_DIR / "corridor_lock_in_by_price_path.csv", index=False
+            )
+            written.append("corridor_lock_in_by_price_path.csv")
 
     shadow = sourcing_shadow_prices(uk_price_variant=uk_price_variant)
     if len(shadow):

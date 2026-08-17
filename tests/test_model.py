@@ -2753,6 +2753,126 @@ def test_the_lock_in_decision_year_is_also_a_medium_scenario_figure():
     assert not (found["low"][1] < found["medium"][1] < found["high"][1])
 
 
+def test_the_lock_in_grid_is_an_artefact_and_not_only_a_test_assertion():
+    """The table in the write-up must exist on disk, not just in this file.
+
+    `corridor_lock_in.csv` is written for one variant and one price scenario, so
+    it holds the frozen-path rows, where nothing reverses and every breakeven is
+    zero. The write-up's lock-in table is the linkage path across all three
+    price scenarios and both beyond-horizon treatments, and until today none of
+    those rows appeared in any artefact. A reader reconciling the chapter
+    against `cbam_model/outputs/` would have found a table of zeros where the
+    chapter reports a reversal.
+
+    This pins the grid the chapter actually quotes.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    by_variant = {
+        variant: runner.run_compliance_matrix(emissions, uk_price_variant=variant)
+        for variant in rc.UK_ETS_PRICE_VARIANTS
+    }
+
+    grid = outputs.corridor_lock_in_by_price_path(by_variant)
+    assert not grid.empty
+
+    expected_rows = (
+        len(rc.UK_ETS_PRICE_VARIANTS) * len(rc.PRICE_SCENARIOS) * 2 * len(rc.PRODUCTS) * 5
+    )
+    assert len(grid) == expected_rows, len(grid)
+
+    # Every reversal in the whole grid is linked-path ammonia. Nothing else.
+    reversals = grid[grid["decision_reverses"]]
+    assert set(reversals["uk_price_variant"]) == {"linked"}
+    assert set(reversals["product"]) == {"ammonia"}
+
+    # Every reversing row, to two decimal places. There are SEVEN, and the
+    # write-up's table carried six: low/hold_final reverses at two separate
+    # decision years and only the earlier one was tabulated. The omitted row is
+    # the largest regret anywhere in the grid, so the reported range understated
+    # the result it was there to bound. Enumerate exhaustively rather than
+    # spot-check, which is how the row went missing in the first place.
+    quoted = {
+        ("low", "truncate", 2027): (30.78, 17.42),
+        ("low", "hold_final", 2026): (55.98, 13.19),
+        ("low", "hold_final", 2027): (103.29, 22.24),
+        ("medium", "truncate", 2026): (8.29, 3.00),
+        ("medium", "hold_final", 2026): (90.75, 14.01),
+        ("high", "truncate", 2026): (12.41, 3.88),
+        ("high", "hold_final", 2026): (106.06, 14.03),
+    }
+    assert len(reversals) == len(quoted), len(reversals)
+
+    for (scenario, horizon, year), (breakeven, regret) in quoted.items():
+        row = reversals[
+            (reversals["price_scenario"] == scenario)
+            & (reversals["beyond_horizon"] == horizon)
+            & (reversals["decision_year"] == year)
+        ]
+        assert len(row) == 1, (scenario, horizon, year, len(row))
+        assert round(
+            float(row.iloc[0]["breakeven_switching_cost_gbp_per_tonne_annual_volume"]), 2
+        ) == breakeven, (scenario, horizon, year)
+        assert round(float(row.iloc[0]["lock_in_regret_pct"]), 2) == regret, (
+            scenario,
+            horizon,
+            year,
+        )
+
+    # The bounds the write-up quotes, taken off the grid rather than by eye.
+    assert round(reversals["lock_in_regret_pct"].min(), 1) == 3.0
+    assert round(reversals["lock_in_regret_pct"].max(), 1) == 22.2
+    breakeven_col = "breakeven_switching_cost_gbp_per_tonne_annual_volume"
+    assert round(reversals[breakeven_col].min(), 2) == 8.29
+    assert round(reversals[breakeven_col].max(), 2) == 106.06
+
+    # The not-law warning travels with the rows it qualifies.
+    assert all("NOT law" in label for label in reversals["uk_price_variant_label"])
+
+
+def test_the_two_schemes_only_withdraw_free_allocation_in_step_for_one_good():
+    """The correction to the findings chapter's one structural claim.
+
+    The chapter said both schemes withdraw free allocation at almost the same
+    speed, 2.195 against 2.104 over 2027-2030, and concluded that the widening
+    EU-UK gap is an artefact of the frozen UK price rather than of scheme
+    design. 2.195 is Canadian ammonia alone.
+
+    The EU withdrawal rate is not a property of the scheme, because the
+    benchmark is subtracted from embedded emissions: the further above its
+    benchmark a good sits, the less the deduction shields it and the flatter its
+    phase-out. So the EU ratio varies by origin and product across a range that
+    contains the UK's 2.104 only at one end. Hydrogen, the good the corridor
+    result turns on, is nowhere near it.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    frame = outputs.free_allocation_phase_out(emissions)
+
+    def ratio(scheme, corridor=None, product=None):
+        rows = frame[frame["scheme"] == scheme]
+        if corridor:
+            rows = rows[rows["corridor"] == corridor]
+        if product:
+            rows = rows[rows["product"] == product]
+        assert len(rows) == 1, (scheme, corridor, product, len(rows))
+        return float(rows.iloc[0]["ratio"])
+
+    uk = ratio("UK CBAM")
+    assert round(uk, 3) == 2.104
+
+    canadian_ammonia = ratio("EU CBAM", rc.HALIFAX_HAMBURG, "ammonia")
+    canadian_hydrogen = ratio("EU CBAM", rc.HALIFAX_HAMBURG, "hydrogen")
+    assert round(canadian_ammonia, 3) == 2.195
+    assert round(canadian_hydrogen, 3) == 1.296
+
+    # The claim that was made: within a few per cent. True for one cell only.
+    assert abs(canadian_ammonia - uk) / uk < 0.05
+    assert abs(canadian_hydrogen - uk) / uk > 0.35
+
+    # And it is the good the corridor result turns on that breaks it.
+    eu = frame[frame["scheme"] == "EU CBAM"]["ratio"].astype(float)
+    assert eu.min() < 1.1 and eu.max() > 2.19, list(eu)
+
+
 # ---------------------------------------------------------------------------
 # Policy events table
 # ---------------------------------------------------------------------------

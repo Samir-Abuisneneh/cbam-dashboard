@@ -367,27 +367,42 @@ outputs.pathway_choice_price_robustness(emissions, commercial)
 outputs.corridor_crossover_year(compliance)
 """),
     md("""
-The two products no longer behave the same way, and that split is a direct consequence of the free
-allocation mechanism selected in section 8.
+**Neither product crosses over on the baseline path.** Ningbo-Felixstowe is cheaper in every year from
+2026 to 2030 for both, so there is no crossover year to report. The reason is the benchmark shield: the
+CBAM hydrogen benchmark is 5.089 tCO2e per tonne against Canadian grey hydrogen's 10.07, so roughly half
+the embedded emissions are chargeable from the start, and the chargeable share grows as free allocation
+is withdrawn.
 
-**Ammonia** follows the pattern the earlier drafts described. Ningbo-Felixstowe is cheaper only in 2026,
-because UK CBAM does not exist yet; the ordering flips in 2027, the year it starts, and stays flipped.
-One flip, not a slow overtake.
+On the `linked` UK price path, which is explicitly not law, ammonia reverses from 2027 because a UK price
+converging upward on the EU price raises UK CBAM enough to change the ordering. Hydrogen does not reverse
+on any path. So every corridor claim has to name the price path it is on.
 
-**Hydrogen** does not flip at all. Ningbo-Felixstowe is cheaper in every year from 2026 to 2030 and there
-is no crossover on the baseline UK price path. The reason is the benchmark shield: the CBAM hydrogen
-benchmark is 5.089 tCO2e per tonne against Canadian grey hydrogen's 10.07, so roughly half the embedded
-emissions are chargeable from the start, and the chargeable share grows as free allocation is withdrawn.
-EU liability therefore climbs steeply while the UK rate fraction climbs far more slowly.
-
-On the `linked` UK price path, which is explicitly not law, Halifax-Hamburg takes the lead in 2027 and
-holds it, because a UK price converging upward on the EU price raises UK CBAM enough to reverse the
-ordering. So every hydrogen corridor claim has to name the price path it is on.
-
-Two superseded versions of this paragraph are quoted in documents written before 8 August 2026. Under the
-factor-scaled form hydrogen followed the ammonia pattern and never reverted. Under the benchmark form with
-the EU ETS benchmark wrongly netted off, hydrogen flipped to Halifax-Hamburg in 2027 and back from 2028.
-Neither survives the benchmark correction.
+**Rewritten 16 August 2026.** Until the origin carbon price correction of 15 August this paragraph said
+ammonia flipped to Halifax-Hamburg in 2027 and stayed flipped on every path. That was true when Canada's
+Article 9 deduction ran at the headline federal rate; deducting only the share a Nova Scotia facility is
+charged on raised Halifax-Hamburg's cost and removed the flip from `frozen` and `desnz`. Two earlier
+versions are quoted in documents written before 8 August 2026, and neither survives the benchmark
+correction either.
+"""),
+    code("""
+# Both readings of Article 31, ordered rather than merely priced. The corridor
+# result above holds in ten of ten product-years on the base-case mechanism and
+# in five of ten on the other, so the mechanism travels with every claim.
+outputs.corridor_ordering_by_mechanism({
+    m: runner.run_compliance_matrix(emissions, cbam_mechanism=m)
+    for m in rc.EU_CBAM_MECHANISMS
+})
+"""),
+    code("""
+# Regime versus origin intensity. The study observes two cells, so these two
+# causes vary together; the counterfactual cells separate them.
+outputs.regime_intensity_decomposition(emissions)
+"""),
+    md("""
+The regime effect is positive and larger in absolute terms than the intensity effect in every year from
+2027, and the two point in opposite directions. The carbon-intensive corridor is therefore cheaper
+*despite* being carbon-intensive, not because of it, and the gap is made by the difference between the two
+border schemes rather than by anything about the goods.
 """),
     code("""
 outputs.abatement_breakeven_year(emissions, commercial)
@@ -395,6 +410,52 @@ outputs.abatement_breakeven_year(emissions, commercial)
     md("""
 Check `carbon_price_varies_by_year` before reading a UK row: the UK ETS price is frozen (only 2026 was ever
 sourced), so a UK pathway showing no breakeven year is an artefact of that, not evidence switching never pays.
+"""),
+    md("""
+## 8c. Sourcing and forecasting
+
+Added 16 August 2026. Both modules were described in the methodology and reported nowhere, so the write-up
+presented two methods, one set of results and two limitations. These are the results.
+"""),
+    code("""
+outputs.sourcing_shadow_prices()
+"""),
+    md("""
+Read `allocation_is_determined` first. Ammonia has two pathways in each market, so demand and the emissions
+ceiling pin the mix exactly and the answer is arithmetic; its shadow price is conditional on the unsourced
+capacity limit. Hydrogen has three and is a genuine optimisation. `applied_cut` shows the requested 30 per
+cent cut falling to about 20 for ammonia, because a cut neither market can reach would compare the two
+corridors at different targets.
+
+Two results come out of this that the deterministic cost model cannot produce.
+
+The **shadow price gap on ammonia** is large and one-directional: meeting the same proportional cut costs
+around five times more per tonne of CO2e in the EU market than in the UK one, and it narrows over the
+horizon as the border charge on the dirty route closes the gap to the clean alternative. Hydrogen's two
+shadow prices sit close together, so this is an ammonia finding and must not be stated for both.
+
+`swap_costs_eur_per_tonne` turns **negative for hydrogen on the EU corridor from 2027**, and the saving
+grows every year after. The CBAM charge on grey SMR exceeds the production premium of blue SMR with CCS from
+that year, so the emissions-reducing switch pays for itself. No equivalent point is reached on the UK
+corridor in any modelled year, where the same class of swap still costs 289 euros per tonne in 2030.
+"""),
+    code("""
+outputs.forecast_validation()
+"""),
+    md("""
+Six of the seven prespecified methods lose to the random walk at every horizon. The seventh wins by a small
+margin at four of five and loses at 24 months, which is not what a method that has found something looks
+like. Read `effective_folds` alongside any figure here: 115 folds at the four-year horizon amount to 2.4
+independent windows, so the sign of a skill number is worth more than its size.
+"""),
+    code("""
+outputs.forecast_against_consensus()
+"""),
+    md("""
+2030 has not happened, so this is not an accuracy test. What it measures is that the institutional
+consensus is several times narrower than the price history alone can justify, which means the institutions
+are pricing the policy trajectory rather than extrapolating the series. That is the study's own reason for
+using sourced anchors instead of a fitted forecast, reached from the opposite direction.
 """),
     md("""
 ## 9. Outputs
@@ -407,10 +468,17 @@ compliance_by_variant = {
     v: runner.run_compliance_matrix(emissions, uk_price_variant=v)
     for v in rc.UK_ETS_PRICE_VARIANTS
 }
+# Same again for the two readings of Article 31, so the mechanism sensitivity
+# is reproducible from the artefacts rather than only from re-running.
+compliance_by_mechanism = {
+    m: runner.run_compliance_matrix(emissions, cbam_mechanism=m)
+    for m in rc.EU_CBAM_MECHANISMS
+}
 
 written = outputs.write_all(maritime, cbam_results, sweep, ranked, compliance,
                             emissions=emissions, commercial=commercial,
-                            compliance_by_variant=compliance_by_variant)
+                            compliance_by_variant=compliance_by_variant,
+                            compliance_by_mechanism=compliance_by_mechanism)
 for name in written:
     print(f"cbam_model/outputs/{name}")
 """),

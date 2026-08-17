@@ -1,0 +1,2 @@
+model,model_point_eur,model_interval_eur,model_width_ratio,consensus_central_eur,consensus_range_eur,consensus_width_ratio,consensus_inside_model_interval,model_interval_is_wider_by,model_bias_factor
+random_walk,82.0,"(102.1, 600.8)",5.88,126.0,"(80.0, 147.0)",1.84,True,3.2,3.12

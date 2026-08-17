@@ -762,6 +762,185 @@ def corridor_crossover_by_price_path(
 
 
 # ---------------------------------------------------------------------------
+# Corridor ordering across both free-allocation mechanisms. Added 16 Aug 2026.
+# ---------------------------------------------------------------------------
+# `cbam_mechanism_comparison` already prices both readings of Article 31 side
+# by side, but it reports one corridor at a time, so it cannot say whether the
+# corridor *ordering* survives the choice. It does not: the ordering reverses
+# in five of ten product-years under `factor_scaled`. The whole headline result
+# is therefore conditional on a reading the commercial guidance disagrees with,
+# and that had to be reproducible from an artefact rather than from a note.
+
+
+def corridor_ordering_by_mechanism(
+    compliance_by_mechanism: dict,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
+) -> pd.DataFrame:
+    """`corridor_cost_comparison` stacked across both EU CBAM mechanisms.
+
+    Keys are mechanism names from `rc.EU_CBAM_MECHANISMS`; values are
+    compliance frames built with that mechanism via
+    `runner.run_compliance_matrix(cbam_mechanism=...)`.
+
+    The `is_base_case_mechanism` column marks `rc.EU_CBAM_DEFAULT_MECHANISM`,
+    which is the reading Article 31(2) and IR 2025/2620 support and the one
+    every other artefact here is written on. The other rows are not a competing
+    central estimate; they are what the result would be if the practitioner
+    reading were right, and they exist so that no corridor claim can be quoted
+    without its mechanism attached.
+    """
+    unknown = set(compliance_by_mechanism) - set(rc.EU_CBAM_MECHANISMS)
+    if unknown:
+        raise ValueError(
+            f"Unknown EU CBAM mechanism(s) {sorted(unknown)}. "
+            f"Expected keys from {rc.EU_CBAM_MECHANISMS}."
+        )
+
+    frames = []
+    for mechanism in rc.EU_CBAM_MECHANISMS:
+        compliance = compliance_by_mechanism.get(mechanism)
+        if compliance is None or compliance.empty:
+            continue
+        frame = corridor_cost_comparison(
+            compliance,
+            pathway=pathway,
+            price_scenario=price_scenario,
+            uk_price_variant=uk_price_variant,
+        )
+        if frame.empty:
+            continue
+        frame = frame.copy()
+        frame["cbam_mechanism"] = mechanism
+        frame["is_base_case_mechanism"] = mechanism == rc.EU_CBAM_DEFAULT_MECHANISM
+        frames.append(frame)
+
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True)
+
+
+# ---------------------------------------------------------------------------
+# Regime versus origin intensity. Added 16 August 2026.
+# ---------------------------------------------------------------------------
+# The study observes two cells, China-to-UK and Canada-to-EU. Destination
+# regime and origin production technology therefore vary together and nothing
+# in the observed data can separate them, so the claim that the corridor gap is
+# produced by the two regulations rather than by the trade was an assertion the
+# design could not support. The two missing cells are cheap to price, because
+# embedded emissions and the border regime enter `cbam_cost_per_tonne` as
+# independent arguments.
+
+
+def regime_intensity_decomposition(
+    emissions: pd.DataFrame,
+    pathway: str = "cbam_default",
+    price_scenario: str = "medium",
+    uk_price_variant: str = "frozen",
+    obps_basis: str = "rule",
+    years=None,
+) -> pd.DataFrame:
+    """Split the corridor CBAM gap into a regime effect and an intensity effect.
+
+    Fills the two counterfactual cells of the 2x2 - Chinese goods entering the
+    EU, Canadian goods entering the UK - and decomposes the observed gap:
+
+        regime    = mean over origins of (EU charge - UK charge)
+        intensity = mean over regimes of (Canadian charge - Chinese charge)
+
+    The two sum to the observed gap exactly, which is why the averaged form is
+    used rather than either conditional difference on its own: it is the
+    symmetric (Shapley) split, so the interaction term is shared equally
+    instead of being assigned by hand to whichever factor the author prefers.
+
+    THREE THINGS TO STATE WHEREVER A FIGURE FROM HERE IS QUOTED.
+
+    1. **This decomposes the CBAM charge, not total compliance cost.** The
+       maritime layer is a property of the voyage, not of the origin's
+       technology or the destination's border scheme, so it belongs to neither
+       factor. `maritime_residual_eur_per_tonne` reports what that leaves out,
+       and it is small next to both effects; the decomposition is of
+       `cbam_gap_eur_per_tonne`, which excludes it.
+    2. **The counterfactual cells are arithmetic, not trade.** Nothing here
+       says Chinese hydrogen could be landed at Hamburg or that a Canadian
+       cargo would clear Felixstowe at this cost. They isolate what each border
+       scheme charges for a given tonne of embedded emissions, and that is all.
+    3. **The origin carbon price travels with the origin, not the regime.** A
+       Canadian cargo carries its Article 9 deduction into the UK cell, because
+       the deduction is a fact about what its producer paid at home.
+    """
+    from ..model import total_cost
+
+    if years is None:
+        years = tuple(scenarios.YEARS)
+
+    hh, nf = rc.HALIFAX_HAMBURG, rc.NINGBO_FELIXSTOWE
+    defaults = emissions[emissions["pathway"] == pathway]
+    intensity_by_origin = {
+        (row["corridor"], row["product"]): row["embedded_emissions_tco2e_per_tonne"]
+        for _, row in defaults.iterrows()
+    }
+
+    def charge(regime_corridor: str, origin_corridor: str, product: str, year: int):
+        """CBAM charge in EUR for `origin_corridor`'s goods under `regime_corridor`."""
+        key = (origin_corridor, product)
+        if key not in intensity_by_origin:
+            return None
+        cost = total_cost.cbam_cost_per_tonne(
+            corridor=regime_corridor,
+            product=product,
+            pathway=pathway,
+            year=year,
+            price_scenario=price_scenario,
+            embedded_emissions_tco2e_per_tonne=intensity_by_origin[key],
+            origin_carbon_price_eur_per_tco2e=rc.origin_carbon_price_eur(
+                origin_corridor, year, obps_basis
+            ),
+            uk_price_variant=uk_price_variant,
+        )
+        return cost.eu_cbam_cost_eur_per_tonne + rc.gbp_to_eur(
+            cost.uk_cbam_cost_gbp_per_tonne
+        )
+
+    rows = []
+    for product in sorted({p for _, p in intensity_by_origin}):
+        for year in years:
+            ca_eu = charge(hh, hh, product, year)
+            cn_eu = charge(hh, nf, product, year)
+            ca_uk = charge(nf, hh, product, year)
+            cn_uk = charge(nf, nf, product, year)
+            if None in (ca_eu, cn_eu, ca_uk, cn_uk):
+                continue
+            regime = ((ca_eu - ca_uk) + (cn_eu - cn_uk)) / 2
+            intensity = ((ca_eu - cn_eu) + (ca_uk - cn_uk)) / 2
+            rows.append(
+                {
+                    "product": product,
+                    "year": year,
+                    "pathway": pathway,
+                    "price_scenario": price_scenario,
+                    "uk_price_variant": uk_price_variant,
+                    "canada_to_eu_eur_per_tonne": round(ca_eu, 2),
+                    "china_to_eu_eur_per_tonne": round(cn_eu, 2),
+                    "canada_to_uk_eur_per_tonne": round(ca_uk, 2),
+                    "china_to_uk_eur_per_tonne": round(cn_uk, 2),
+                    "cbam_gap_eur_per_tonne": round(ca_eu - cn_uk, 2),
+                    "regime_effect_eur_per_tonne": round(regime, 2),
+                    "intensity_effect_eur_per_tonne": round(intensity, 2),
+                    "regime_share_of_absolute_effects": (
+                        round(abs(regime) / (abs(regime) + abs(intensity)), 3)
+                        if (abs(regime) + abs(intensity)) > 0
+                        else None
+                    ),
+                    "cells_observed": "canada_to_eu, china_to_uk",
+                    "cells_counterfactual": "china_to_eu, canada_to_uk",
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+# ---------------------------------------------------------------------------
 # Lock-in and corridor switching. Added 6 August 2026.
 # ---------------------------------------------------------------------------
 # `corridor_crossover_year` above finds the year the cheaper corridor changes.
@@ -1371,6 +1550,162 @@ def abatement_breakeven_year(
     ).reset_index(drop=True)
 
 
+# ---------------------------------------------------------------------------
+# Forecasting and sourcing results. Added 16 August 2026.
+# ---------------------------------------------------------------------------
+# Both modules were described in the methodology and reported nowhere, so a
+# reader met two methods, one set of results and two limitations. These put the
+# results where the claims are, on the same rule as everything else here: a
+# number quoted in the write-up has to come out of an artefact.
+
+
+def forecast_validation(series=None) -> pd.DataFrame:
+    """Walk-forward skill of every prespecified model at every horizon.
+
+    Returns the horizon sweep with the effective sample size attached to each
+    row, because the headline metric and the number of independent tests behind
+    it must not be separable. At four years there are 2.4 of them, so a skill
+    figure in that column is indicative and a ranking within it is not a result.
+
+    Returns an empty frame if the raw EUA download is absent, which is the
+    normal state of a fresh clone: the file is not fetched by the code.
+    """
+    if series is None:
+        try:
+            from ..market_data import eua_prices
+
+            series = eua_prices.to_monthly(eua_prices.load_eua_daily())["price_mean"]
+        except Exception:
+            return pd.DataFrame()
+
+    from ..forecasting import price_model as pm
+
+    sweep = pm.horizon_sweep(series)
+    sweep["beats_random_walk"] = sweep["skill_vs_baseline"] > 0
+    sweep["is_baseline"] = sweep["model"] == pm.BASELINE
+    return sweep.sort_values(["horizon_months", "model"]).reset_index(drop=True)
+
+
+def forecast_against_consensus(series=None, model: str = "random_walk") -> pd.DataFrame:
+    """The fitted 2030 interval set beside the institutional consensus.
+
+    2030 has not happened, so this is not an accuracy test and none is
+    available. What it measures is how much narrower the sourced anchors are
+    than the price history alone can justify, which is the study's own argument
+    for using anchors instead of a fitted forecast, reached from the other side.
+
+    `bias_factor` is the typical multiplicative miss in the walk-forward
+    errors. It is well above one because the sample is dominated by a rising
+    price, so the interval sits above the point forecast. That is a property of
+    the sample and not a coding error, and it is the reason the interval is
+    quoted as a width ratio rather than as bounds.
+    """
+    if series is None:
+        try:
+            from ..market_data import eua_prices
+
+            series = eua_prices.to_monthly(eua_prices.load_eua_daily())["price_mean"]
+        except Exception:
+            return pd.DataFrame()
+
+    from ..forecasting import price_model as pm
+
+    forecast = pm.forecast_with_interval(series, pm.MODELS[model], model)
+    return pd.DataFrame([pm.compare_with_consensus(forecast)])
+
+
+def sourcing_shadow_prices(
+    demand_tonnes: float = 500_000.0,
+    price_scenario: str = "medium",
+    cut_fraction: float = 0.3,
+    uk_price_variant: str = "frozen",
+    years=None,
+) -> pd.DataFrame:
+    """`market_comparison` stacked over both products and every year.
+
+    The column to read is `shadow_price_eur_per_tco2e`, the marginal cost of the
+    last tonne of CO2e abated in that market. Two things travel with it and are
+    written into the frame rather than left to the prose.
+
+    `allocation_is_determined` is True where a market has only two pathways, in
+    which case demand and the ceiling pin the mix exactly and the answer is
+    arithmetic. Ammonia is in that state on both corridors, so its shadow price
+    is conditional on the unsourced capacity limit in a way hydrogen's is not.
+
+    `applied_cut` records the cut actually imposed. A requested cut is reduced
+    to the deepest both markets can achieve, since otherwise the two corridors
+    would be compared at different targets. For ammonia the requested 30 per
+    cent falls to roughly 20.
+
+    `shadow_price_production_only_eur_per_tco2e` re-solves the same program with
+    every compliance cost set to zero, which is the world with no border scheme
+    on either corridor. It exists because the gap between the two markets' shadow
+    prices reads as a regulatory result and mostly is not: strip both schemes out
+    and the gap widens slightly, because it is driven by how dirty each origin's
+    default route is rather than by what either border charges. Quote the two
+    columns together or the finding inverts.
+    """
+    from ..optimisation import allocation as al
+
+    if years is None:
+        years = tuple(scenarios.YEARS)
+
+    def production_only_shadow(product, year, corridor, applied_cut):
+        """Shadow price in the counterfactual where neither border scheme exists."""
+        options = al.build_options(
+            product, year, price_scenario, corridor,
+            uk_price_variant=uk_price_variant,
+        ).copy()
+        options["cost_eur_per_tonne"] = options["production_eur_per_tonne"]
+        options = options.sort_values("cost_eur_per_tonne")
+        caps = al.CapacityAssumptions()
+        baseline = al.unconstrained_emissions(options, demand_tonnes, caps)
+        try:
+            solved = al.solve_allocation(
+                options, demand_tonnes, caps,
+                emissions_cap_tco2e=baseline * (1 - applied_cut),
+            )
+        except ValueError:
+            return None
+        return solved.emissions_shadow_price_eur_per_tco2e
+
+    frames = []
+    for product in rc.PRODUCTS:
+        for year in years:
+            try:
+                frame = al.market_comparison(
+                    product,
+                    year,
+                    demand_tonnes,
+                    price_scenario=price_scenario,
+                    cut_fraction=cut_fraction,
+                    uk_price_variant=uk_price_variant,
+                )
+            except ValueError:
+                continue
+            frame = frame.copy()
+            frame.insert(0, "product", product)
+            frame.insert(1, "year", year)
+            applied = frame.attrs["applied_cut"]
+            frame["shadow_price_production_only_eur_per_tco2e"] = [
+                (lambda v: round(v, 2) if v is not None else None)(
+                    production_only_shadow(product, year, corridor, applied)
+                )
+                for corridor in frame["corridor"]
+            ]
+            frame["requested_cut"] = frame.attrs["requested_cut"]
+            frame["applied_cut"] = round(frame.attrs["applied_cut"], 4)
+            frame["cut_was_limited"] = frame.attrs["cut_was_limited"]
+            frame["price_scenario"] = price_scenario
+            frame["uk_price_variant"] = uk_price_variant
+            frame["demand_tonnes"] = demand_tonnes
+            frames.append(frame)
+
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True)
+
+
 def _data_io():
     """Imported lazily; data_io imports this package's siblings at module load."""
     from .. import data_io
@@ -1460,6 +1795,7 @@ def write_all(
     commercial: pd.DataFrame = None,
     uk_price_variant: str = "frozen",
     compliance_by_variant: dict | None = None,
+    compliance_by_mechanism: dict | None = None,
 ):
     """Write every result table to `cbam_model/outputs/`.
 
@@ -1475,9 +1811,34 @@ def write_all(
     cannot show that hydrogen's ordering reverses on `linked`. Omit it and the
     two by-price-path artefacts are simply not written, so old callers behave
     as they did.
+
+    `compliance_by_mechanism` does the same job for the two readings of
+    Article 31. Without it the outputs can show that the two mechanisms price
+    a corridor differently, but not that they order the two corridors
+    differently, which is the claim the findings chapter actually rests on.
     """
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     written = []
+
+    if emissions is not None:
+        decomposition = regime_intensity_decomposition(
+            emissions, uk_price_variant=uk_price_variant
+        )
+        if len(decomposition):
+            decomposition.to_csv(
+                OUTPUT_DIR / "regime_intensity_decomposition.csv", index=False
+            )
+            written.append("regime_intensity_decomposition.csv")
+
+    if compliance_by_mechanism:
+        by_mechanism = corridor_ordering_by_mechanism(
+            compliance_by_mechanism, uk_price_variant=uk_price_variant
+        )
+        if len(by_mechanism):
+            by_mechanism.to_csv(
+                OUTPUT_DIR / "corridor_ordering_by_mechanism.csv", index=False
+            )
+            written.append("corridor_ordering_by_mechanism.csv")
 
     bunker = bunker_fuel_comparison(maritime)
     if len(bunker):
@@ -1624,6 +1985,25 @@ def write_all(
                 OUTPUT_DIR / "corridor_crossover_by_price_path.csv", index=False
             )
             written.append("corridor_crossover_by_price_path.csv")
+
+    shadow = sourcing_shadow_prices(uk_price_variant=uk_price_variant)
+    if len(shadow):
+        shadow.to_csv(OUTPUT_DIR / "sourcing_shadow_prices.csv", index=False)
+        written.append("sourcing_shadow_prices.csv")
+
+    # Both are silently skipped when the raw EUA download is absent, which is
+    # the state of a fresh clone. See `forecast_validation`.
+    validation = forecast_validation()
+    if len(validation):
+        validation.to_csv(OUTPUT_DIR / "forecast_validation.csv", index=False)
+        written.append("forecast_validation.csv")
+
+        consensus = forecast_against_consensus()
+        if len(consensus):
+            consensus.to_csv(
+                OUTPUT_DIR / "forecast_against_consensus.csv", index=False
+            )
+            written.append("forecast_against_consensus.csv")
 
     maritime.to_csv(OUTPUT_DIR / "maritime_cost_per_voyage.csv", index=False)
     written.append("maritime_cost_per_voyage.csv")

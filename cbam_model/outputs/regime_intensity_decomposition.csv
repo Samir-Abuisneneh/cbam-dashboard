@@ -1,0 +1,11 @@
+product,year,pathway,price_scenario,uk_price_variant,canada_to_eu_eur_per_tonne,china_to_eu_eur_per_tonne,canada_to_uk_eur_per_tonne,china_to_uk_eur_per_tonne,cbam_gap_eur_per_tonne,regime_effect_eur_per_tonne,intensity_effect_eur_per_tonne,regime_share_of_absolute_effects,cells_observed,cells_counterfactual
+ammonia,2026,cbam_default,medium,frozen,40.05,233.57,0.0,0.0,40.05,136.81,-96.76,0.586,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+ammonia,2027,cbam_default,medium,frozen,48.95,270.63,17.0,39.55,9.4,131.52,-122.12,0.519,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+ammonia,2028,cbam_default,medium,frozen,62.53,312.48,19.12,45.01,17.52,155.44,-137.92,0.53,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+ammonia,2029,cbam_default,medium,frozen,90.33,369.15,23.48,55.93,34.4,190.03,-155.63,0.55,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+ammonia,2030,cbam_default,medium,frozen,146.23,456.09,34.05,83.24,63.0,242.52,-179.52,0.575,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+hydrogen,2026,cbam_default,medium,frozen,538.77,1947.38,0.0,0.0,538.77,1243.07,-704.3,0.638,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+hydrogen,2027,cbam_default,medium,frozen,720.25,2482.71,92.87,241.68,478.57,1434.2,-955.64,0.6,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+hydrogen,2028,cbam_default,medium,frozen,941.57,3095.35,104.5,275.04,666.53,1828.69,-1162.16,0.611,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+hydrogen,2029,cbam_default,medium,frozen,1114.74,3513.78,128.34,341.77,772.97,2079.21,-1306.24,0.614,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"
+hydrogen,2030,cbam_default,medium,frozen,1376.4,4033.41,186.09,508.58,867.82,2357.57,-1489.75,0.613,"canada_to_eu, china_to_uk","china_to_eu, canada_to_uk"

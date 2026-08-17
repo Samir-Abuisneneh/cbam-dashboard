@@ -1,3 +1,3 @@
 product,pathway,price_scenario,first_year,last_year,cheaper_corridor_first_year,cheaper_corridor_last_year,cost_gap_first_year_gbp,cost_gap_last_year_gbp,crossover_year,ordering_changes
-ammonia,cbam_default,medium,2026,2030,ningbo_felixstowe,halifax_hamburg,-9.94,13.04,2027.0,True
-hydrogen,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-130.61,-112.22,,False
+ammonia,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-34.98,-55.45,,False
+hydrogen,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-467.53,-756.79,,False

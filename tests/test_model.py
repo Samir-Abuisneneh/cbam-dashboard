@@ -3022,3 +3022,280 @@ def test_corridor_ordering_by_price_path_rejects_an_unknown_variant():
         outputs.corridor_ordering_by_price_path(
             {"frozen": compliance, "desnzz": compliance}
         )
+
+
+def test_the_corridor_ordering_reverses_under_the_factor_scaled_mechanism():
+    """The headline corridor result is conditional on the reading of Article 31.
+
+    Added 16 August 2026, after a review of the draft findings chapter found
+    that it reported the benchmark reading alone. `cbam_mechanism_comparison`
+    already showed the two readings price a corridor differently. It could not
+    show that they *order* the corridors differently, and they do: on the
+    base-case path Ningbo-Felixstowe is cheaper in all ten product-years under
+    `benchmark_shielded` and in only five under `factor_scaled`.
+
+    That is not an argument against the base case. Article 31(2) points at ETS
+    benchmarks combined into per-good values and IR 2025/2620 supplies them, so
+    `benchmark_shielded` is the reading the law supports. It is an argument
+    that no corridor claim may be quoted without its mechanism named, which is
+    what this test locks.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    by_mechanism = {
+        m: runner.run_compliance_matrix(emissions, cbam_mechanism=m)
+        for m in rc.EU_CBAM_MECHANISMS
+    }
+    frame = outputs.corridor_ordering_by_mechanism(by_mechanism)
+
+    base = frame[frame["is_base_case_mechanism"]]
+    other = frame[~frame["is_base_case_mechanism"]]
+    assert len(base) == len(other) == 10
+    assert set(base["cbam_mechanism"]) == {rc.EU_CBAM_DEFAULT_MECHANISM}
+
+    nf = rc.NINGBO_FELIXSTOWE
+    assert (base["cheaper_corridor"] == nf).sum() == 10
+    assert (other["cheaper_corridor"] == nf).sum() == 5, (
+        "if this count moves, the findings chapter's mechanism table is stale"
+    )
+
+
+def test_corridor_ordering_by_mechanism_rejects_an_unknown_mechanism():
+    """Same guard as the price-path stacker, for the same reason."""
+    emissions, _, _ = data_io.load_inputs()
+    compliance = runner.run_compliance_matrix(emissions)
+
+    with pytest.raises(ValueError, match="Unknown EU CBAM mechanism"):
+        outputs.corridor_ordering_by_mechanism(
+            {"benchmark_shielded": compliance, "benchmark_shieldedd": compliance}
+        )
+
+
+def test_the_regime_effect_outweighs_the_origin_intensity_effect():
+    """What actually produces the corridor gap, now that the 2x2 is filled.
+
+    The study observes two cells, so destination regime and origin production
+    technology vary together and the claim that the gap is made by the two
+    regulations rather than by the trade was unsupported by the design. Filling
+    the counterfactual cells settles it: the regime effect is larger in
+    absolute terms than the intensity effect in every product-year, and it
+    points the other way, so the dirtier corridor is cheaper *despite* being
+    dirtier and not because of it.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    frame = outputs.regime_intensity_decomposition(emissions)
+    assert len(frame) == 10
+
+    for _, row in frame.iterrows():
+        regime = row["regime_effect_eur_per_tonne"]
+        intensity = row["intensity_effect_eur_per_tonne"]
+        where = f"{row['product']}/{row['year']}"
+
+        # Exactly additive by construction. This is the property that makes the
+        # symmetric split reportable: no interaction term is left unassigned.
+        assert regime + intensity == pytest.approx(
+            row["cbam_gap_eur_per_tonne"], abs=0.01
+        ), where
+
+        if row["year"] == 2026:
+            # UK CBAM has not started, so both UK cells are zero and the
+            # decomposition has nothing to separate. Commencement dates, not
+            # design.
+            assert row["canada_to_uk_eur_per_tonne"] == 0.0, where
+            assert row["china_to_uk_eur_per_tonne"] == 0.0, where
+            continue
+
+        assert regime > 0, where
+        assert intensity < 0, where
+        assert abs(regime) > abs(intensity), where
+
+
+def test_the_counterfactual_cells_keep_the_origin_carbon_price_with_the_origin():
+    """Article 9 is a fact about the producer, not about the border it crosses.
+
+    A Canadian cargo priced under the UK regime must still carry its Nova
+    Scotia deduction, and a Chinese cargo priced under the EU regime must still
+    carry zero. Getting this backwards would move the deduction to whichever
+    scheme the goods enter and quietly turn the decomposition into a comparison
+    of two Canadas.
+    """
+    emissions, _, _ = data_io.load_inputs()
+    rule = outputs.regime_intensity_decomposition(emissions, obps_basis="rule")
+    overage = outputs.regime_intensity_decomposition(emissions, obps_basis="overage")
+
+    for col in ("canada_to_eu_eur_per_tonne", "canada_to_uk_eur_per_tonne"):
+        moved = (rule[col] != overage[col]) | (rule[col] == 0.0)
+        assert moved.all(), f"{col} must respond to the OBPS basis"
+
+    for col in ("china_to_eu_eur_per_tonne", "china_to_uk_eur_per_tonne"):
+        assert (rule[col] == overage[col]).all(), (
+            f"{col} must not respond to a Canadian assumption"
+        )
+
+
+def test_only_one_forecasting_method_beats_the_random_walk():
+    """The forecasting result, locked so the findings chapter cannot drift.
+
+    Five of the six alternatives lose to the random walk at every horizon from
+    six months to four years. The sixth, `damped_trend`, wins by a small margin
+    at four of the five horizons and loses at 24 months. With 2.4 independent
+    windows the test cannot separate that from noise in either direction, which
+    is itself the result.
+
+    Read with `effective_folds`: at 48 months there are 2.4 independent windows,
+    so the sign of a skill figure in that column is worth more than its size.
+    """
+    validation = outputs.forecast_validation()
+    if validation.empty:
+        pytest.skip("raw EUA download absent, which is normal on a fresh clone")
+
+    assert set(validation["horizon_months"]) == {6, 12, 24, 36, 48}
+    assert validation["is_baseline"].sum() == 5
+
+    alternatives = validation[~validation["is_baseline"]]
+    assert alternatives["model"].nunique() == 6, "six alternatives, plus the baseline"
+
+    winners = alternatives[alternatives["beats_random_walk"]]
+    assert set(winners["model"]) == {"damped_trend"}, (
+        "if another method starts winning, the findings chapter is stale"
+    )
+    assert len(winners) == 4, "damped_trend loses at exactly one horizon"
+
+    never_wins = [m for m, g in alternatives.groupby("model") if not g["beats_random_walk"].any()]
+    assert len(never_wins) == 5, "five of six lose everywhere; the chapter says five"
+
+    at_48 = validation[validation["horizon_months"] == 48]
+    assert at_48["effective_folds"].max() == 2.4
+    assert at_48["folds"].max() == 115
+
+
+def test_the_consensus_range_is_narrower_than_the_price_history_supports():
+    """Why the model uses sourced anchors instead of its own fitted forecast.
+
+    The institutional consensus spans EUR 80 to 147, a width ratio of 1.84. The
+    random walk's empirical 80 per cent interval at the same horizon is several
+    times wider. Institutions are therefore pricing the policy trajectory, which
+    the price series does not contain, and a fitted forecast would understate
+    the uncertainty it claims to measure.
+    """
+    frame = outputs.forecast_against_consensus()
+    if frame.empty:
+        pytest.skip("raw EUA download absent, which is normal on a fresh clone")
+
+    row = frame.iloc[0]
+    assert row["consensus_width_ratio"] == pytest.approx(1.84, abs=0.01)
+    assert row["model_interval_is_wider_by"] > 2.0
+    assert row["consensus_inside_model_interval"]
+
+
+def test_the_ammonia_sourcing_answer_is_determined_and_says_so():
+    """Ammonia has two pathways per market, so the LP has no freedom left.
+
+    Demand and the emissions ceiling pin the mix exactly, which makes the
+    ammonia allocation arithmetic and its shadow price conditional on the
+    unsourced capacity limit. Hydrogen has three pathways and is a genuine
+    optimisation. The distinction has to survive into the artefact, because a
+    shadow price reads the same either way.
+    """
+    frame = outputs.sourcing_shadow_prices()
+    assert len(frame)
+
+    ammonia = frame[frame["product"] == "ammonia"]
+    hydrogen = frame[frame["product"] == "hydrogen"]
+
+    assert ammonia["allocation_is_determined"].all()
+    assert not hydrogen["allocation_is_determined"].any()
+
+    # The requested cut is clamped to what both markets can reach, or the two
+    # corridors would be compared at different targets.
+    assert ammonia["cut_was_limited"].all()
+    assert not hydrogen["cut_was_limited"].any()
+    assert ammonia["applied_cut"].max() < ammonia["requested_cut"].max()
+
+
+def test_the_ammonia_abatement_gap_is_origin_and_not_regime():
+    """Corrects a claim the 17 August draft got backwards.
+
+    The draft read the four-to-five-fold gap between the two markets' shadow
+    prices as a regulatory result. It is not. Re-solving with every compliance
+    cost set to zero, which is the world with neither border scheme, leaves the
+    gap at 5.38, and the schemes only move it within 4.78 to 5.53. They modulate
+    a gap they did not create.
+
+    What causes it is the origin's default route. China's coal ammonia emits
+    6.15 tCO2e per tonne against Canada's 2.18, so switching away from it
+    removes 3.4 times more carbon for a comparable premium, and the shadow
+    price is a premium divided by that saving.
+    """
+    frame = outputs.sourcing_shadow_prices()
+    ammonia = frame[frame["product"] == "ammonia"]
+
+    for year, grp in ammonia.groupby("year"):
+        eu = grp[grp["regime"] == "EU"].iloc[0]
+        uk = grp[grp["regime"] == "UK"].iloc[0]
+        actual = eu["shadow_price_eur_per_tco2e"] / uk["shadow_price_eur_per_tco2e"]
+        counterfactual = (
+            eu["shadow_price_production_only_eur_per_tco2e"]
+            / uk["shadow_price_production_only_eur_per_tco2e"]
+        )
+        assert actual > 3.0, f"{year}: gap is large, {actual}"
+        assert counterfactual == pytest.approx(5.38, abs=0.01), (
+            f"{year}: and it survives removing both border schemes"
+        )
+        # The schemes move it by at most 11 per cent of the counterfactual, in
+        # both directions. A cause would not behave like that.
+        assert abs(actual - counterfactual) / counterfactual < 0.12, (
+            f"{year}: {actual} vs {counterfactual}"
+        )
+
+
+def test_the_border_schemes_reverse_the_hydrogen_abatement_ordering():
+    """Where the regime does drive the abatement margin, and it is hydrogen.
+
+    Absent both schemes the EU market is the dearer place to abate hydrogen, at
+    1.12 times the UK market. The schemes flip that: by 2030 the EU market is
+    the cheaper one, at 0.84. Ammonia shows the opposite pattern, so the two
+    products must never be given the same explanation.
+    """
+    frame = outputs.sourcing_shadow_prices()
+    hydrogen = frame[frame["product"] == "hydrogen"]
+
+    for year, grp in hydrogen.groupby("year"):
+        eu = grp[grp["regime"] == "EU"].iloc[0]
+        uk = grp[grp["regime"] == "UK"].iloc[0]
+        counterfactual = (
+            eu["shadow_price_production_only_eur_per_tco2e"]
+            / uk["shadow_price_production_only_eur_per_tco2e"]
+        )
+        assert counterfactual == pytest.approx(1.12, abs=0.01)
+        actual = eu["shadow_price_eur_per_tco2e"] / uk["shadow_price_eur_per_tco2e"]
+        assert actual < 1.0, f"{year}: schemes make the EU the cheaper place"
+
+    at_2030 = hydrogen[hydrogen["year"] == 2030]
+    eu = at_2030[at_2030["regime"] == "EU"]["shadow_price_eur_per_tco2e"].iloc[0]
+    uk = at_2030[at_2030["regime"] == "UK"]["shadow_price_eur_per_tco2e"].iloc[0]
+    assert eu / uk == pytest.approx(0.84, abs=0.01)
+
+
+def test_cbam_turns_hydrogen_abatement_cost_negative_on_the_eu_corridor_only():
+    """The finding the sourcing model contributes that the cost model cannot.
+
+    From 2027 the CBAM charge on Canadian grey hydrogen exceeds the production
+    premium of blue SMR with CCS, so the emissions-reducing swap saves money
+    outright, and the saving grows every year after. No equivalent point is
+    reached on the UK corridor anywhere in the horizon, where the same class of
+    swap still costs 289.36 euros per tonne in 2030.
+    """
+    frame = outputs.sourcing_shadow_prices()
+    hydrogen = frame[frame["product"] == "hydrogen"]
+
+    eu = hydrogen[hydrogen["regime"] == "EU"].set_index("year")
+    uk = hydrogen[hydrogen["regime"] == "UK"].set_index("year")
+
+    assert eu.loc[2026, "swap_costs_eur_per_tonne"] > 0
+    assert (eu.loc[2027:, "swap_costs_eur_per_tonne"] < 0).all(), (
+        "2027 is the first cost-negative year; the findings chapter names it"
+    )
+    # Monotone from there, which is what makes it a trend and not a crossing.
+    costs = list(eu.loc[2027:, "swap_costs_eur_per_tonne"])
+    assert costs == sorted(costs, reverse=True)
+    assert (uk["swap_costs_eur_per_tonne"] > 0).all()

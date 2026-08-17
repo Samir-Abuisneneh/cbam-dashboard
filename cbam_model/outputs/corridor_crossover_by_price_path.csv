@@ -1,7 +1,7 @@
 product,pathway,price_scenario,first_year,last_year,cheaper_corridor_first_year,cheaper_corridor_last_year,cost_gap_first_year_gbp,cost_gap_last_year_gbp,crossover_year,ordering_changes,uk_price_variant,uk_price_variant_label
-ammonia,cbam_default,medium,2026,2030,ningbo_felixstowe,halifax_hamburg,-9.94,13.04,2027.0,True,frozen,Frozen at the 2026 determination (baseline)
-hydrogen,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-130.61,-112.22,,False,frozen,Frozen at the 2026 determination (baseline)
-ammonia,cbam_default,medium,2026,2030,ningbo_felixstowe,halifax_hamburg,-9.94,96.59,2027.0,True,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-hydrogen,cbam_default,medium,2026,2030,ningbo_felixstowe,halifax_hamburg,-130.61,398.51,2027.0,True,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-ammonia,cbam_default,medium,2026,2030,ningbo_felixstowe,halifax_hamburg,-9.95,13.89,2027.0,True,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-hydrogen,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-130.72,-107.03,,False,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-34.98,-55.45,,False,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-467.53,-756.79,,False,frozen,Frozen at the 2026 determination (baseline)
+ammonia,cbam_default,medium,2026,2030,ningbo_felixstowe,halifax_hamburg,-34.98,28.1,2027.0,True,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-467.53,-246.06,,False,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-34.99,-54.6,,False,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,cbam_default,medium,2026,2030,ningbo_felixstowe,ningbo_felixstowe,-467.64,-751.6,,False,desnz,"DESNZ traded carbon values (official, real 2025 prices)"

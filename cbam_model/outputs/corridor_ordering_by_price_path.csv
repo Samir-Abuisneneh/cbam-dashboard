@@ -1,31 +1,31 @@
 product,year,halifax_hamburg_gbp_equivalent,ningbo_felixstowe_gbp_equivalent,cost_gap_gbp,cheaper_corridor,corridors_tied,pathway,price_scenario,uk_price_variant,uk_price_variant_label
-ammonia,2026,9.99,0.05,-9.94,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-ammonia,2027,14.72,33.8,19.08,halifax_hamburg,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-ammonia,2028,22.89,38.46,15.57,halifax_hamburg,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-ammonia,2029,37.62,47.77,10.15,halifax_hamburg,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-ammonia,2030,58.03,71.07,13.04,halifax_hamburg,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-hydrogen,2026,131.11,0.5,-130.61,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-hydrogen,2027,211.68,206.7,-4.98,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-hydrogen,2028,338.87,235.16,-103.71,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-hydrogen,2029,461.15,292.09,-169.06,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-hydrogen,2030,546.63,434.41,-112.22,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
-ammonia,2026,9.99,0.05,-9.94,ningbo_felixstowe,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-ammonia,2027,14.72,44.81,30.09,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-ammonia,2028,22.89,63.51,40.62,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-ammonia,2029,37.62,94.46,56.84,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-ammonia,2030,58.03,154.62,96.59,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-hydrogen,2026,131.11,0.5,-130.61,ningbo_felixstowe,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-hydrogen,2027,211.68,274.02,62.34,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-hydrogen,2028,338.87,388.35,49.48,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-hydrogen,2029,461.15,577.5,116.35,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-hydrogen,2030,546.63,945.14,398.51,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
-ammonia,2026,9.99,0.04,-9.95,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-ammonia,2027,14.72,28.05,13.33,halifax_hamburg,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-ammonia,2028,22.89,31.13,8.24,halifax_hamburg,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-ammonia,2029,37.62,41.58,3.96,halifax_hamburg,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-ammonia,2030,58.03,71.92,13.89,halifax_hamburg,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-hydrogen,2026,131.11,0.39,-130.72,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-hydrogen,2027,211.68,171.52,-40.16,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-hydrogen,2028,338.87,190.38,-148.49,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-hydrogen,2029,461.15,254.2,-206.95,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
-hydrogen,2030,546.63,439.6,-107.03,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,2026,35.03,0.05,-34.98,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+ammonia,2027,42.73,33.8,-8.93,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+ammonia,2028,54.41,38.46,-15.95,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+ammonia,2029,78.23,47.77,-30.46,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+ammonia,2030,126.52,71.07,-55.45,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,2026,468.03,0.5,-467.53,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,2027,623.78,206.7,-417.08,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,2028,813.53,235.16,-578.37,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,2029,962.2,292.09,-670.11,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+hydrogen,2030,1191.2,434.41,-756.79,ningbo_felixstowe,False,cbam_default,medium,frozen,Frozen at the 2026 determination (baseline)
+ammonia,2026,35.03,0.05,-34.98,ningbo_felixstowe,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,2027,42.73,44.81,2.08,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,2028,54.41,63.51,9.1,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,2029,78.23,94.46,16.23,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,2030,126.52,154.62,28.1,halifax_hamburg,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,2026,468.03,0.5,-467.53,ningbo_felixstowe,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,2027,623.78,274.02,-349.76,ningbo_felixstowe,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,2028,813.53,388.35,-425.18,ningbo_felixstowe,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,2029,962.2,577.5,-384.7,ningbo_felixstowe,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+hydrogen,2030,1191.2,945.14,-246.06,ningbo_felixstowe,False,cbam_default,medium,linked,EU-UK ETS linkage: converges to EU price (NOT law)
+ammonia,2026,35.03,0.04,-34.99,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,2027,42.73,28.05,-14.68,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,2028,54.41,31.13,-23.28,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,2029,78.23,41.58,-36.65,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+ammonia,2030,126.52,71.92,-54.6,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,2026,468.03,0.39,-467.64,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,2027,623.78,171.52,-452.26,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,2028,813.53,190.38,-623.15,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,2029,962.2,254.2,-708.0,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"
+hydrogen,2030,1191.2,439.6,-751.6,ningbo_felixstowe,False,cbam_default,medium,desnz,"DESNZ traded carbon values (official, real 2025 prices)"

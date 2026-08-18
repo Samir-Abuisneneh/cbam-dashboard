@@ -1,4 +1,4 @@
-"""MCG scenario explorer over the CBAM corridor cost model.
+"""Scenario explorer over the CBAM corridor cost model.
 
 Streamlit dashboard, tooling rather than part of the model itself. Calls
 `cbam_model` live for every selection rather than reading pre-baked CSVs, so
@@ -341,7 +341,7 @@ def _headroom(values: list[float]) -> dict:
 
 
 st.markdown(
-    '<div class="app-eyebrow"><span class="line"></span>MCG · MSc DATA SCIENCE FOR BUSINESS · UNIVERSITY OF BRISTOL</div>',
+    '<div class="app-eyebrow"><span class="line"></span>MSc DATA SCIENCE FOR BUSINESS · UNIVERSITY OF BRISTOL</div>',
     unsafe_allow_html=True,
 )
 st.title("CBAM Corridor Cost Explorer")
@@ -537,7 +537,7 @@ price_scenario = st.sidebar.selectbox(
 vessel_set = st.sidebar.selectbox(
     "Vessel",
     list(vl.VESSEL_SETS),
-    format_func=lambda v: "Gas carrier (VLGC/VLAC)" if v == "gas_carrier" else "Container ship (MCG-named)",
+    format_func=lambda v: "Gas carrier (VLGC/VLAC)" if v == "gas_carrier" else "Container ship (named-vessel reference)",
 )
 speed_scenario = (
     st.sidebar.selectbox(

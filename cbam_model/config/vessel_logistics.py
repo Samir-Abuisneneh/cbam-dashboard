@@ -2,7 +2,7 @@
 
 Source notebooks (Student 2, received 25 July 2026):
   FINAL_shipping_maritime_cost_model.ipynb        core gas carrier model
-  FINAL_container_ship_cost_model.ipynb           MCG named-vessel variant
+  FINAL_container_ship_cost_model.ipynb           named-vessel variant
   gas_carrier_vs_container_ship_comparison.ipynb  side by side
 
 These values supersede the figures in the original build spec wherever the two
@@ -13,7 +13,7 @@ than a quiet divergence.
 The gas carrier is the primary case. Hydrogen and ammonia would realistically
 move as chartered bulk cargo, and no dedicated liquid hydrogen carrier fleet
 exists commercially, so the VLGC/VLAC class that carries ammonia today stands in
-for both products. The container ship set exists because MCG's corridor
+for both products. The container ship set exists because a corridor
 reference document named two specific vessels.
 """
 
@@ -78,7 +78,7 @@ GAS_CARRIER = {
 # three scenarios: the paper's base case plus the bounds it tested.
 SPEED_SCENARIOS_KNOTS = {"lower": 13.0, "base": 14.8, "upper": 17.0}
 
-# Container ship variant, from MCG's corridor reference document. Manufacturer
+# Container ship variant, from a corridor reference document. Manufacturer
 # and technical-archive sources rather than peer-reviewed papers.
 CONTAINER_SHIPS = {
     HH: {

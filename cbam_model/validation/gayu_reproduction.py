@@ -215,7 +215,7 @@ def format_report() -> str:
     # with the rows above it if a check ever became non-deterministic.
     sections = [
         ("Gas carrier (VLGC/VLAC), primary case", check_gas_carrier()),
-        ("Container ship (MCG named vessels)", check_container_ship()),
+        ("Container ship (named-vessel reference)", check_container_ship()),
         ("Cargo capacity and density", check_cargo_capacity()),
     ]
 

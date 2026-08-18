@@ -397,8 +397,6 @@ next_steps = [
     "consultation response, and update the model once it is published.",
     "Resolve the Ramsook et al. reference check by reading the source paper in "
     "full to confirm or rule out the denominator hypothesis.",
-    "Await MCG's HyPACT validation data, requested from Clinton and Jiaqi, "
-    "subject to ethics approval sign off.",
 ]
 story.append(ListFlowable(
     [ListItem(Paragraph(step, body), leftIndent=0) for step in next_steps],

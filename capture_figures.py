@@ -90,10 +90,33 @@ def capture(port: int) -> list[Path]:
                 continue
             tab.first.click()
             _settle(page)
+
+            # Streamlit scrolls inside its own <section class="stMain">
+            # rather than the document body, so a plain full_page=True
+            # screenshot only ever captures one viewport's worth: Playwright
+            # measures full-page height off the outer document, which
+            # reports zero overflow because the real scrolling happens one
+            # level down. Measure that container's actual content height and
+            # grow the viewport to match before shooting, then shrink back
+            # so the next tab's measurement starts from a clean baseline.
+            content_height = page.evaluate(
+                "document.querySelector('section.stMain')?.scrollHeight || 0"
+            )
+            target_height = max(int(content_height), VIEWPORT["height"])
+            if target_height > VIEWPORT["height"]:
+                page.set_viewport_size(
+                    {"width": VIEWPORT["width"], "height": target_height}
+                )
+                _settle(page, 500)
+
             path = FIGURES_DIR / filename
             page.screenshot(path=str(path), full_page=True)
             written.append(path)
-            print(f"  {path.relative_to(Path(__file__).parent)}")
+            print(f"  {path.relative_to(Path(__file__).parent)} ({target_height}px tall)")
+
+            if target_height > VIEWPORT["height"]:
+                page.set_viewport_size(VIEWPORT)
+                _settle(page, 300)
 
         browser.close()
 

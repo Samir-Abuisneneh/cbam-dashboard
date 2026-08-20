@@ -17,3 +17,10 @@ scipy==1.16.3
 # Required by pandas Styler.background_gradient, used to colour the forecast
 # skill grid on the dashboard.
 matplotlib==3.11.1
+
+# GradientBoostingRegressor for the one machine-learning model in the price
+# forecast (cbam_model/forecasting/price_model.py:gradient_boosted), run
+# through the same walk-forward harness as the statistical models on the
+# "Price forecast" dashboard tab. Not optional there, so it belongs in the
+# deployment set rather than requirements-dev.txt.
+scikit-learn==1.9.0

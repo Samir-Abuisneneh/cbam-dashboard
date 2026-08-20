@@ -249,6 +249,7 @@ MODEL_LABELS = {
     "ses": "Weighted recent average",
     "damped_trend": "Trend that flattens out",
     "theta": "Theta method",
+    "gradient_boosted": "Gradient-boosted trees (ML)",
 }
 
 
@@ -1148,7 +1149,8 @@ with tab_forecast:
         st.info(
             f"**A fitted forecast cannot pin down the 2030 carbon price, and that "
             f"is the finding.**\n\n"
-            f"- Seven models were tried. The best of them, "
+            f"- Eight models were tried, including a gradient-boosted machine-"
+            f"learning model. The best of them, "
             f"*{_model_display(best['model'])}*, is barely better than simply "
             f"assuming the price never changes, and on this much data that margin "
             f"cannot be told apart from luck.\n"

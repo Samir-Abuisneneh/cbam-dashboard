@@ -3255,11 +3255,12 @@ def test_the_counterfactual_cells_keep_the_origin_carbon_price_with_the_origin()
 def test_only_one_forecasting_method_beats_the_random_walk():
     """The forecasting result, locked so the findings chapter cannot drift.
 
-    Five of the six alternatives lose to the random walk at every horizon from
-    six months to four years. The sixth, `damped_trend`, wins by a small margin
-    at four of the five horizons and loses at 24 months. With 2.4 independent
-    windows the test cannot separate that from noise in either direction, which
-    is itself the result.
+    Six of the seven alternatives lose to the random walk at every horizon
+    from six months to four years, including `gradient_boosted`, the one
+    machine-learning model in the set. The seventh, `damped_trend`, wins by a
+    small margin at four of the five horizons and loses at 24 months. With 2.4
+    independent windows the test cannot separate that from noise in either
+    direction, which is itself the result.
 
     Read with `effective_folds`: at 48 months there are 2.4 independent windows,
     so the sign of a skill figure in that column is worth more than its size.
@@ -3272,7 +3273,7 @@ def test_only_one_forecasting_method_beats_the_random_walk():
     assert validation["is_baseline"].sum() == 5
 
     alternatives = validation[~validation["is_baseline"]]
-    assert alternatives["model"].nunique() == 6, "six alternatives, plus the baseline"
+    assert alternatives["model"].nunique() == 7, "seven alternatives, plus the baseline"
 
     winners = alternatives[alternatives["beats_random_walk"]]
     assert set(winners["model"]) == {"damped_trend"}, (
@@ -3281,7 +3282,10 @@ def test_only_one_forecasting_method_beats_the_random_walk():
     assert len(winners) == 4, "damped_trend loses at exactly one horizon"
 
     never_wins = [m for m, g in alternatives.groupby("model") if not g["beats_random_walk"].any()]
-    assert len(never_wins) == 5, "five of six lose everywhere; the chapter says five"
+    assert len(never_wins) == 6, "six of seven lose everywhere, including the ML model"
+    assert "gradient_boosted" in never_wins, (
+        "the ML model must never win here, or the chapter's honesty claim is stale"
+    )
 
     at_48 = validation[validation["horizon_months"] == 48]
     assert at_48["effective_folds"].max() == 2.4

@@ -24,11 +24,26 @@ THE THREE MODELS, AND WHY THESE THREE
                 toward a long-run level rather than wandering freely. If carbon
                 prices are policy-anchored rather than random, this should win.
 
-Deliberately no ARIMA, no gradient boosting, no neural network. With 2.4
-effectively independent observations at this horizon (see
-`effective_sample_size`), a more flexible model would fit the noise and its
-apparent skill would be an artefact of overlapping folds. Choosing the simplest
-model the data can support is the methodological point, not a limitation.
+No ARIMA, no neural network. With 2.4 effectively independent observations at
+this horizon (see `effective_sample_size`), a more flexible model would fit
+the noise and its apparent skill would be an artefact of overlapping folds.
+Choosing the simplest model the data can support is the methodological point,
+not a limitation.
+
+ONE MACHINE-LEARNING MODEL, ADDED TO TEST THAT ARGUMENT RATHER THAN ASSUME IT
+-------------------------------------------------------------------------------
+`gradient_boosted` is exactly the model class named above and, until now,
+deliberately excluded. It is included once, run through the identical
+walk-forward harness as every statistical model here, and reported the same
+way. Regularised hard (50 shallow trees, a low learning rate, row subsampling)
+because the point is to give the flexible-model argument its fairest hearing
+at this sample size, not to build the best possible predictor. If it beats the
+random walk by a material margin, that overturns the paragraph above and is
+worth knowing. If it does not, that is the same finding the six statistical
+models already give, reached by a method with no assumption in common with
+any of them, which is a stronger result than six similar linear methods
+agreeing with each other. Either way the walk-forward discipline decides it,
+not a claim about what gradient boosting is generally capable of.
 
 FREQUENCY AND TARGET
 --------------------
@@ -182,6 +197,61 @@ def theta(train: pd.Series, horizon: int) -> float:
     return float(np.exp(level + 0.5 * slope * horizon))
 
 
+_ML_LAGS = (1, 2, 3, 6, 12)
+
+
+def _lag_features(y: np.ndarray, lags: tuple[int, ...]) -> tuple[np.ndarray, np.ndarray]:
+    """Turn a univariate log-price series into a supervised table.
+
+    Row i's features are y at each lag behind position i; its target is y[i].
+    Only rows where every lag is available are kept, so the first max(lags)
+    points of the series are always dropped. Shared by fitting and by the
+    recursive forecast loop below so the two cannot drift apart.
+    """
+    max_lag = max(lags)
+    rows = [[y[i - lag] for lag in lags] for i in range(max_lag, len(y))]
+    targets = y[max_lag:]
+    return np.array(rows), targets
+
+
+def gradient_boosted(train: pd.Series, horizon: int) -> float:
+    """Gradient-boosted trees on lagged log price, iterated forward.
+
+    Fits a one-step-ahead model, then feeds each prediction back in as next
+    month's most recent lag to reach `horizon` months out, the same recursive
+    approach `ar1_log` and `damped_trend` already use above. Errors compound
+    with the horizon exactly as they would if this were deployed, which is
+    the honest way to extend a one-step model rather than a shortcut.
+
+    Falls back to the random walk if the training window is too short to
+    build a sensible lag table (below `MIN_TRAIN_MONTHS` this cannot happen
+    inside `walk_forward`, but the function should not fail if called
+    directly on a shorter series).
+    """
+    from sklearn.ensemble import GradientBoostingRegressor
+
+    y = np.log(train.to_numpy())
+    x, target = _lag_features(y, _ML_LAGS)
+    if len(target) < 20:
+        return float(train.iloc[-1])
+
+    model = GradientBoostingRegressor(
+        n_estimators=50,
+        max_depth=2,
+        learning_rate=0.05,
+        subsample=0.8,
+        random_state=0,
+    )
+    model.fit(x, target)
+
+    history = list(y[-max(_ML_LAGS) :])
+    for _ in range(horizon):
+        row = np.array([[history[-lag] for lag in _ML_LAGS]])
+        history.append(float(model.predict(row)[0]))
+
+    return float(np.exp(history[-1]))
+
+
 MODELS = {
     "random_walk": random_walk,
     "drift": drift,
@@ -190,13 +260,16 @@ MODELS = {
     "ses": ses,
     "damped_trend": damped_trend,
     "theta": theta,
+    "gradient_boosted": gradient_boosted,
 }
 BASELINE = "random_walk"
 
-# The set fixed before any of it was run, so that reporting all seven is not a
+# The set fixed before any of it was run, so that reporting all eight is not a
 # choice made after seeing which one won. With 2.4 independent windows at the
 # four-year horizon, searching model space until something beats the baseline
-# would find a winner whether or not one exists.
+# would find a winner whether or not one exists. gradient_boosted joined this
+# set on the same rule: registered once, before its walk-forward result was
+# known, not added after the fact because it happened to do well or badly.
 PRESPECIFIED = tuple(MODELS)
 
 

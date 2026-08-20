@@ -67,6 +67,38 @@ def test_ar1_degenerates_to_random_walk_on_a_true_random_walk():
 
 
 # ---------------------------------------------------------------------------
+# The one machine-learning model
+# ---------------------------------------------------------------------------
+
+
+def test_gradient_boosted_falls_back_on_a_too_short_series():
+    """Below the lag table's minimum size it should not try to fit at all."""
+    s = pd.Series(np.exp(np.linspace(np.log(50), np.log(60), 15)))
+    assert pm.gradient_boosted(s, horizon=12) == pytest.approx(float(s.iloc[-1]))
+
+
+def test_gradient_boosted_recovers_a_flat_series():
+    """On a series with nothing to learn, it should forecast close to flat."""
+    s = pd.Series(np.full(80, 50.0) * np.exp(np.random.default_rng(2).normal(0, 0.01, 80)))
+    forecast = pm.gradient_boosted(s, horizon=24)
+    assert forecast == pytest.approx(50.0, rel=0.15)
+
+
+def test_gradient_boosted_is_registered_on_the_same_terms_as_every_other_model(monthly):
+    """It must go through walk_forward and evaluate exactly like the rest.
+
+    Not a separate code path with its own scoring: the whole point of adding
+    it is that the same honesty check applies. If this model needs a special
+    case anywhere in the harness, that is a bug, not a feature.
+    """
+    assert "gradient_boosted" in pm.MODELS
+    assert "gradient_boosted" in pm.PRESPECIFIED
+    results = pm.walk_forward(monthly, pm.gradient_boosted, horizon=12)
+    assert len(results) > 0
+    assert results["origin"].lt(results["target"]).all()
+
+
+# ---------------------------------------------------------------------------
 # Validation does not leak the future
 # ---------------------------------------------------------------------------
 

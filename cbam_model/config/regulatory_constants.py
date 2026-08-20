@@ -87,6 +87,12 @@ CBAM_FERTILISER_PRODUCTS = ("ammonia",)
 # cbam_cert_price_within_ets_scenario_bounds() below, which checks the 2026
 # scenario range still brackets it. If that check ever fails, the scenario
 # bounds have drifted from the actual market and need revisiting.
+# Article 21(1) of the 2023 original sets weekly averaging with no 2026
+# carve-out; this looked like a disagreement until Commission Implementing
+# Regulation (EU) 2025/2548 (10 December 2025) confirmed quarterly averaging
+# for 2026 specifically (four quarterly prices, moving to weekly from
+# 1 January 2027), verified against two independent secondary sources on
+# 20 August 2026. Also recorded in `data/policy_events.csv` (row EU-07).
 CBAM_CERT_PRICE_AVERAGING = {2026: "quarterly", 2027: "weekly"}  # weekly from 2027 onward
 CBAM_CERT_PRICE_Q1_2026_ACTUAL = 75.36  # EUR/tCO2e, confirmed published figure (EEX)
 
@@ -415,6 +421,15 @@ def cbam_emissions_boundary(product: str) -> str:
         ) from None
 
 # First annual declaration and certificate surrender for 2026 imports.
+# The original Article 22(1)/6(1) text (Regulation (EU) 2023/956, 2023) set
+# this at 31 May. Regulation (EU) 2025/2083 postponed it to 30 September,
+# confirmed against two independent secondary sources on 20 August 2026
+# (Mayer Brown and ICAP CBAM simplification summaries); the primary OJ text
+# for the amending regulation has not been read directly. This constant was
+# flagged in `methodology_sources_samir.md` as disagreeing with the
+# regulation "as read 11 August 2026" - that reading was of the superseded
+# 2023 original, not the amended text, so the constant was right and the
+# working note was checking against the wrong version.
 EU_CBAM_FIRST_SURRENDER_DEADLINE = "2027-09-30"
 
 

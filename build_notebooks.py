@@ -37,7 +37,9 @@ The model works in two layers. Gayu's maritime costs are per voyage; CBAM liabil
 product, because embedded emissions are expressed per tonne. Her cargo capacity notebook supplies the
 tonnage that joins them, so **total carbon compliance cost per tonne is now computable**.
 
-Full delivered cost is not, because production, conversion and freight cost still have no owner.
+Full delivered cost is not: production, conversion and freight cost are a scope boundary this study
+declares rather than a pending input, since they are invariant to production pathway and cancel out of
+every within-corridor comparison the study makes.
 """),
     code("""
 import warnings

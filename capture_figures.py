@@ -30,6 +30,8 @@ TABS = [
     ("Maritime layer only", "dashboard_2_maritime.png"),
     ("Sensitivity", "dashboard_3_sensitivity.png"),
     ("Which pathway / corridor", "dashboard_4_pathway_corridor.png"),
+    ("Price forecast", "dashboard_5_price_forecast.png"),
+    ("Sourcing optimiser", "dashboard_6_sourcing_optimiser.png"),
 ]
 
 # The sidebar selections to make before capturing. Left at the dashboard's own
@@ -72,7 +74,13 @@ def capture(port: int) -> list[Path]:
                 print(f"  ! no control labelled {label!r}, leaving at default")
                 continue
             box.first.click()
-            page.get_by_text(value, exact=True).last.click()
+            # Scoped to the open listbox rather than get_by_text against the
+            # whole page: with six tabs now built, several of them render a
+            # plotly chart with an axis tick reading the same text as a
+            # scenario value ("2030" on a price-history x-axis, for one),
+            # and an unscoped text match can resolve to that instead of the
+            # dropdown option, hanging on an element that is never visible.
+            page.get_by_role("option", name=value, exact=True).click()
             _settle(page, 1200)
 
         for label, filename in TABS:

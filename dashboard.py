@@ -348,8 +348,8 @@ st.markdown(
 st.title("CBAM Corridor Cost Explorer")
 st.caption(
     "Carbon compliance cost only: CBAM plus maritime ETS plus FuelEU. "
-    "Conversion and freight cost are not yet included (no owner assigned in "
-    "the data contracts), so this is not a full delivered cost. "
+    "Production, conversion and freight cost are a scope boundary, not a "
+    "pending input, so this is not a full delivered cost. "
     "EUR (Halifax–Hamburg) and GBP (Ningbo–Felixstowe) are never "
     "converted or combined."
 )
